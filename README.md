@@ -1,6 +1,6 @@
 # boarding-house-utilities-tracker
-
-School project for CCC151
+## About
+School project for **CCC151**
 
 Members:
 1. Leonard John T. Corpuz
