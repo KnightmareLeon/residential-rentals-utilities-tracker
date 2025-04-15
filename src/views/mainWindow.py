@@ -1,6 +1,7 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import QSize
 
 
 class MainWindow(QMainWindow):
@@ -26,6 +27,7 @@ class MainWindow(QMainWindow):
 "/* Sidebar */\n"
 "#sidebarFrame QPushButton {\n"
 "    font-family: \"Urbanist\";\n"
+"    color: white;\n"
 "    font-size: 24px;\n"
 "    border: none;\n"
 "    padding: 15px 30px;\n"
@@ -70,11 +72,13 @@ class MainWindow(QMainWindow):
 "    font-size: 40px;\n"
 "    font-weight: 700;\n"
 "    font-family: \"Urbanist\";\n"
+"    color: white;\n"
 "}\n"
 "\n"
 "QLabel#userNameLabel {\n"
 "    font-family: \"Urbanist\";\n"
 "    font-size: 20px;\n"
+"    color: white;\n"
 "    margin: 15px;\n"
 "}")
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
@@ -108,6 +112,7 @@ class MainWindow(QMainWindow):
         self.logoLabel.setObjectName("logoLabel")
         self.horizontalLayout_6.addWidget(self.logoLabel)
         self.verticalLayout.addWidget(self.sidebarLogoFrame)
+
         self.sidebarButtonsFrame = QtWidgets.QFrame(parent=self.sidebarFrame)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -121,6 +126,7 @@ class MainWindow(QMainWindow):
         self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_3.setSpacing(10)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
+
         self.homeButton = QtWidgets.QPushButton(parent=self.sidebarButtonsFrame)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -133,8 +139,10 @@ class MainWindow(QMainWindow):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("src/ui\\../../assets/icons/home.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.homeButton.setIcon(icon)
+        self.homeButton.setIconSize(QSize(24, 24))  
         self.homeButton.setObjectName("homeButton")
         self.verticalLayout_3.addWidget(self.homeButton, 0, QtCore.Qt.AlignmentFlag.AlignLeft)
+
         self.unitsButton = QtWidgets.QPushButton(parent=self.sidebarButtonsFrame)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Maximum)
         sizePolicy.setHorizontalStretch(0)
@@ -146,8 +154,10 @@ class MainWindow(QMainWindow):
         icon1 = QtGui.QIcon()
         icon1.addPixmap(QtGui.QPixmap("src/ui\\../../assets/icons/units.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.unitsButton.setIcon(icon1)
+        self.unitsButton.setIconSize(QSize(24, 24))  
         self.unitsButton.setObjectName("unitsButton")
         self.verticalLayout_3.addWidget(self.unitsButton, 0, QtCore.Qt.AlignmentFlag.AlignLeft)
+
         self.utilitiesButton = QtWidgets.QPushButton(parent=self.sidebarButtonsFrame)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Maximum)
         sizePolicy.setHorizontalStretch(0)
@@ -159,8 +169,10 @@ class MainWindow(QMainWindow):
         icon2 = QtGui.QIcon()
         icon2.addPixmap(QtGui.QPixmap("src/ui\\../../assets/icons/utilities.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.utilitiesButton.setIcon(icon2)
+        self.utilitiesButton.setIconSize(QSize(24, 24))
         self.utilitiesButton.setObjectName("utilitiesButton")
         self.verticalLayout_3.addWidget(self.utilitiesButton, 0, QtCore.Qt.AlignmentFlag.AlignLeft)
+
         self.billsButton = QtWidgets.QPushButton(parent=self.sidebarButtonsFrame)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Maximum)
         sizePolicy.setHorizontalStretch(0)
@@ -172,8 +184,10 @@ class MainWindow(QMainWindow):
         icon3 = QtGui.QIcon()
         icon3.addPixmap(QtGui.QPixmap("src/ui\\../../assets/icons/bills.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.billsButton.setIcon(icon3)
+        self.billsButton.setIconSize(QSize(24, 24))
         self.billsButton.setObjectName("billsButton")
         self.verticalLayout_3.addWidget(self.billsButton, 0, QtCore.Qt.AlignmentFlag.AlignLeft)
+
         self.recordsButton = QtWidgets.QPushButton(parent=self.sidebarButtonsFrame)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Maximum)
         sizePolicy.setHorizontalStretch(0)
@@ -185,8 +199,10 @@ class MainWindow(QMainWindow):
         icon4 = QtGui.QIcon()
         icon4.addPixmap(QtGui.QPixmap("src/ui\\../../assets/icons/records.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.recordsButton.setIcon(icon4)
+        self.recordsButton.setIconSize(QSize(24, 24))
         self.recordsButton.setObjectName("recordsButton")
         self.verticalLayout_3.addWidget(self.recordsButton, 0, QtCore.Qt.AlignmentFlag.AlignLeft)
+
         self.profileButton = QtWidgets.QPushButton(parent=self.sidebarButtonsFrame)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Maximum)
         sizePolicy.setHorizontalStretch(0)
@@ -198,8 +214,10 @@ class MainWindow(QMainWindow):
         icon5 = QtGui.QIcon()
         icon5.addPixmap(QtGui.QPixmap("src/ui\\../../assets/icons/profiles.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.profileButton.setIcon(icon5)
+        self.profileButton.setIconSize(QSize(24, 24))
         self.profileButton.setObjectName("profileButton")
         self.verticalLayout_3.addWidget(self.profileButton, 0, QtCore.Qt.AlignmentFlag.AlignLeft)
+
         self.verticalLayout_3.setStretch(0, 1)
         self.verticalLayout_3.setStretch(1, 1)
         self.verticalLayout_3.setStretch(2, 1)
@@ -211,6 +229,7 @@ class MainWindow(QMainWindow):
         self.verticalLayout.addItem(spacerItem)
         self.verticalLayout.setStretch(0, 2)
         self.verticalLayout.setStretch(2, 8)
+
         self.horizontalLayout.addWidget(self.sidebarFrame)
         self.centerFrame = QtWidgets.QFrame(parent=self.centralwidget)
         self.centerFrame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
