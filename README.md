@@ -3,7 +3,7 @@
 School project for **CCC151**
 
 Members:
-1. Leonard John T. Corpuz
+1. Leonard John T. Corpuz (me)
 2. Kim Gabriel A. Nasayao
 3. Rogelio Angelo C. Bollozos
 
