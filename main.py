@@ -2,7 +2,7 @@ import sys
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QFontDatabase
 
-from src.views.mainWindow import MainWindow
+from src.views.MainWindow import MainWindow
 
 if __name__ == "__main__":    
 	app = QApplication(sys.argv)
