@@ -1,5 +1,42 @@
-.env
-.vscode
+# Python
 __pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.py~  
+*.log
+*.sqlite3
+*.db
+*.egg-info/
+tempCodeRunnerFile.py
+
+# Environments
+.env
+.venv/
 venv/
+ENV/
+env/
+pip-wheel-metadata/
+
+# Editor settings
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Compiled UI and resource files (optional if you're generating them)
+*.ui.py
+*.qrc.py
+
+# Tests
 test/
+
+# PyInstaller
+dist/
+build/
+*.spec
+
+# Jupyter
+.ipynb_checkpoints/

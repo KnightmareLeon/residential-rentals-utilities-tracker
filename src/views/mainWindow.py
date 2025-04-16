@@ -3,6 +3,8 @@ from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import QSize
 
+from src.views.components.UnitTable import UnitTable
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -11,6 +13,18 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QIcon("assets/logos/logoIcon.png"))
 
         self.setupUi(self)
+        self.setupPages()
+        
+        self.currentSidebarButton = self.homeButton
+
+        self.stackedWidget.setCurrentWidget(self.homePage)
+
+        self.homeButton.clicked.connect(lambda: self.updatePage(self.homePage, self.homeButton, "Welcome back"))
+        self.unitsButton.clicked.connect(lambda: self.updatePage(self.unitsPage, self.unitsButton, "Units"))
+        self.utilitiesButton.clicked.connect(lambda: self.updatePage(self.utilitiesPage, self.utilitiesButton, "Utilities"))
+        self.billsButton.clicked.connect(lambda: self.updatePage(self.billsPage, self.billsButton, "Bills"))
+
+        self.searchInputLineEdit.returnPressed.connect(self.unitsTable.updateTable)
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -28,7 +42,7 @@ class MainWindow(QMainWindow):
 "#sidebarFrame QPushButton {\n"
 "    font-family: \"Urbanist\";\n"
 "    color: white;\n"
-"    font-size: 24px;\n"
+"    font-size: 18px;\n"
 "    border: none;\n"
 "    padding: 15px 30px;\n"
 "    border-radius: 15px;\n"
@@ -201,6 +215,8 @@ class MainWindow(QMainWindow):
         self.recordsButton.setIcon(icon4)
         self.recordsButton.setIconSize(QSize(24, 24))
         self.recordsButton.setObjectName("recordsButton")
+        # TODO:
+        self.recordsButton.setVisible(False)
         self.verticalLayout_3.addWidget(self.recordsButton, 0, QtCore.Qt.AlignmentFlag.AlignLeft)
 
         self.profileButton = QtWidgets.QPushButton(parent=self.sidebarButtonsFrame)
@@ -216,6 +232,8 @@ class MainWindow(QMainWindow):
         self.profileButton.setIcon(icon5)
         self.profileButton.setIconSize(QSize(24, 24))
         self.profileButton.setObjectName("profileButton")
+        # TODO:
+        self.profileButton.setVisible(False)
         self.verticalLayout_3.addWidget(self.profileButton, 0, QtCore.Qt.AlignmentFlag.AlignLeft)
 
         self.verticalLayout_3.setStretch(0, 1)
@@ -293,6 +311,9 @@ class MainWindow(QMainWindow):
         self.searchInputLineEdit.setReadOnly(False)
         self.searchInputLineEdit.setObjectName("searchInputLineEdit")
         self.horizontalLayout_5.addWidget(self.searchInputLineEdit)
+
+        self.searchBarFrame.setVisible(False)
+
         self.horizontalLayout_3.addWidget(self.searchBarFrame, 0, QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.horizontalLayout_3.setStretch(0, 1)
         self.horizontalLayout_3.setStretch(1, 5)
@@ -327,12 +348,22 @@ class MainWindow(QMainWindow):
         #TODO: Add different pages here!
         self.stackedWidget = QtWidgets.QStackedWidget(parent=self.centerFrame)
         self.stackedWidget.setObjectName("stackedWidget")
-        self.page = QtWidgets.QWidget()
-        self.page.setObjectName("page")
-        self.stackedWidget.addWidget(self.page)
-        self.page_2 = QtWidgets.QWidget()
-        self.page_2.setObjectName("page_2")
-        self.stackedWidget.addWidget(self.page_2)
+
+        self.homePage = QtWidgets.QWidget()
+        self.homePage.setObjectName("homePage")
+        self.stackedWidget.addWidget(self.homePage)
+
+        self.unitsPage = QtWidgets.QWidget()
+        self.unitsPage.setObjectName("unitsPage")
+        self.stackedWidget.addWidget(self.unitsPage)
+
+        self.utilitiesPage = QtWidgets.QWidget()
+        self.utilitiesPage.setObjectName("utilitiesPage")
+        self.stackedWidget.addWidget(self.utilitiesPage)
+
+        self.billsPage = QtWidgets.QWidget()
+        self.billsPage.setObjectName("billsPage")
+        self.stackedWidget.addWidget(self.billsPage)
 
         self.verticalLayout_2.addWidget(self.stackedWidget)
         self.verticalLayout_2.setStretch(0, 1)
@@ -357,5 +388,69 @@ class MainWindow(QMainWindow):
         self.billsButton.setText(_translate("MainWindow", "    Bills"))
         self.recordsButton.setText(_translate("MainWindow", "    Records"))
         self.profileButton.setText(_translate("MainWindow", "    Profile"))
-        self.windowLabel.setText(_translate("MainWindow", "Unit"))
+        self.windowLabel.setText(_translate("MainWindow", "Welcome back"))
         self.userNameLabel.setText(_translate("MainWindow", "Leonard"))
+
+    # TODO: UPDATE!!!
+    def setupPages(self):
+        homePageLayout = QtWidgets.QVBoxLayout(self.homePage)
+        unitsPageLayout = QtWidgets.QVBoxLayout(self.unitsPage)
+        utilitiesPageLayout = QtWidgets.QVBoxLayout(self.utilitiesPage)
+        billsPageLayout = QtWidgets.QVBoxLayout(self.billsPage)
+
+        self.unitsTable = UnitTable(mainWindow=self)
+        # self.utilitiesTable = UnitTable(mainWindow=self)
+        # self.billsTable = UnitTable(mainWindow=self)
+        
+        # Sample data
+        sampleData = [
+            {
+                "Unit ID": "U001",
+                "Unit Name": "Unit Alpha",
+                "Address": "123 Main St",
+                "Unit Type": "Residential"
+            },
+            {
+                "Unit ID": "U002",
+                "Unit Name": "Unit Beta",
+                "Address": "456 Side St",
+                "Unit Type": "Commercial"
+            },
+            {
+                "Unit ID": "U003",
+                "Unit Name": "Unit Gamma",
+                "Address": "789 Back St",
+                "Unit Type": "Industrial"
+            }
+        ]
+
+        self.unitsTable.populateTable(sampleData)
+        # self.utilitiesTable.populateTable(sampleData)
+        # self.billsTable.populateTable(sampleData)
+
+        #homePageLayout.addWidget(self.homePage)
+        unitsPageLayout.addWidget(self.unitsTable)
+        # utilitiesPageLayout.addWidget(self.utilitiesTable)
+        # billsPageLayout.addWidget(self.billsTable)
+
+    def updatePage(self, page, button, title):
+        self.stackedWidget.setCurrentWidget(page)
+
+        if hasattr(self, 'currentSidebarButton') and self.currentSidebarButton:
+            self.currentSidebarButton.setStyleSheet("background-color: transparent; color: white;")
+
+        button.setStyleSheet("""
+            background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0,
+                                            stop:0.4 #3A0CA3, stop:1 #F72585);
+            color: white;
+            font-weight: bold;
+        """)
+
+        if button == self.homeButton:
+            self.searchBarFrame.setVisible(False)
+        else:
+            self.searchBarFrame.setVisible(True)
+
+        self.currentSidebarButton = button
+
+        self.windowLabel.setText(title)
