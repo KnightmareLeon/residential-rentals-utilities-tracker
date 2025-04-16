@@ -1,13 +1,22 @@
 import mysql.connector
-from abc import ABC
+from abc import ABC, abstractmethod
 from dotenv import load_dotenv
 import os
 
 class DatabaseConnection:
 
-    def __init__(self):
+    __db = None
+
+    @staticmethod
+    def startConnection():
+        """
+        Initializes the database connection using the credentials stored in the .env file.
+        """
+        if DatabaseConnection.__db is not None:
+            return
+        
         load_dotenv()
-        self.__db = mysql.connector.connect(
+        DatabaseConnection.__db = mysql.connector.connect(
             host = os.getenv("HOST"),
             user = os.getenv("USER"),
             password = os.getenv("PASSWORD"),
@@ -15,65 +24,37 @@ class DatabaseConnection:
             database = os.getenv("DATABASE"),
             use_pure = True
         )
-        self.__db.autocommit = True
-        try:
-            __cursorCreate = self.__db.cursor()
-            __cursorCreate.execute("CREATE TABLE IF NOT EXISTS unit( " +
-                "UnitID int NOT NULL, " +
-                "Name varchar(30) NOT NULL, " +
-                "Address varchar(255) NOT NULL, " +
-                "PRIMARY KEY (UnitID))"
-            )
-            __cursorCreate.execute("CREATE TABLE IF NOT EXISTS utility (" +
-                "UtilityID int NOT NULL, " + 
-                "Type varchar(30) NOT NULL, " +
-                "Status enum('Active','Inactive') NOT NULL, " +
-                "PRIMARY KEY (UtilityID))"
-            )
-            __cursorCreate.execute("CREATE TABLE IF NOT EXISTS installedutilities ( " +
-                "UnitID int NOT NULL, " +
-                "UtilityID int NOT NULL, " +
-                "InstallationDate date NOT NULL, " +
-                "PRIMARY KEY (UnitID,UtilityID), " +
-                "KEY UtilityID (UtilityID), " +
-                "CONSTRAINT installedutilities_ibfk_1 FOREIGN KEY (UnitID) REFERENCES unit (UnitID) ON DELETE CASCADE ON UPDATE CASCADE, " +
-                "CONSTRAINT installedutilities_ibfk_2 FOREIGN KEY (UtilityID) REFERENCES utility (UtilityID) ON DELETE CASCADE ON UPDATE CASCADE)"
-            )
-            __cursorCreate.execute("CREATE TABLE IF NOT EXISTS utilitybills ( " +
-                "BillID int NOT NULL, " +
-                "UnitID int DEFAULT NULL, " +
-                "UtilityID int DEFAULT NULL, " +
-                "TotalAmount decimal(10,2) NOT NULL, " +
-                "BillingPeriodStart date NOT NULL, " +
-                "BillingPeriodEnd date NOT NULL, " +
-                "Status enum('Unpaid','Paid','Partially Paid','Overdue') NOT NULL, " +
-                "DueDate date NOT NULL, " +
-                "BillingCycle enum('Monthly','Quarterly','Annually','Irregular') NOT NULL, " +
-                "PRIMARY KEY (BillID), " +
-                "KEY UnitID (UnitID), " +
-                "KEY UtilityID (UtilityID), " +
-                "CONSTRAINT utilitybills_ibfk_1 FOREIGN KEY (UnitID) REFERENCES unit (UnitID) ON DELETE SET NULL ON UPDATE CASCADE, " +
-                "CONSTRAINT utilitybills_ibfk_2 FOREIGN KEY (UtilityID) REFERENCES utility (UtilityID) ON DELETE SET NULL ON UPDATE CASCADE, " +
-                "CONSTRAINT utilitybills_chk_1 CHECK ((BillingPeriodEnd > BillingPeriodStart)), " +
-                "CONSTRAINT utilitybills_chk_2 CHECK ((DueDate > BillingPeriodEnd)))"
-            )
-        except Exception as e:
-            print(f"Error: {e}")
-            raise e
-        finally:
-            __cursorCreate.close()
+        DatabaseConnection.__db.autocommit = True
 
-    def getConnection(self):
-        return self.__db
+    @staticmethod
+    def getConnection():
+        """
+        Returns the database connection object. If the connection is not established,
+        it initializes the connection first.
+        """
+        if DatabaseConnection.__db is None:
+            DatabaseConnection.startConnection()
+        return DatabaseConnection.__db
 
+    @staticmethod
+    def closeConnection():
+        """
+        Closes the database connection if it is open.
+        """
+        if DatabaseConnection.__db is None:
+            return
+        if DatabaseConnection.__db.is_connected():
+            DatabaseConnection.__db.close()
 
-class TableHandler(ABC):
+class Table(ABC):
     
     def __init__(self, table_name : str):
         self.table_name = table_name
+        self.primary = None
+        self.dbConnection = None
         try:
-            self.dbConnection = DatabaseConnection()
-            cursor = self.dbConnection.getConnection().cursor(dictionary = True)
+            self._createTable()
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             cursor.execute("SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE " +
                            f"WHERE TABLE_NAME = '{self.table_name}' AND CONSTRAINT_NAME = " +
                            "'PRIMARY'")
@@ -84,7 +65,7 @@ class TableHandler(ABC):
         finally:
             cursor.close()
     
-    def fetch(self, page : int = 1, limit : int = 50):
+    def read(self, page : int = 1, limit : int = 50):
         """
         Fetches data from the table and returns it as a list of dictionaries.
         Each dictionary represents a row from the table. The default total
@@ -98,7 +79,7 @@ class TableHandler(ABC):
         try:
             if page < 1 or limit < 1:
                 raise ValueError("Page and limit must be positive integers.")
-            cursor = self.dbConnection.getConnection().cursor(dictionary = True)
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             offset = (page - 1) * limit
             cursor.execute(f"SELECT * FROM {self.table_name} LIMIT {limit} OFFSET {offset}; ")
             result = cursor.fetchall()
@@ -109,7 +90,11 @@ class TableHandler(ABC):
             cursor.close()
         return result
     
-    def insert(self, data : dict[str, any]):
+    @abstractmethod
+    def _createTable(self):
+        pass
+
+    def create(self, data : dict[str, any]):
         """
         Inserts data into the table. The data must be a dictionary where the keys
         are the column names and the values are the corresponding values to be inserted.
@@ -123,7 +108,7 @@ class TableHandler(ABC):
             if self.primary not in data:
                 raise ValueError(f"Primary key '{self.primary}' is required in the data.")
         
-            cursor = self.dbConnection.getConnection().cursor()
+            cursor = DatabaseConnection.getConnection().cursor()
             columns = ', '.join(data.keys())
             values = []
             for data in data.values():
@@ -152,7 +137,7 @@ class TableHandler(ABC):
         try:
             if not isinstance(key, int):
                 raise ValueError("Key must be an integer.")
-            cursor = self.dbConnection.getConnection().cursor()
+            cursor = DatabaseConnection.getConnection().cursor()
             sql = f"DELETE FROM {self.table_name} WHERE {self.primary} = {key}"
             cursor.execute(sql)
         except Exception as e:
@@ -175,7 +160,7 @@ class TableHandler(ABC):
             if not isinstance(data, dict):
                 raise ValueError("Data must be a dictionary.")
         
-            cursor = self.dbConnection.getConnection().cursor()
+            cursor = DatabaseConnection.getConnection().cursor()
             set_clause = ', '.join([f"{k} = '{v}'" for k, v in data.items()])
             sql = f"UPDATE {self.table_name} SET {set_clause} WHERE {self.primary} = {key}"
             cursor.execute(sql)
@@ -184,21 +169,100 @@ class TableHandler(ABC):
             raise e
         finally:
             cursor.close()
-class Unit(TableHandler):
+    
+class Unit(Table):
     def __init__(self):
         super().__init__("unit")
 
-class Utility(TableHandler):
+    def _createTable(self):
+        try:
+            cursor = DatabaseConnection.getConnection().cursor()
+            cursor.execute("CREATE TABLE IF NOT EXISTS unit( " +
+                "UnitID int NOT NULL, " +
+                "Name varchar(30) NOT NULL, " +
+                "Address varchar(255) NOT NULL, " +
+                "PRIMARY KEY (UnitID))"
+            )
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+
+class Utility(Table):
     def __init__(self):
         super().__init__("utility")
 
-class UtilityBills(TableHandler):
+    def _createTable(self):
+        try:
+            cursor = DatabaseConnection.getConnection().cursor()
+            cursor.execute("CREATE TABLE IF NOT EXISTS utility (" +
+                "UtilityID int NOT NULL, " + 
+                "Type varchar(30) NOT NULL, " +
+                "Status enum('Active','Inactive') NOT NULL, " +
+                "PRIMARY KEY (UtilityID))"
+            )
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+
+class UtilityBills(Table):
     def __init__(self):
         super().__init__("utilitybills")
 
-class InstalledUtilities(TableHandler):
+    def _createTable(self):
+        try:
+            cursor = DatabaseConnection.getConnection().cursor()
+            cursor.execute("CREATE TABLE IF NOT EXISTS utilitybills ( " +
+                "BillID int NOT NULL, " +
+                "UnitID int DEFAULT NULL, " +
+                "UtilityID int DEFAULT NULL, " +
+                "TotalAmount decimal(10,2) NOT NULL, " +
+                "BillingPeriodStart date NOT NULL, " +
+                "BillingPeriodEnd date NOT NULL, " +
+                "Status enum('Unpaid','Paid','Partially Paid','Overdue') NOT NULL, " +
+                "DueDate date NOT NULL, " +
+                "BillingCycle enum('Monthly','Quarterly','Annually','Irregular') NOT NULL, " +
+                "PRIMARY KEY (BillID), " +
+                "KEY UnitID (UnitID), " +
+                "KEY UtilityID (UtilityID), " +
+                "CONSTRAINT utilitybills_ibfk_1 FOREIGN KEY (UnitID) REFERENCES unit (UnitID) ON DELETE SET NULL ON UPDATE CASCADE, " +
+                "CONSTRAINT utilitybills_ibfk_2 FOREIGN KEY (UtilityID) REFERENCES utility (UtilityID) ON DELETE SET NULL ON UPDATE CASCADE, " +
+                "CONSTRAINT utilitybills_chk_1 CHECK ((BillingPeriodEnd > BillingPeriodStart)), " +
+                "CONSTRAINT utilitybills_chk_2 CHECK ((DueDate > BillingPeriodEnd)))"
+            )
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+
+class InstalledUtilities(Table):
     def __init__(self):
         self.__init__("installedutilities")
 
+    def _createTable(self):
+        try:
+            cursor = DatabaseConnection.getConnection().cursor()
+            cursor.execute("CREATE TABLE IF NOT EXISTS installedutilities ( " +
+                "UnitID int NOT NULL, " +
+                "UtilityID int NOT NULL, " +
+                "InstallationDate date NOT NULL, " +
+                "PRIMARY KEY (UnitID,UtilityID), " +
+                "KEY UtilityID (UtilityID), " +
+                "CONSTRAINT installedutilities_ibfk_1 FOREIGN KEY (UnitID) REFERENCES unit (UnitID) ON DELETE CASCADE ON UPDATE CASCADE, " +
+                "CONSTRAINT installedutilities_ibfk_2 FOREIGN KEY (UtilityID) REFERENCES utility (UtilityID) ON DELETE CASCADE ON UPDATE CASCADE)"
+            )
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+
     def delete_data(self, key):
+        """
+        Disabled the delete method for this class, to delete data from the table,
+        use the delete method of either the Unit or Utility class."""
         pass
