@@ -51,7 +51,6 @@ class Table(ABC):
     def __init__(self, table_name : str):
         self.table_name = table_name
         self.primary = None
-        self.dbConnection = None
         try:
             self._createTable()
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
@@ -65,7 +64,7 @@ class Table(ABC):
         finally:
             cursor.close()
     
-    def read(self, page : int = 1, limit : int = 50):
+    def read(self, page : int = 1, limit : int = 50, sortBy : str = None, order : str = "ASC"):
         """
         Fetches data from the table and returns it as a list of dictionaries.
         Each dictionary represents a row from the table. The default total
@@ -79,9 +78,19 @@ class Table(ABC):
         try:
             if page < 1 or limit < 1:
                 raise ValueError("Page and limit must be positive integers.")
+            if sortBy is not None and not isinstance(sortBy, str):
+                raise ValueError("sortBy must be a string.")
+            if not isinstance(order, str):
+                raise ValueError("order must be a string.")
+            if order not in ["ASC", "DESC"]:
+                raise ValueError("order must be 'ASC' or 'DESC'.")
+            
+            if sortBy is None:
+                sortBy = self.primary
+                
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             offset = (page - 1) * limit
-            cursor.execute(f"SELECT * FROM {self.table_name} LIMIT {limit} OFFSET {offset}; ")
+            cursor.execute(f"SELECT * FROM {self.table_name} ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset}; ")
             result = cursor.fetchall()
         except Exception as e:
             print(f"Error: {e}")
