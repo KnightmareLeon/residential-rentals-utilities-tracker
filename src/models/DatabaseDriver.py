@@ -48,29 +48,34 @@ class DatabaseConnection:
 
 class Table(ABC):
     
-    def __init__(self, table_name : str):
-        self.table_name = table_name
-        self.primary = None
-        self.columns = []
+    _tableName = None
+    _primary = None
+    _columns = []
+
+    @classmethod
+    def initialize(cls):
         try:
-            self._createTable()
+            cls._tableName = cls.__name__.lower()
+            cls._createTable(cls)
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             cursor.execute("SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE " +
-                           f"WHERE TABLE_NAME = '{self.table_name}' AND CONSTRAINT_NAME = " +
+                           f"WHERE TABLE_NAME = '{cls._tableName}' AND CONSTRAINT_NAME = " +
                            "'PRIMARY'")
-            self.primary = cursor.fetchone()['COLUMN_NAME']
-            self.columns = self._getColumns()
+            cls._primary = cursor.fetchone()['COLUMN_NAME']
+            cls._columns = cls._getColumns(cls)
         except Exception as e:
             print(f"Error: {e}")
             raise e
         finally:
             cursor.close()
-        
+    
+    @classmethod  
     @abstractmethod
-    def _createTable(self):
+    def _createTable(cls):
         pass
 
-    def read(self, 
+    @classmethod
+    def read(cls, 
              page : int = 1, 
              limit : int = 50, 
              sortBy : str = None, 
@@ -110,8 +115,8 @@ class Table(ABC):
                 raise ValueError("Page and limit must be positive integers.")
             if sortBy is not None and not isinstance(sortBy, str):
                 raise ValueError("sortBy must be a string.")
-            if sortBy is not None and sortBy not in self.columns:
-                raise ValueError(f"sortBy must be one of the following columns: {self.columns}")
+            if sortBy is not None and sortBy not in cls._columns:
+                raise ValueError(f"sortBy must be one of the following columns: {cls._columns}")
             if not isinstance(order, str):
                 raise ValueError("order must be a string.")
             if order not in ["ASC", "DESC"]:
@@ -120,15 +125,15 @@ class Table(ABC):
                 raise ValueError("searchValue must be a string.")
             
             if sortBy is None:
-                sortBy = self.primary
+                sortBy = cls._primary
 
             searchClause = ""
             if searchValue is not None:
-                allcolumns = " OR ".join([column + " REGEXP \'" + searchValue + "\'" for column in self.columns])
+                allcolumns = " OR ".join([column + " REGEXP \'" + searchValue + "\'" for column in cls._columns])
                 searchClause = f"WHERE {allcolumns} "
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             offset = (page - 1) * limit
-            cursor.execute(f"SELECT * FROM {self.table_name} {searchClause}ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset}; ")
+            cursor.execute(f"SELECT * FROM {cls._tableName} {searchClause}ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset}; ")
             result = cursor.fetchall()
         except Exception as e:
             print(f"Error: {e}")
@@ -137,7 +142,8 @@ class Table(ABC):
             cursor.close()
         return result
 
-    def create(self, data : dict[str, any]):
+    @classmethod
+    def create(cls, data : dict[str, any]):
         """
         Inserts data into the table. The data must be a dictionary where the keys
         are the column names and the values are the corresponding values to be inserted.
@@ -148,15 +154,15 @@ class Table(ABC):
         try:
             if not isinstance(data, dict):
                 raise ValueError("Data must be a dictionary.")
-            if self.primary not in data:
-                raise ValueError(f"Primary key '{self.primary}' is required in the data.")
-            if not isinstance(data[self.primary], int):
-                raise ValueError(f"Primary key '{self.primary}' must be an integer.")
+            if cls._primary not in data:
+                raise ValueError(f"Primary key '{cls._primary}' is required in the data.")
+            if not isinstance(data[cls._primary], int):
+                raise ValueError(f"Primary key '{cls._primary}' must be an integer.")
             for key in data.keys():
-                if key not in self.columns:
+                if key not in cls._columns:
                     raise ValueError(f"Column '{key}' does not exist in the table.")
-            if list(data.keys()) != self.columns:
-                raise ValueError(f"Data keys {data.keys()} do not match table columns {self.columns}.")
+            if list(data.keys()) != cls._columns:
+                raise ValueError(f"Data keys {data.keys()} do not match table columns {cls._columns}.")
         
             cursor = DatabaseConnection.getConnection().cursor()
             columns = ', '.join(data.keys())
@@ -170,7 +176,7 @@ class Table(ABC):
                     raise ValueError(f"Unsupported data type: {type(data)}")
                 values.append(data)
             values = ', '.join(values)
-            sql = f"INSERT INTO {self.table_name} ({columns}) VALUES ({values})"
+            sql = f"INSERT INTO {cls._tableName} ({columns}) VALUES ({values})"
             cursor.execute(sql)
         except Exception as e:
             print(f"Error: {e}")
@@ -178,7 +184,8 @@ class Table(ABC):
         finally:
             cursor.close()
     
-    def delete(self, keys : list[int]):
+    @classmethod
+    def delete(cls, keys : list[int]):
         """
         Deletes data from the table based on the primary key. The key must be an integer
         and must exist in the table. The method will raise an error if the key is not
@@ -192,7 +199,7 @@ class Table(ABC):
                     raise ValueError("Keys must be a list of integers.")
             cursor = DatabaseConnection.getConnection().cursor()
             keysClause = ', '.join([str(key) for key in keys])
-            sql = f"DELETE FROM {self.table_name} WHERE {self.primary} IN ({keysClause})"
+            sql = f"DELETE FROM {cls._tableName} WHERE {cls._primary} IN ({keysClause})"
             cursor.execute(sql)
         except Exception as e:
             print(f"Error: {e}")
@@ -200,7 +207,8 @@ class Table(ABC):
         finally:
             cursor.close()
 
-    def update(self, key : int, data : dict[str, any]):
+    @classmethod
+    def update(cls, key : int, data : dict[str, any]):
         """
         Updates data in the table based on the primary key. The key must be an integer
         and must exist in the table. The data must be a dictionary where the keys are
@@ -214,12 +222,12 @@ class Table(ABC):
             if not isinstance(data, dict):
                 raise ValueError("Data must be a dictionary.")
             for k in data.keys():
-                if k not in self.columns:
+                if k not in cls._columns:
                     raise ValueError(f"Column '{k}' does not exist in the table.")    
         
             cursor = DatabaseConnection.getConnection().cursor()
             set_clause = ', '.join([f"{k} = '{v}'" for k, v in data.items()])
-            sql = f"UPDATE {self.table_name} SET {set_clause} WHERE {self.primary} = {key}"
+            sql = f"UPDATE {cls._tableName} SET {set_clause} WHERE {cls._primary} = {key}"
             cursor.execute(sql)
         except Exception as e:
             print(f"Error: {e}")
@@ -227,14 +235,14 @@ class Table(ABC):
         finally:
             cursor.close()
     
-    def _getColumns(self) -> list[str]:
+    def _getColumns(cls) -> list[str]:
         """
         Returns a list of column names in the table.
         """
         columns = []
         try:
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
-            cursor.execute(f"SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_NAME = '{self.table_name}'")
+            cursor.execute(f"SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_NAME = '{cls._tableName}'")
             columns = [row['COLUMN_NAME'] for row in cursor.fetchall()]
         except Exception as e:
             print(f"Error: {e}")
@@ -244,10 +252,8 @@ class Table(ABC):
         return columns
     
 class Unit(Table):
-    def __init__(self):
-        super().__init__("unit")
 
-    def _createTable(self):
+    def _createTable(cls):
         try:
             cursor = DatabaseConnection.getConnection().cursor()
             cursor.execute("CREATE TABLE IF NOT EXISTS unit( " +
@@ -263,10 +269,8 @@ class Unit(Table):
             cursor.close()
 
 class Utility(Table):
-    def __init__(self):
-        super().__init__("utility")
 
-    def _createTable(self):
+    def _createTable(cls):
         try:
             cursor = DatabaseConnection.getConnection().cursor()
             cursor.execute("CREATE TABLE IF NOT EXISTS utility (" +
@@ -282,10 +286,8 @@ class Utility(Table):
             cursor.close()
 
 class UtilityBills(Table):
-    def __init__(self):
-        super().__init__("utilitybills")
 
-    def _createTable(self):
+    def _createTable(cls):
         try:
             cursor = DatabaseConnection.getConnection().cursor()
             cursor.execute("CREATE TABLE IF NOT EXISTS utilitybills ( " +
@@ -313,10 +315,8 @@ class UtilityBills(Table):
             cursor.close()
 
 class InstalledUtilities(Table):
-    def __init__(self):
-        self.__init__("installedutilities")
 
-    def _createTable(self):
+    def _createTable(cls):
         try:
             cursor = DatabaseConnection.getConnection().cursor()
             cursor.execute("CREATE TABLE IF NOT EXISTS installedutilities ( " +
@@ -334,7 +334,7 @@ class InstalledUtilities(Table):
         finally:
             cursor.close()
 
-    def delete_data(self, key):
+    def delete(cls, keys : list[int]):
         """
         Disabled the delete method for this class, to delete data from the table,
         use the delete method of either the Unit or Utility class."""
