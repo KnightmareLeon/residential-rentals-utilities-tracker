@@ -3,8 +3,9 @@ from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import QSize
 
-from src.views.components.UnitTable import UnitTable
-from src.views.components.UtilityTable import UtilityTable
+from src.views.components.UnitsTable import UnitsTable
+from src.views.components.UtilitiesTable import UtilitiesTable
+from src.views.components.BillsTable import BillsTable
 
 
 class MainWindow(QMainWindow):
@@ -17,6 +18,12 @@ class MainWindow(QMainWindow):
         self.setupPages()
         
         self.currentSidebarButton = self.homeButton
+        self.searchbarTextByPage = {
+            "Home": "",
+            "Units": "",
+            "Utilities": "",
+            "Bills": "",
+        }
 
         self.stackedWidget.setCurrentWidget(self.homePage)
 
@@ -387,16 +394,15 @@ class MainWindow(QMainWindow):
         self.windowLabel.setText(_translate("MainWindow", "Welcome back"))
         self.userNameLabel.setText(_translate("MainWindow", "Leonard"))
 
-    # TODO: UPDATE!!!
     def setupPages(self):
         homePageLayout = QtWidgets.QVBoxLayout(self.homePage)
         unitsPageLayout = QtWidgets.QVBoxLayout(self.unitsPage)
         utilitiesPageLayout = QtWidgets.QVBoxLayout(self.utilitiesPage)
         billsPageLayout = QtWidgets.QVBoxLayout(self.billsPage)
 
-        self.unitsTable = UnitTable(mainWindow=self)
-        self.utilitiesTable = UtilityTable(mainWindow=self)
-        # self.billsTable = UnitTable(mainWindow=self)
+        self.unitsTable = UnitsTable(mainWindow=self)
+        self.utilitiesTable = UtilitiesTable(mainWindow=self)
+        self.billsTable = BillsTable(mainWindow=self)
         
         # Sample data
         sampleData1 = [
@@ -439,24 +445,56 @@ class MainWindow(QMainWindow):
             "BillingCycle": "Monthly"
         }
     ]
+        sampleData3 = [
+            {
+                "BillID": "BILL001",
+                "UnitName": "Unit Alpha",
+                "Type": "Electricity",
+                "TotalAmount": "₱3,200.50",
+                "DueDate": "2025-04-30",
+                "Status": "Unpaid"
+            },
+            {
+                "BillID": "BILL002",
+                "UnitName": "Unit Beta",
+                "Type": "Water",
+                "TotalAmount": "₱850.75",
+                "DueDate": "2025-04-28",
+                "Status": "Paid"
+            },
+            {
+                "BillID": "BILL003",
+                "UnitName": "Unit Gamma",
+                "Type": "Internet",
+                "TotalAmount": "₱1,500.00",
+                "DueDate": "2025-05-05",
+                "Status": "Overdue"
+            }
+        ]
 
         self.unitsTable.populateTable(sampleData1)
         self.utilitiesTable.populateTable(sampleData2)
-        # self.billsTable.populateTable(sampleData)
+        self.billsTable.populateTable(sampleData3)
 
         #homePageLayout.addWidget(self.homePage)
         unitsPageLayout.addWidget(self.unitsTable)
         utilitiesPageLayout.addWidget(self.utilitiesTable)
-        # billsPageLayout.addWidget(self.billsTable)
+        billsPageLayout.addWidget(self.billsTable)
 
         self.homeButton.clicked.connect(lambda: self.updatePage(self.homePage, self.homeButton, "Welcome back"))
         self.unitsButton.clicked.connect(lambda: self.updatePage(self.unitsPage, self.unitsButton, "Units"))
         self.utilitiesButton.clicked.connect(lambda: self.updatePage(self.utilitiesPage, self.utilitiesButton, "Utilities"))
         self.billsButton.clicked.connect(lambda: self.updatePage(self.billsPage, self.billsButton, "Bills"))
 
-    def updatePage(self, page, button, title):
-        self.stackedWidget.setCurrentWidget(page)
+    def updatePage(self, pageWidget, button, title):
+        self.searchbarTextByPage[self.windowLabel.text()] = self.searchInputLineEdit.text()
 
+        self.stackedWidget.setCurrentWidget(pageWidget)
+
+        restoredText = self.searchbarTextByPage.get(title, "")
+        self.searchInputLineEdit.setText(restoredText)
+
+        # Handle sidebar button styles
         if hasattr(self, 'currentSidebarButton') and self.currentSidebarButton:
             self.currentSidebarButton.setStyleSheet("background-color: transparent; color: white;")
 
@@ -467,20 +505,16 @@ class MainWindow(QMainWindow):
             font-weight: bold;
         """)
 
-        if button == self.homeButton:
-            self.searchBarFrame.setVisible(False)
-        else:
-            self.searchBarFrame.setVisible(True)
+        self.searchBarFrame.setVisible(button != self.homeButton)
 
         self.currentSidebarButton = button
-
         self.windowLabel.setText(title)
-    
+
     def handleSearch(self):
         currentPage = self.stackedWidget.currentWidget()
         if currentPage == self.unitsPage:
             self.unitsTable.updateTable()
         elif currentPage == self.utilitiesPage:
             self.utilitiesTable.updateTable()
-        # elif currentPage == self.billsPage:
-        #     self.billsTable.updateTable()
+        elif currentPage == self.billsPage:
+            self.billsTable.updateTable()
