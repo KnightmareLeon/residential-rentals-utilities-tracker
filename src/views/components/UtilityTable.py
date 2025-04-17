@@ -6,10 +6,10 @@ from PyQt6.QtGui import QIcon, QColor, QBrush
 from src.views.components.BaseTableWidget import BaseTableWidget
 from src.utils.constants import SortOrder
 
-class UnitTable(BaseTableWidget):
+class UtilityTable(BaseTableWidget):
     def __init__(self, parent=None, mainWindow=None):
-        self.databaseHeaders = ["UnitID", "Name", "Address", "UnitType"]
-        self.headers = ["Unit ID", "Unit Name", "Address", "Unit Type", "Actions"]
+        self.databaseHeaders = ["UtilityID", "Type", "Status", "BillingCycle"]
+        self.headers = ["Utility ID", "Type", "Status", "Billing Cycle", "Actions"]
         super().__init__(self.headers, self.databaseHeaders, parent=parent, mainWindow=mainWindow)
 
     def updateTable(self):
@@ -24,13 +24,13 @@ class UnitTable(BaseTableWidget):
         else:
             sortingOrderStr = "ASC"
 
-        print("UNITS TABLE |", "search:", searchValue, "| sort by:", sortingField, sortingOrderStr)
+        print("UTILITIES TABLE |", "search:", searchValue, "| sort by:", sortingField, sortingOrderStr)
 
     def handleViewButton(self, row_idx):
-        print("UNITS TABLE | view", row_idx)
+        print("UTILITIES TABLE | view", row_idx)
 
     def handleEditButton(self, row_idx):
-        print("UNITS TABLE | edit", row_idx)
+        print("UTILITIES TABLE | edit", row_idx)
     
     def handleDeleteButton(self, row_idx):
-        print("UNITS TABLE | delete", row_idx)
+        print("UTILITIES TABLE | delete", row_idx)

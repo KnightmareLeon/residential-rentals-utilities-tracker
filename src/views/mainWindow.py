@@ -4,6 +4,7 @@ from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import QSize
 
 from src.views.components.UnitTable import UnitTable
+from src.views.components.UtilityTable import UtilityTable
 
 
 class MainWindow(QMainWindow):
@@ -19,12 +20,7 @@ class MainWindow(QMainWindow):
 
         self.stackedWidget.setCurrentWidget(self.homePage)
 
-        self.homeButton.clicked.connect(lambda: self.updatePage(self.homePage, self.homeButton, "Welcome back"))
-        self.unitsButton.clicked.connect(lambda: self.updatePage(self.unitsPage, self.unitsButton, "Units"))
-        self.utilitiesButton.clicked.connect(lambda: self.updatePage(self.utilitiesPage, self.utilitiesButton, "Utilities"))
-        self.billsButton.clicked.connect(lambda: self.updatePage(self.billsPage, self.billsButton, "Bills"))
-
-        self.searchInputLineEdit.returnPressed.connect(self.unitsTable.updateTable)
+        self.searchInputLineEdit.returnPressed.connect(self.handleSearch)
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -399,39 +395,64 @@ class MainWindow(QMainWindow):
         billsPageLayout = QtWidgets.QVBoxLayout(self.billsPage)
 
         self.unitsTable = UnitTable(mainWindow=self)
-        # self.utilitiesTable = UnitTable(mainWindow=self)
+        self.utilitiesTable = UtilityTable(mainWindow=self)
         # self.billsTable = UnitTable(mainWindow=self)
         
         # Sample data
-        sampleData = [
+        sampleData1 = [
             {
-                "Unit ID": "U001",
-                "Unit Name": "Unit Alpha",
+                "UnitID": "U001",
+                "Name": "Unit Alpha",
                 "Address": "123 Main St",
-                "Unit Type": "Residential"
+                "UnitType": "Residential"
             },
             {
-                "Unit ID": "U002",
-                "Unit Name": "Unit Beta",
+                "UnitID": "U002",
+                "Name": "Unit Beta",
                 "Address": "456 Side St",
-                "Unit Type": "Commercial"
+                "UnitType": "Commercial"
             },
             {
-                "Unit ID": "U003",
-                "Unit Name": "Unit Gamma",
+                "UnitID": "U003",
+                "Name": "Unit Gamma",
                 "Address": "789 Back St",
-                "Unit Type": "Industrial"
+                "UnitType": "Industrial"
             }
         ]
+        sampleData2 = [
+        {
+            "UtilityID": "UT001",
+            "Type": "Water",
+            "Status": "Active",
+            "BillingCycle": "Monthly"
+        },
+        {
+            "UtilityID": "UT002",
+            "Type": "Electricity",
+            "Status": "Inactive",
+            "BillingCycle": "Quarterly"
+        },
+        {
+            "UtilityID": "UT003",
+            "Type": "Internet",
+            "Status": "Active",
+            "BillingCycle": "Monthly"
+        }
+    ]
 
-        self.unitsTable.populateTable(sampleData)
-        # self.utilitiesTable.populateTable(sampleData)
+        self.unitsTable.populateTable(sampleData1)
+        self.utilitiesTable.populateTable(sampleData2)
         # self.billsTable.populateTable(sampleData)
 
         #homePageLayout.addWidget(self.homePage)
         unitsPageLayout.addWidget(self.unitsTable)
-        # utilitiesPageLayout.addWidget(self.utilitiesTable)
+        utilitiesPageLayout.addWidget(self.utilitiesTable)
         # billsPageLayout.addWidget(self.billsTable)
+
+        self.homeButton.clicked.connect(lambda: self.updatePage(self.homePage, self.homeButton, "Welcome back"))
+        self.unitsButton.clicked.connect(lambda: self.updatePage(self.unitsPage, self.unitsButton, "Units"))
+        self.utilitiesButton.clicked.connect(lambda: self.updatePage(self.utilitiesPage, self.utilitiesButton, "Utilities"))
+        self.billsButton.clicked.connect(lambda: self.updatePage(self.billsPage, self.billsButton, "Bills"))
 
     def updatePage(self, page, button, title):
         self.stackedWidget.setCurrentWidget(page)
@@ -454,3 +475,12 @@ class MainWindow(QMainWindow):
         self.currentSidebarButton = button
 
         self.windowLabel.setText(title)
+    
+    def handleSearch(self):
+        currentPage = self.stackedWidget.currentWidget()
+        if currentPage == self.unitsPage:
+            self.unitsTable.updateTable()
+        elif currentPage == self.utilitiesPage:
+            self.utilitiesTable.updateTable()
+        # elif currentPage == self.billsPage:
+        #     self.billsTable.updateTable()
