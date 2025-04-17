@@ -51,6 +51,7 @@ class Table(ABC):
     def __init__(self, table_name : str):
         self.table_name = table_name
         self.primary = None
+        self.columns = []
         try:
             self._createTable()
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
@@ -58,39 +59,72 @@ class Table(ABC):
                            f"WHERE TABLE_NAME = '{self.table_name}' AND CONSTRAINT_NAME = " +
                            "'PRIMARY'")
             self.primary = cursor.fetchone()['COLUMN_NAME']
+            self.columns = self._getColumns()
         except Exception as e:
             print(f"Error: {e}")
             raise e
         finally:
             cursor.close()
-    
-    def read(self, page : int = 1, limit : int = 50, sortBy : str = None, order : str = "ASC"):
+        
+    @abstractmethod
+    def _createTable(self):
+        pass
+
+    def read(self, 
+             page : int = 1, 
+             limit : int = 50, 
+             sortBy : str = None, 
+             order : str = "ASC",
+             searchValue : str = None
+             ) -> list[dict[str, any]]:
         """
         Fetches data from the table and returns it as a list of dictionaries.
-        Each dictionary represents a row from the table. The default total
-        number of rows returned is set to 50. To return other sets of rows,
-        pass different integer values to the \'page\' argument, which has a
-        default value of 1. Do not give negative integer values or zero
-        in any of the arguments, for the method will return an error if it 
-        is done.
+        Each dictionary represents a row from the table. 
+        The keys of the dictionary are the column names and the values are the
+        corresponding values from the row. 
+        
+        The method takes the following arguments:
+
+        The default total number of rows returned is set to 50 by the \'limit'\
+        argument. Simply pass the \'limit\' argument to change the number of rows
+        returned. 
+        
+        The \'page\' argument is used to paginate the data. The default
+        page is set to 1. The \'page\' argument is used to specify the page number.
+        
+        The \'sortBy\' argument is used to sort the data based on a specific column. 
+        The default sort column is set to the primary key of the table. The \'sortBy\'
+        argument can be set to any column name in the table.
+
+        The \'order\' argument is used to specify the order. The default order is set to \'ASC\'.
+        The \'order\' argument can be set to either \'ASC\' or \'DESC\'.
         """
+
         result = []
         try:
             if page < 1 or limit < 1:
                 raise ValueError("Page and limit must be positive integers.")
             if sortBy is not None and not isinstance(sortBy, str):
                 raise ValueError("sortBy must be a string.")
+            if sortBy is not None and sortBy not in self.columns:
+                raise ValueError(f"sortBy must be one of the following columns: {self.columns}")
             if not isinstance(order, str):
                 raise ValueError("order must be a string.")
             if order not in ["ASC", "DESC"]:
                 raise ValueError("order must be 'ASC' or 'DESC'.")
+            if searchValue is not None and not isinstance(searchValue, str):
+                raise ValueError("searchValue must be a string.")
             
             if sortBy is None:
                 sortBy = self.primary
-                
+
+            searchClause = ""
+            if searchValue is not None:
+                allcolumns = " OR ".join([column + " REGEXP \'" + searchValue + "\'" for column in self.columns])
+                searchClause = f"WHERE {allcolumns} "
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             offset = (page - 1) * limit
-            cursor.execute(f"SELECT * FROM {self.table_name} ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset}; ")
+            cursor.execute(f"SELECT * FROM {self.table_name} {searchClause}ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset}; ")
             result = cursor.fetchall()
         except Exception as e:
             print(f"Error: {e}")
@@ -98,10 +132,6 @@ class Table(ABC):
         finally:
             cursor.close()
         return result
-    
-    @abstractmethod
-    def _createTable(self):
-        pass
 
     def create(self, data : dict[str, any]):
         """
@@ -116,6 +146,13 @@ class Table(ABC):
                 raise ValueError("Data must be a dictionary.")
             if self.primary not in data:
                 raise ValueError(f"Primary key '{self.primary}' is required in the data.")
+            if not isinstance(data[self.primary], int):
+                raise ValueError(f"Primary key '{self.primary}' must be an integer.")
+            for key in data.keys():
+                if key not in self.columns:
+                    raise ValueError(f"Column '{key}' does not exist in the table.")
+            if list(data.keys()) != self.columns:
+                raise ValueError(f"Data keys {data.keys()} do not match table columns {self.columns}.")
         
             cursor = DatabaseConnection.getConnection().cursor()
             columns = ', '.join(data.keys())
@@ -168,6 +205,9 @@ class Table(ABC):
                 raise ValueError("Key must be an integer.")
             if not isinstance(data, dict):
                 raise ValueError("Data must be a dictionary.")
+            for k in data.keys():
+                if k not in self.columns:
+                    raise ValueError(f"Column '{k}' does not exist in the table.")    
         
             cursor = DatabaseConnection.getConnection().cursor()
             set_clause = ', '.join([f"{k} = '{v}'" for k, v in data.items()])
@@ -178,6 +218,22 @@ class Table(ABC):
             raise e
         finally:
             cursor.close()
+    
+    def _getColumns(self) -> list[str]:
+        """
+        Returns a list of column names in the table.
+        """
+        columns = []
+        try:
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            cursor.execute(f"SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_NAME = '{self.table_name}'")
+            columns = [row['COLUMN_NAME'] for row in cursor.fetchall()]
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return columns
     
 class Unit(Table):
     def __init__(self):
