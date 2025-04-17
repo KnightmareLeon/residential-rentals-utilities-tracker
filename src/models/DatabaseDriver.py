@@ -98,6 +98,10 @@ class Table(ABC):
 
         The \'order\' argument is used to specify the order. The default order is set to \'ASC\'.
         The \'order\' argument can be set to either \'ASC\' or \'DESC\'.
+
+        The \'searchValue\' argument is used to search for a specific value in the table.
+        The \'searchValue\' argument can be set to any string value. The search is done using a regular expression.
+        The search is done on all columns in the table. The \'searchValue\' argument is optional.
         """
 
         result = []
@@ -174,17 +178,21 @@ class Table(ABC):
         finally:
             cursor.close()
     
-    def delete(self, key : int):
+    def delete(self, keys : list[int]):
         """
         Deletes data from the table based on the primary key. The key must be an integer
         and must exist in the table. The method will raise an error if the key is not
         an integer or if the key does not exist in the table.
         """
         try:
-            if not isinstance(key, int):
-                raise ValueError("Key must be an integer.")
+            if not isinstance(keys, list):
+                raise ValueError("Keys must be a list of integers.")
+            for key in keys:
+                if not isinstance(key, int):
+                    raise ValueError("Keys must be a list of integers.")
             cursor = DatabaseConnection.getConnection().cursor()
-            sql = f"DELETE FROM {self.table_name} WHERE {self.primary} = {key}"
+            keysClause = ', '.join([str(key) for key in keys])
+            sql = f"DELETE FROM {self.table_name} WHERE {self.primary} IN ({keysClause})"
             cursor.execute(sql)
         except Exception as e:
             print(f"Error: {e}")
