@@ -99,6 +99,9 @@ class BaseTableWidget(QTableWidget):
         for i in range(self.columnCount() - 1):
             header.setSectionResizeMode(i, QHeaderView.ResizeMode.Stretch)
 
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
+        self.setColumnWidth(0, 90)
+
         header.setSectionResizeMode(self.columnCount() - 1, QHeaderView.ResizeMode.ResizeToContents)
 
     def populateTable(self, data: list[dict]):
