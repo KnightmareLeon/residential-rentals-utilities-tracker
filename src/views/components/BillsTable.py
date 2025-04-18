@@ -1,10 +1,6 @@
-from PyQt6 import QtCore, QtWidgets
-from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem, QPushButton, QWidget, QHBoxLayout, QHeaderView
-from PyQt6.QtCore import Qt, pyqtSignal, QSize
-from PyQt6.QtGui import QIcon, QColor, QBrush
-
 from src.views.components.BaseTableWidget import BaseTableWidget
 from src.utils.constants import SortOrder
+from src.controllers.billsController import BillsController
 
 class BillsTable(BaseTableWidget):
     def __init__(self, parent=None, mainWindow=None):
@@ -25,13 +21,44 @@ class BillsTable(BaseTableWidget):
         else:
             sortingOrderStr = "ASC"
 
-        print("BILLS TABLE |", "search:", searchValue, "| sort by:", sortingField, sortingOrderStr, "| page:", currentPage)
+        data, count = BillsController.fetchData(currentPage, sortingOrderStr, sortingField, searchValue)
+        #self.populateTable(data)
+        self.parentWidget().totalPages = count
+        self.parentWidget().pageLabel.setText(f"Page {currentPage} of {count}")
+
 
     def handleViewButton(self, row_idx):
-        print("BILLS TABLE | view", row_idx)
+        item = self.item(row_idx, 0)
+        if not item:
+            return
+    
+        id = item.text()
+        unitData = BillsController.viewRecord(id)
+
+        if unitData:
+            #open unit view dialog
+            pass
+
+        self.updateTable()
 
     def handleEditButton(self, row_idx):
-        print("BILLS TABLE | edit", row_idx)
-    
+        item = self.item(row_idx, 0)
+        if not item:
+            return
+        
+        id = item.text()
+        #open unit edit dialog
+        response = BillsController.editRecord(id, None)
+
+        self.updateTable()
+
     def handleDeleteButton(self, row_idx):
-        print("BILLS TABLE | delete", row_idx)
+        item = self.item(row_idx, 0)
+        if not item:
+            return
+        
+        id = item.text()
+        #open unit delete dialog
+        response = BillsController.deleteRecord(id)
+
+        self.updateTable()
