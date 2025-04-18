@@ -260,6 +260,7 @@ class Unit(Table):
                 "UnitID int NOT NULL, " +
                 "Name varchar(30) NOT NULL, " +
                 "Address varchar(255) NOT NULL, " +
+                "Type varchar(30) NOT NULL, " +
                 "PRIMARY KEY (UnitID))"
             )
         except Exception as e:
@@ -277,6 +278,7 @@ class Utility(Table):
                 "UtilityID int NOT NULL, " + 
                 "Type varchar(30) NOT NULL, " +
                 "Status enum('Active','Inactive') NOT NULL, " +
+                "BillingCycle enum('Monthly','Quarterly','Annually','Irregular') NOT NULL," +
                 "PRIMARY KEY (UtilityID))"
             )
         except Exception as e:
@@ -285,12 +287,12 @@ class Utility(Table):
         finally:
             cursor.close()
 
-class UtilityBills(Table):
+class Bill(Table):
 
     def _createTable(cls):
         try:
             cursor = DatabaseConnection.getConnection().cursor()
-            cursor.execute("CREATE TABLE IF NOT EXISTS utilitybills ( " +
+            cursor.execute("CREATE TABLE IF NOT EXISTS bill ( " +
                 "BillID int NOT NULL, " +
                 "UnitID int DEFAULT NULL, " +
                 "UtilityID int DEFAULT NULL, " +
@@ -299,14 +301,13 @@ class UtilityBills(Table):
                 "BillingPeriodEnd date NOT NULL, " +
                 "Status enum('Unpaid','Paid','Partially Paid','Overdue') NOT NULL, " +
                 "DueDate date NOT NULL, " +
-                "BillingCycle enum('Monthly','Quarterly','Annually','Irregular') NOT NULL, " +
                 "PRIMARY KEY (BillID), " +
                 "KEY UnitID (UnitID), " +
                 "KEY UtilityID (UtilityID), " +
-                "CONSTRAINT utilitybills_ibfk_1 FOREIGN KEY (UnitID) REFERENCES unit (UnitID) ON DELETE SET NULL ON UPDATE CASCADE, " +
-                "CONSTRAINT utilitybills_ibfk_2 FOREIGN KEY (UtilityID) REFERENCES utility (UtilityID) ON DELETE SET NULL ON UPDATE CASCADE, " +
-                "CONSTRAINT utilitybills_chk_1 CHECK ((BillingPeriodEnd > BillingPeriodStart)), " +
-                "CONSTRAINT utilitybills_chk_2 CHECK ((DueDate > BillingPeriodEnd)))"
+                "CONSTRAINT bill_ibfk_1 FOREIGN KEY (UnitID) REFERENCES unit (UnitID) ON DELETE SET NULL ON UPDATE CASCADE, " +
+                "CONSTRAINT bill_ibfk_2 FOREIGN KEY (UtilityID) REFERENCES utility (UtilityID) ON DELETE SET NULL ON UPDATE CASCADE, " +
+                "CONSTRAINT bill_chk_1 CHECK ((BillingPeriodEnd > BillingPeriodStart)), " +
+                "CONSTRAINT bill_chk_2 CHECK ((DueDate > BillingPeriodEnd)))"
             )
         except Exception as e:
             print(f"Error: {e}")
@@ -314,19 +315,19 @@ class UtilityBills(Table):
         finally:
             cursor.close()
 
-class InstalledUtilities(Table):
+class InstalledUtility(Table):
 
     def _createTable(cls):
         try:
             cursor = DatabaseConnection.getConnection().cursor()
-            cursor.execute("CREATE TABLE IF NOT EXISTS installedutilities ( " +
+            cursor.execute("CREATE TABLE IF NOT EXISTS installedutility ( " +
                 "UnitID int NOT NULL, " +
                 "UtilityID int NOT NULL, " +
                 "InstallationDate date NOT NULL, " +
                 "PRIMARY KEY (UnitID,UtilityID), " +
                 "KEY UtilityID (UtilityID), " +
-                "CONSTRAINT installedutilities_ibfk_1 FOREIGN KEY (UnitID) REFERENCES unit (UnitID) ON DELETE CASCADE ON UPDATE CASCADE, " +
-                "CONSTRAINT installedutilities_ibfk_2 FOREIGN KEY (UtilityID) REFERENCES utility (UtilityID) ON DELETE CASCADE ON UPDATE CASCADE)"
+                "CONSTRAINT installedutility_ibfk_1 FOREIGN KEY (UnitID) REFERENCES unit (UnitID) ON DELETE CASCADE ON UPDATE CASCADE, " +
+                "CONSTRAINT installedutility_ibfk_2 FOREIGN KEY (UtilityID) REFERENCES utility (UtilityID) ON DELETE CASCADE ON UPDATE CASCADE)"
             )
         except Exception as e:
             print(f"Error: {e}")
@@ -334,6 +335,7 @@ class InstalledUtilities(Table):
         finally:
             cursor.close()
 
+    @classmethod
     def delete(cls, keys : list[int]):
         """
         Disabled the delete method for this class, to delete data from the table,
