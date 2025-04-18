@@ -13,6 +13,7 @@ class UnitsTable(BaseTableWidget):
         super().__init__(self.headers, self.databaseHeaders, parent=parent, mainWindow=mainWindow)
 
     def updateTable(self):
+        currentPage = self.parentWidget().currentPage
         sortingOrder = self.columnSortStates[self.currentSortIndex]
         sortingField = self.databaseHeaders[self.currentSortIndex]
         searchValue = self.mainWindow.searchInputLineEdit.text().strip()
@@ -24,7 +25,7 @@ class UnitsTable(BaseTableWidget):
         else:
             sortingOrderStr = "ASC"
 
-        print("UNITS TABLE |", "search:", searchValue, "| sort by:", sortingField, sortingOrderStr)
+        print("UNITS TABLE |", "search:", searchValue, "| sort by:", sortingField, sortingOrderStr, "| page:", currentPage)
 
     def handleViewButton(self, row_idx):
         print("UNITS TABLE | view", row_idx)
