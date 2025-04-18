@@ -3,21 +3,17 @@ from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import QSize
 
-from src.views.components.UnitsTable import UnitsTable
-from src.views.components.UtilitiesTable import UtilitiesTable
-from src.views.components.BillsTable import BillsTable
-
+from src.views.pages.UnitsPage import UnitsPage
+from src.views.pages.UtilitiesPage import UtilitiesPage
+from src.views.pages.BillsPage import BillsPage
+from src.utils.sampleDataGenerator import generateUnitData, generateUtilityData, generateBillData
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.setWindowIcon(QIcon("assets/logos/logoIcon.png"))
-
-        self.setupUi(self)
-        self.setupPages()
         
-        self.currentSidebarButton = self.homeButton
         self.searchbarTextByPage = {
             "Home": "",
             "Units": "",
@@ -25,6 +21,10 @@ class MainWindow(QMainWindow):
             "Bills": "",
         }
 
+        self.setupUi(self)
+        self.setupPages()
+
+        self.currentSidebarButton = self.homeButton
         self.stackedWidget.setCurrentWidget(self.homePage)
 
         self.searchInputLineEdit.returnPressed.connect(self.handleSearch)
@@ -50,6 +50,9 @@ class MainWindow(QMainWindow):
 "    padding: 15px 30px;\n"
 "    border-radius: 15px;\n"
 "    text-align: left;\n"
+"}\n"
+"#sidebarFrame QPushButton::hover {\n"
+"   background-color: #15161a;\n"
 "}\n"
 "\n"
 "#homeButton {\n"
@@ -348,26 +351,8 @@ class MainWindow(QMainWindow):
         self.horizontalLayout_2.setStretch(1, 1)
         self.verticalLayout_2.addWidget(self.headerFrame)
 
-        #TODO: Add different pages here!
         self.stackedWidget = QtWidgets.QStackedWidget(parent=self.centerFrame)
         self.stackedWidget.setObjectName("stackedWidget")
-
-        self.homePage = QtWidgets.QWidget()
-        self.homePage.setObjectName("homePage")
-        self.stackedWidget.addWidget(self.homePage)
-
-        self.unitsPage = QtWidgets.QWidget()
-        self.unitsPage.setObjectName("unitsPage")
-        self.stackedWidget.addWidget(self.unitsPage)
-
-        self.utilitiesPage = QtWidgets.QWidget()
-        self.utilitiesPage.setObjectName("utilitiesPage")
-        self.stackedWidget.addWidget(self.utilitiesPage)
-
-        self.billsPage = QtWidgets.QWidget()
-        self.billsPage.setObjectName("billsPage")
-        self.stackedWidget.addWidget(self.billsPage)
-
         self.verticalLayout_2.addWidget(self.stackedWidget)
         self.verticalLayout_2.setStretch(0, 1)
         self.verticalLayout_2.setStretch(1, 8)
@@ -395,96 +380,31 @@ class MainWindow(QMainWindow):
         self.userNameLabel.setText(_translate("MainWindow", "Leonard"))
 
     def setupPages(self):
-        homePageLayout = QtWidgets.QVBoxLayout(self.homePage)
-        unitsPageLayout = QtWidgets.QVBoxLayout(self.unitsPage)
-        utilitiesPageLayout = QtWidgets.QVBoxLayout(self.utilitiesPage)
-        billsPageLayout = QtWidgets.QVBoxLayout(self.billsPage)
-
-        self.unitsTable = UnitsTable(mainWindow=self)
-        self.utilitiesTable = UtilitiesTable(mainWindow=self)
-        self.billsTable = BillsTable(mainWindow=self)
+        self.unitsPage = UnitsPage(mainWindow=self)
+        self.utilitiesPage = UtilitiesPage(mainWindow=self)
+        self.billsPage = BillsPage(mainWindow=self)
         
-        # Sample data
-        sampleData1 = [
-            {
-                "UnitID": "U001",
-                "Name": "Unit Alpha",
-                "Address": "123 Main St",
-                "UnitType": "Residential"
-            },
-            {
-                "UnitID": "U002",
-                "Name": "Unit Beta",
-                "Address": "456 Side St",
-                "UnitType": "Commercial"
-            },
-            {
-                "UnitID": "U003",
-                "Name": "Unit Gamma",
-                "Address": "789 Back St",
-                "UnitType": "Industrial"
-            }
-        ]
-        sampleData2 = [
-        {
-            "UtilityID": "UT001",
-            "Type": "Water",
-            "Status": "Active",
-            "BillingCycle": "Monthly"
-        },
-        {
-            "UtilityID": "UT002",
-            "Type": "Electricity",
-            "Status": "Inactive",
-            "BillingCycle": "Quarterly"
-        },
-        {
-            "UtilityID": "UT003",
-            "Type": "Internet",
-            "Status": "Active",
-            "BillingCycle": "Monthly"
-        }
-    ]
-        sampleData3 = [
-            {
-                "BillID": "BILL001",
-                "UnitName": "Unit Alpha",
-                "Type": "Electricity",
-                "TotalAmount": "₱3,200.50",
-                "DueDate": "2025-04-30",
-                "Status": "Unpaid"
-            },
-            {
-                "BillID": "BILL002",
-                "UnitName": "Unit Beta",
-                "Type": "Water",
-                "TotalAmount": "₱850.75",
-                "DueDate": "2025-04-28",
-                "Status": "Paid"
-            },
-            {
-                "BillID": "BILL003",
-                "UnitName": "Unit Gamma",
-                "Type": "Internet",
-                "TotalAmount": "₱1,500.00",
-                "DueDate": "2025-05-05",
-                "Status": "Overdue"
-            }
-        ]
+        self.homePage = QtWidgets.QFrame(parent=self.stackedWidget)
+        self.stackedWidget.addWidget(self.homePage)
+        self.stackedWidget.addWidget(self.unitsPage)
+        self.stackedWidget.addWidget(self.utilitiesPage)
+        self.stackedWidget.addWidget(self.billsPage)
+        
+        # FIXME:
+        sampleData1 = generateUnitData()
+        sampleData2 = generateUtilityData()
+        sampleData3 =generateBillData()
 
-        self.unitsTable.populateTable(sampleData1)
-        self.utilitiesTable.populateTable(sampleData2)
-        self.billsTable.populateTable(sampleData3)
-
-        #homePageLayout.addWidget(self.homePage)
-        unitsPageLayout.addWidget(self.unitsTable)
-        utilitiesPageLayout.addWidget(self.utilitiesTable)
-        billsPageLayout.addWidget(self.billsTable)
+        self.unitsPage.table.populateTable(sampleData1)
+        self.utilitiesPage.table.populateTable(sampleData2)
+        self.billsPage.table.populateTable(sampleData3)
 
         self.homeButton.clicked.connect(lambda: self.updatePage(self.homePage, self.homeButton, "Welcome back"))
         self.unitsButton.clicked.connect(lambda: self.updatePage(self.unitsPage, self.unitsButton, "Units"))
         self.utilitiesButton.clicked.connect(lambda: self.updatePage(self.utilitiesPage, self.utilitiesButton, "Utilities"))
         self.billsButton.clicked.connect(lambda: self.updatePage(self.billsPage, self.billsButton, "Bills"))
+
+        self.updatePage(self.homePage, self.homeButton, "Welcome back")
 
     def updatePage(self, pageWidget, button, title):
         self.searchbarTextByPage[self.windowLabel.text()] = self.searchInputLineEdit.text()
@@ -493,17 +413,26 @@ class MainWindow(QMainWindow):
 
         restoredText = self.searchbarTextByPage.get(title, "")
         self.searchInputLineEdit.setText(restoredText)
+        self.searchInputLineEdit.setPlaceholderText(f"Search {title.lower()}...")
 
-        # Handle sidebar button styles
         if hasattr(self, 'currentSidebarButton') and self.currentSidebarButton:
-            self.currentSidebarButton.setStyleSheet("background-color: transparent; color: white;")
-
+            self.currentSidebarButton.setStyleSheet("""
+                    QPushButton {
+                        background: none;
+                        color: white;
+                    }
+                    QPushButton:hover {
+                        background-color: #15161a;
+                    }
+                    """)
+    
         button.setStyleSheet("""
-            background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0,
-                                            stop:0.4 #3A0CA3, stop:1 #F72585);
-            color: white;
-            font-weight: bold;
-        """)
+                QPushButton {
+                    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0.4 #3A0CA3, stop:1 #F72585);
+                    color: white;
+                    font-weight: bold;
+                }
+                """)
 
         self.searchBarFrame.setVisible(button != self.homeButton)
 
@@ -513,8 +442,8 @@ class MainWindow(QMainWindow):
     def handleSearch(self):
         currentPage = self.stackedWidget.currentWidget()
         if currentPage == self.unitsPage:
-            self.unitsTable.updateTable()
+            self.unitsPage.updatePage()
         elif currentPage == self.utilitiesPage:
-            self.utilitiesTable.updateTable()
+            self.utilitiesPage.updatePage()
         elif currentPage == self.billsPage:
-            self.billsTable.updateTable()
+            self.billsPage.updatePage()

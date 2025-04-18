@@ -1,11 +1,23 @@
 from PyQt6 import QtCore, QtWidgets
-from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem, QPushButton, QWidget, QHBoxLayout, QHeaderView
+from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem, QPushButton, QWidget, QHBoxLayout, QHeaderView, QStyledItemDelegate
 from PyQt6.QtCore import Qt, QSize, pyqtSignal
-from PyQt6.QtGui import QIcon, QColor, QBrush
+from PyQt6.QtGui import QIcon, QColor, QBrush, QPalette
 
 from abc import ABC, abstractmethod
 
 from src.utils.constants import SortOrder
+
+class TableItemDelegate(QStyledItemDelegate):
+    def paint(self, painter, option, index):
+        viewOption = option
+        itemForeground = index.data(Qt.ItemDataRole.ForegroundRole)
+
+        if itemForeground:
+            itemColor = itemForeground.color() if hasattr(itemForeground, 'color') else itemForeground
+            if itemColor != option.palette.color(QPalette.ColorRole.Text):
+                viewOption.palette.setColor(QPalette.ColorRole.HighlightedText, itemColor)
+
+        super().paint(painter, viewOption, index)
 
 class BaseTableWidget(QTableWidget):
     sortRequested = pyqtSignal(int, int)  # columnIndex, sortOrder
@@ -26,6 +38,14 @@ class BaseTableWidget(QTableWidget):
         "#743131"
     ]
     BUTTON_COUNT = 3
+    TABLE_TEXT_COLOR_MAP = {
+        (3, "Active"): "#00FF6F",
+        (3, "Inactive"): "#FA1647",
+        (5, "Paid"): "#00FF6F",
+        (5, "Unpaid"): "#FAFA16",
+        (5, "Overdue"): "#FA1647",
+        (5, "Partially Paid"): "#FF8400",
+    }
 
     def __init__(self, columnHeaders: list[str], databaseHeaders: list[str], parent=None, mainWindow=None):
         super().__init__(0, len(columnHeaders), parent)
@@ -36,14 +56,18 @@ class BaseTableWidget(QTableWidget):
         self.currentSortIndex = 0
         self.columnSortStates[0] = SortOrder.ASC
 
-        self.setMouseTracking(True)
-        self.viewport().setMouseTracking(True)
-        self.viewport().installEventFilter(self)
         self.hoveredRow = -1
         self.actionButtonsPerRow = {}
+        self.itemColors = {}
 
         self.setupTable()
         self.updateHeaderLabels()
+
+        self.setItemDelegate(TableItemDelegate(self))
+        self.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.setMouseTracking(True)
+        self.viewport().setMouseTracking(True)
+        self.viewport().installEventFilter(self)
 
     def setupTable(self):
         self.setHorizontalHeaderLabels(self.columnHeaders)
@@ -113,6 +137,13 @@ class BaseTableWidget(QTableWidget):
                 value = str(row_data.get(col_name, ""))
                 item = QTableWidgetItem(value)
                 item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+
+                key = (col_idx, value)
+                if key in self.TABLE_TEXT_COLOR_MAP:
+                    color = QColor(self.TABLE_TEXT_COLOR_MAP[key])
+                    item.setForeground(QBrush(color))
+                    self.itemColors[(row_idx, col_idx)] = color
+                
                 self.setItem(row_idx, col_idx, item)
 
             self.addActionButtons(row_idx)
@@ -178,6 +209,17 @@ class BaseTableWidget(QTableWidget):
             headerItem = self.horizontalHeaderItem(self.currentSortIndex)
             if headerItem:
                 headerItem.setBackground(QBrush(QColor(48, 48, 48)))
+    
+    def selectionChanged(self, selected, deselected):
+        super().selectionChanged(selected, deselected)
+
+        for index in selected.indexes():
+            row = index.row()
+            col = index.column()
+            originalColor = self.itemColors.get((row, col), QColor("white"))
+            item = self.item(row, col)
+            if item:
+                item.setForeground(QBrush(originalColor))
 
     def eventFilter(self, source, event):
         if source == self.viewport():
