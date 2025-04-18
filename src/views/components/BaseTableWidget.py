@@ -76,7 +76,7 @@ class BaseTableWidget(QTableWidget):
 
         self.setAlternatingRowColors(False)
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
-        self.horizontalHeader().setFixedHeight(50)
+        self.horizontalHeader().setFixedHeight(60)
         self.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         self.verticalHeader().setDefaultSectionSize(45)
         self.verticalHeader().setVisible(False)
@@ -87,12 +87,14 @@ class BaseTableWidget(QTableWidget):
                 border-radius: 12px;
                 background-color: #1c1c1c;
                 padding: 20px 25px;
-                color: white; 
+                color: white;
+                gridline-color: transparent;
             }
             QHeaderView::section { 
                 font: 12pt "Urbanist"; 
-                font-weight: bold; 
-                border-bottom: 2px solid #1c1c1c;
+                font-weight: bold;
+                color: white;
+                padding: 6px;
             }
             QTableCornerButton::section {
                 background-color: #f0f0f0;
