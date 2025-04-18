@@ -50,7 +50,7 @@ class Table(ABC):
     
     _tableName = None
     _primary = None
-    _columns = []
+    columns = []
 
     @classmethod
     def initialize(cls):
@@ -62,7 +62,7 @@ class Table(ABC):
                            f"WHERE TABLE_NAME = '{cls._tableName}' AND CONSTRAINT_NAME = " +
                            "'PRIMARY'")
             cls._primary = cursor.fetchone()['COLUMN_NAME']
-            cls._columns = cls._getColumns(cls)
+            cls.columns = cls._getColumns(cls)
         except Exception as e:
             print(f"Error: {e}")
             raise e
@@ -80,7 +80,9 @@ class Table(ABC):
              limit : int = 50, 
              sortBy : str = None, 
              order : str = "ASC",
-             searchValue : str = None
+             searchValue : str = None,
+             all : bool = True,
+             columns : list[str] = []
              ) -> list[dict[str, any]]:
         """
         Fetches data from the table and returns it as a list of dictionaries.
@@ -107,6 +109,11 @@ class Table(ABC):
         The \'searchValue\' argument is used to search for a specific value in the table.
         The \'searchValue\' argument can be set to any string value. The search is done using a regular expression.
         The search is done on all columns in the table. The \'searchValue\' argument is optional.
+
+        The \'all\' argument is used to specify whether to return all columns or only the specified columns.
+        The default value is set to \'True\'. If set to \'True\', all columns are returned.
+        If set to \'False\', only the specified columns are returned. The \'columns\' argument is used to specify the columns to be returned.
+        There must be at least one column in the \'columns\' argument if \'all\' is set to \'False\'.
         """
 
         result = []
@@ -115,25 +122,38 @@ class Table(ABC):
                 raise ValueError("Page and limit must be positive integers.")
             if sortBy is not None and not isinstance(sortBy, str):
                 raise ValueError("sortBy must be a string.")
-            if sortBy is not None and sortBy not in cls._columns:
-                raise ValueError(f"sortBy must be one of the following columns: {cls._columns}")
+            if sortBy is not None and sortBy not in cls.columns:
+                raise ValueError(f"sortBy must be one of the following columns: {cls.columns}")
             if not isinstance(order, str):
                 raise ValueError("order must be a string.")
             if order not in ["ASC", "DESC"]:
                 raise ValueError("order must be 'ASC' or 'DESC'.")
             if searchValue is not None and not isinstance(searchValue, str):
                 raise ValueError("searchValue must be a string.")
+            if not isinstance(all, bool):
+                raise ValueError("all must be a boolean.")
+            if not isinstance(columns, list):
+                raise ValueError("columns must be a list.")
+            if not all:
+                if len(columns) == 0:
+                    raise ValueError("columns must not be empty.")
+                for column in columns:
+                    if column not in cls.columns:
+                        raise ValueError(f"Column '{column}' does not exist in the table.")
             
             if sortBy is None:
                 sortBy = cls._primary
 
             searchClause = ""
             if searchValue is not None:
-                allcolumns = " OR ".join([column + " REGEXP \'" + searchValue + "\'" for column in cls._columns])
+                allcolumns = " OR ".join([column + " REGEXP \'" + searchValue + "\'" for column in cls.columns])
                 searchClause = f"WHERE {allcolumns} "
+            
+            selectClause = "*" if all else ", ".join(columns)
+
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             offset = (page - 1) * limit
-            cursor.execute(f"SELECT * FROM {cls._tableName} {searchClause}ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset}; ")
+            cursor.execute(f"SELECT {selectClause} FROM {cls._tableName} {searchClause}ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset}; ")
             result = cursor.fetchall()
         except Exception as e:
             print(f"Error: {e}")
@@ -159,10 +179,10 @@ class Table(ABC):
             if not isinstance(data[cls._primary], int):
                 raise ValueError(f"Primary key '{cls._primary}' must be an integer.")
             for key in data.keys():
-                if key not in cls._columns:
+                if key not in cls.columns:
                     raise ValueError(f"Column '{key}' does not exist in the table.")
-            if list(data.keys()) != cls._columns:
-                raise ValueError(f"Data keys {data.keys()} do not match table columns {cls._columns}.")
+            if list(data.keys()) != cls.columns:
+                raise ValueError(f"Data keys {data.keys()} do not match table columns {cls.columns}.")
         
             cursor = DatabaseConnection.getConnection().cursor()
             columns = ', '.join(data.keys())
@@ -222,7 +242,7 @@ class Table(ABC):
             if not isinstance(data, dict):
                 raise ValueError("Data must be a dictionary.")
             for k in data.keys():
-                if k not in cls._columns:
+                if k not in cls.columns:
                     raise ValueError(f"Column '{k}' does not exist in the table.")    
         
             cursor = DatabaseConnection.getConnection().cursor()
