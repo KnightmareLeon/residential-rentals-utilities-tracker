@@ -20,8 +20,6 @@ class TableItemDelegate(QStyledItemDelegate):
         super().paint(painter, viewOption, index)
 
 class BaseTableWidget(QTableWidget):
-    sortRequested = pyqtSignal(int, int)  # columnIndex, sortOrder
-
     ICON_PATHS = [
         "assets/icons/view.png",
         "assets/icons/edit.png",
@@ -189,7 +187,6 @@ class BaseTableWidget(QTableWidget):
         self.columnSortStates[index] = newState
 
         self.updateHeaderLabels()
-        self.sortRequested.emit(index, newState)
 
     def updateHeaderLabels(self):
         new_labels = []

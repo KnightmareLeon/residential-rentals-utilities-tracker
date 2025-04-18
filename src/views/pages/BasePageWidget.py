@@ -10,9 +10,7 @@ class BasePageWidget(QWidget):
 		self.table = tableWidget(mainWindow=self.mainWindow)
 
 		self.currentPage = 1
-		self.rowsPerPage = 10
-		self.fullData = []
-		self.totalPages = 1
+		self.totalPages = 10000
 
 		self.setupUI(buttonText)
 		self.addButton.clicked.connect(self.handleAddButton)

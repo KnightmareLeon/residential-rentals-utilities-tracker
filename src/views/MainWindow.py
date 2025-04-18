@@ -393,7 +393,7 @@ class MainWindow(QMainWindow):
         # FIXME:
         sampleData1 = generateUnitData()
         sampleData2 = generateUtilityData()
-        sampleData3 =generateBillData()
+        sampleData3 = generateBillData()
 
         self.unitsPage.table.populateTable(sampleData1)
         self.utilitiesPage.table.populateTable(sampleData2)
