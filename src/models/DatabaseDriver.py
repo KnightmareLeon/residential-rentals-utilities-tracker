@@ -51,6 +51,7 @@ class Table(ABC):
     _tableName = None
     _primary = None
     columns = []
+    referredTables = []
 
     @classmethod
     def initialize(cls):
@@ -73,16 +74,24 @@ class Table(ABC):
     @abstractmethod
     def _createTable(cls):
         pass
-
+    
+    @classmethod
+    def getTableName(cls) -> str:
+        """
+        Returns the name of the table.
+        """
+        return cls._tableName
+    
     @classmethod
     def read(cls, 
-             page : int = 1, 
-             limit : int = 50, 
+             all : bool = True,
+             columns : list[str] = None,
+             referred : dict['Table' : list[str]] = None,
+             searchValue : str = None,
              sortBy : str = None, 
              order : str = "ASC",
-             searchValue : str = None,
-             all : bool = True,
-             columns : list[str] = []
+             page : int = 1, 
+             limit : int = 50
              ) -> list[dict[str, any]]:
         """
         Fetches data from the table and returns it as a list of dictionaries.
@@ -117,23 +126,31 @@ class Table(ABC):
         """
 
         result = []
+        referred = {} if referred is None else referred
+        columns = [] if columns is None else columns
         try:
             if page < 1 or limit < 1:
                 raise ValueError("Page and limit must be positive integers.")
             if sortBy is not None and not isinstance(sortBy, str):
                 raise ValueError("sortBy must be a string.")
-            if sortBy is not None and sortBy not in cls.columns:
-                raise ValueError(f"sortBy must be one of the following columns: {cls.columns}")
             if not isinstance(order, str):
                 raise ValueError("order must be a string.")
-            if order not in ["ASC", "DESC"]:
-                raise ValueError("order must be 'ASC' or 'DESC'.")
             if searchValue is not None and not isinstance(searchValue, str):
                 raise ValueError("searchValue must be a string.")
             if not isinstance(all, bool):
                 raise ValueError("all must be a boolean.")
-            if not isinstance(columns, list):
+            if columns is not None and not isinstance(columns, list):
                 raise ValueError("columns must be a list.")
+            if referred is not None and not isinstance(referred, dict):
+                raise ValueError("referred must be a dictionary.")
+            for table in referred.keys():
+                if table not in cls.referredTables:
+                    raise ValueError(f"Table '{table}' is not a referred table.")
+                for column in referred[table]:
+                    if column not in table.columns:
+                        raise ValueError(f"Column '{column}' does not exist in the table '{table}'.")
+                if len(referred[table]) == 0:
+                    raise ValueError(f"referredColumns for table '{table}' must not be empty.")
             if not all:
                 if len(columns) == 0:
                     raise ValueError("columns must not be empty.")
@@ -141,19 +158,49 @@ class Table(ABC):
                     if column not in cls.columns:
                         raise ValueError(f"Column '{column}' does not exist in the table.")
             
+            searchClause = ""
+            if all:
+                columns += cls.columns
+            columns = [f"{cls._tableName}.{column}" for column in columns]
+            if referred:
+                for table, tableColumns in referred.items():
+                    columns += [f"{table.getTableName()}.{column}" for column in tableColumns]
+                if searchClause == "":
+                    searchClause = "WHERE "
+                searchClause += " AND ".join([f"{cls._tableName}.{table._primary} = {table.getTableName()}.{table._primary}" for table in referred.keys()])
+
+            if searchValue is not None:
+                allcolumns = "(" + " OR ".join([column + " REGEXP \'" + searchValue + "\'" for column in columns]) + ")"
+                if searchClause == "":
+                    searchClause = "WHERE "
+                else:
+                    searchClause += " AND "
+                searchClause += allcolumns
+            
             if sortBy is None:
                 sortBy = cls._primary
+            if sortBy not in cls.columns:
+                columnExists = False
+                for table in referred.keys():
+                    if sortBy in table.columns:
+                        sortBy = f"{table.getTableName()}.{sortBy}"
+                        columnExists = True
+                        break
+                if not columnExists:
+                    raise ValueError(f"Column '{sortBy}' does not exist in the table.")
+            else:
+                sortBy = f"{cls._tableName}.{sortBy}"
 
-            searchClause = ""
-            if searchValue is not None:
-                allcolumns = " OR ".join([column + " REGEXP \'" + searchValue + "\'" for column in cls.columns])
-                searchClause = f"WHERE {allcolumns} "
+            if order not in ["ASC", "DESC"]:
+                raise ValueError("order must be 'ASC' or 'DESC'.")
             
-            selectClause = "*" if all else ", ".join(columns)
-
+            selectClause = ', '.join(columns)
+            tableNames = ", ".join([table.getTableName() for table in referred.keys()] + [cls._tableName])
+            
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             offset = (page - 1) * limit
-            cursor.execute(f"SELECT {selectClause} FROM {cls._tableName} {searchClause}ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset}; ")
+            sql = f"SELECT {selectClause} FROM {tableNames} {searchClause} ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset}; "
+            cursor.execute(sql)
             result = cursor.fetchall()
         except Exception as e:
             print(f"Error: {e}")
@@ -309,6 +356,8 @@ class Utility(Table):
 
 class Bill(Table):
 
+    referredTables = [Unit, Utility]
+
     def _createTable(cls):
         try:
             cursor = DatabaseConnection.getConnection().cursor()
@@ -336,6 +385,8 @@ class Bill(Table):
             cursor.close()
 
 class InstalledUtility(Table):
+
+    referredTables = [Unit, Utility]
 
     def _createTable(cls):
         try:
