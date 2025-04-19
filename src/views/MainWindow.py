@@ -6,6 +6,7 @@ from PyQt6.QtCore import QSize
 from src.views.pages.UnitsPage import UnitsPage
 from src.views.pages.UtilitiesPage import UtilitiesPage
 from src.views.pages.BillsPage import BillsPage
+from src.views.pages.HomePage import HomePage
 from src.utils.sampleDataGenerator import generateUnitData, generateUtilityData, generateBillData
 
 class MainWindow(QMainWindow):
@@ -383,8 +384,8 @@ class MainWindow(QMainWindow):
         self.unitsPage = UnitsPage(mainWindow=self)
         self.utilitiesPage = UtilitiesPage(mainWindow=self)
         self.billsPage = BillsPage(mainWindow=self)
-        
-        self.homePage = QtWidgets.QFrame(parent=self.stackedWidget)
+        self.homePage = HomePage(mainWindow=self)
+
         self.stackedWidget.addWidget(self.homePage)
         self.stackedWidget.addWidget(self.unitsPage)
         self.stackedWidget.addWidget(self.utilitiesPage)
@@ -442,8 +443,8 @@ class MainWindow(QMainWindow):
     def handleSearch(self):
         currentPage = self.stackedWidget.currentWidget()
         if currentPage == self.unitsPage:
-            self.unitsPage.updatePage()
+            self.unitsPage.resetPage()
         elif currentPage == self.utilitiesPage:
-            self.utilitiesPage.updatePage()
+            self.utilitiesPage.resetPage()
         elif currentPage == self.billsPage:
-            self.billsPage.updatePage()
+            self.billsPage.resetPage()
