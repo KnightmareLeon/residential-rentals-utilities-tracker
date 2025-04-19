@@ -94,35 +94,17 @@ class Table(ABC):
              limit : int = 50
              ) -> list[dict[str, any]]:
         """
-        Fetches data from the table and returns it as a list of dictionaries.
-        Each dictionary represents a row from the table. 
-        The keys of the dictionary are the column names and the values are the
-        corresponding values from the row. 
-        
-        The method takes the following arguments:
-
-        The default total number of rows returned is set to 50 by the \'limit'\
-        argument. Simply pass the \'limit\' argument to change the number of rows
-        returned. 
-        
-        The \'page\' argument is used to paginate the data. The default
-        page is set to 1. The \'page\' argument is used to specify the page number.
-        
-        The \'sortBy\' argument is used to sort the data based on a specific column. 
-        The default sort column is set to the primary key of the table. The \'sortBy\'
-        argument can be set to any column name in the table.
-
-        The \'order\' argument is used to specify the order. The default order is set to \'ASC\'.
-        The \'order\' argument can be set to either \'ASC\' or \'DESC\'.
-
-        The \'searchValue\' argument is used to search for a specific value in the table.
-        The \'searchValue\' argument can be set to any string value. The search is done using a regular expression.
-        The search is done on all columns in the table. The \'searchValue\' argument is optional.
-
-        The \'all\' argument is used to specify whether to return all columns or only the specified columns.
-        The default value is set to \'True\'. If set to \'True\', all columns are returned.
-        If set to \'False\', only the specified columns are returned. The \'columns\' argument is used to specify the columns to be returned.
-        There must be at least one column in the \'columns\' argument if \'all\' is set to \'False\'.
+        Reads data from the table. The method accepts various parameters to filter,
+        sort, and paginate the results. The parameters include:
+        - all: A boolean indicating whether to select all columns or not.
+        - columns: A list of column names to select.
+        - referred: A dictionary of referred tables and their columns.
+        - searchValue: A string to search for in the columns.
+        - sortBy: A string indicating the column to sort by.
+        - order: A string indicating the order of sorting ('ASC' or 'DESC').
+        - page: An integer indicating the page number for pagination.
+        - limit: An integer indicating the number of records per page.
+        The method returns a list of dictionaries where each dictionary represents a row
         """
 
         result = []
@@ -301,6 +283,59 @@ class Table(ABC):
             raise e
         finally:
             cursor.close()
+    
+    @classmethod
+    def totalRows(cls,
+                all : bool = True,
+                columns : list[str] = None,
+                referred : dict['Table' : list[str]] = None,
+                searchValue : str = None,
+             ) -> int:
+        """
+        Returns the total number of rows in the table. The method accepts various
+        arguments to filter the results. The parameters include:
+        - all: A boolean indicating whether to select all columns or not.
+        - columns: A list of column names to select.
+        - referred: A dictionary of referred tables and their columns.
+        - searchValue: A string to search for in the columns.
+        """
+        total = 0
+        referred = {} if referred is None else referred
+        columns = [] if columns is None else columns
+        try:
+            searchClause = ""
+            if all:
+                columns += cls.columns
+            columns = [f"{cls._tableName}.{column}" for column in columns]
+            if referred:
+                for table, tableColumns in referred.items():
+                    columns += [f"{table.getTableName()}.{column}" for column in tableColumns]
+                if searchClause == "":
+                    searchClause = "WHERE "
+                searchClause += " AND ".join([f"{cls._tableName}.{table._primary} = {table.getTableName()}.{table._primary}" for table in referred.keys()])
+
+            if searchValue is not None:
+                allcolumns = "(" + " OR ".join([column + " REGEXP \'" + searchValue + "\'" for column in columns]) + ")"
+                if searchClause == "":
+                    searchClause = "WHERE "
+                else:
+                    searchClause += " AND "
+                searchClause += allcolumns
+            
+            tableNames = ", ".join([table.getTableName() for table in referred.keys()] + [cls._tableName])
+
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            sql = f"SELECT COUNT(*) AS total FROM {tableNames} {searchClause};"
+            cursor.execute(sql)
+            total = cursor.fetchone()['total']
+            if total is None:
+                total = 0
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return total
     
     def _getColumns(cls) -> list[str]:
         """
