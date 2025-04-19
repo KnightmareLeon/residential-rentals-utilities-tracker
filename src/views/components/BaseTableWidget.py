@@ -252,6 +252,10 @@ class BaseTableWidget(QTableWidget):
                     btn.setStyleSheet("background-color: transparent; border: none;")
 
     @abstractmethod
+    def updateTable(self):
+        pass
+
+    @abstractmethod
     def handleViewButton(self, row_idx):
         pass
 

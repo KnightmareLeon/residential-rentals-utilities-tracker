@@ -1,5 +1,5 @@
 import random
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 unit_types = ["Residential", "Commercial", "Industrial", "Mixed-Use", "Office", "Retail"]
 statuses = ["Active", "Inactive"]
@@ -79,3 +79,39 @@ def generateBillData():
         })
     
     return sampleData3
+
+def generateRandomUtilityData(startDate=None, endDate=None):
+    if startDate is None:
+        startDate = datetime.today() - timedelta(days=365)
+    if endDate is None:
+        endDate = datetime.today()
+
+    def random_date(start, end):
+        delta = end - start
+        return start + timedelta(days=random.randint(0, delta.days))
+
+    categories = {
+        "Electricity": (1000, 10000),
+        "Water": (50, 250),
+        "Gas": (1000, 2000),
+        "Wifi": (1000, 3500),
+        "Trash": (500, 500),
+        "Maintenance": (100, 5000),
+        "Miscellaneous": (0, 5000)
+    }
+
+    data = {}
+    for category, (min_amt, max_amt) in categories.items():
+        num_entries = random.randint(20, 50)
+        bills = []
+        for _ in range(num_entries):
+            bill_date = random_date(startDate, endDate)
+            amount = random.randint(min_amt, max_amt)
+            bills.append({
+                "TotalAmount": str(amount),
+                "BillingPeriodEnd": bill_date.strftime("%Y-%m-%d")
+            })
+        bills.sort(key=lambda b: b["BillingPeriodEnd"])
+        data[category] = bills
+
+    return data
