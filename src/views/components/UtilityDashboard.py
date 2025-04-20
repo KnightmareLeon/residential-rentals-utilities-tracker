@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import random
 
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QButtonGroup
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QButtonGroup, QComboBox
 from PyQt6.QtGui import QFont, QPixmap, QIcon
 from PyQt6.QtCore import Qt, QSize
 
@@ -13,6 +13,7 @@ from matplotlib.figure import Figure
 
 from src.utils.formatMoney import formatMoneyNoDecimal, formatMoney
 from src.utils.sampleDataGenerator import generateRandomUtilityData
+from src.views.widgets.CheckableComboBox import CheckableComboBox
 
 class UtilityDashboard(QFrame):
     def __init__(self, parent=None):
@@ -20,10 +21,19 @@ class UtilityDashboard(QFrame):
         self.dateRange = "1M"
         self.chartDivisions = 10
         self.rangeButtons = []
+        self.plottedPoints = []
+        self.utilityFilters = ["Electricity", "Water", "Gas", "Wifi", "Trash", "Maintenance"]
 
         self.setupUI()
 
-    def setupUI(self):
+        self.annotation = self.ax.annotate("", xy=(0, 0), xytext=(15, 15),
+            textcoords="offset points", bbox=dict(boxstyle="round", fc="black", ec="white", lw=0.5),
+            fontsize=8, color="white", arrowprops=dict(arrowstyle="->", color="white"))
+        self.annotation.set_visible(False)
+
+        self.canvas.mpl_connect("motion_notify_event", self.onHover)
+
+    def setupUI(self) -> None:
         mainLayout = QVBoxLayout()
         self.setLayout(mainLayout)
         self.setObjectName("UtilityDashboard")
@@ -46,6 +56,16 @@ class UtilityDashboard(QFrame):
                            QPushButton:hover {
                             background-color: #3E3E3E;
                            }
+
+                           QComboBox {
+                            background-color: #1C1C1C;
+                            color: white;
+                            border: 2px solid #3E3E3E;
+                            padding: 10px 15px;
+                            border-radius: 10px;
+                            font-family: "Urbanist", sans-serif;
+                            font-size: 14px;
+                           }
                            """)
 
         # === Summary Cards ===
@@ -66,6 +86,17 @@ class UtilityDashboard(QFrame):
         self.rangeButtons = []
         self.buttonGroup = QButtonGroup(self)
         self.buttonGroup.setExclusive(True)
+
+        self.filterComboBox = CheckableComboBox()
+        self.filterComboBox.addItem("Electricity")
+        self.filterComboBox.addItem("Water")
+        self.filterComboBox.addItem("Gas")
+        self.filterComboBox.addItem("Wifi")
+        self.filterComboBox.addItem("Trash")
+        self.filterComboBox.addItem("Maintenance")
+        self.filterComboBox.onItemCheckedChanged(self.handleFilterUpdate)
+
+        chartHeader.addWidget(self.filterComboBox)
 
         for label in ["3M", "6M", "1Y", "2Y"]:
             btn = QPushButton(label)
@@ -92,7 +123,7 @@ class UtilityDashboard(QFrame):
         self.handleRangeUpdate()
 
     # SUMMARY CARDS
-    def createSummaryCard(self, title, value, iconPath):
+    def createSummaryCard(self, title: str, value: str, iconPath: str) -> tuple[QFrame, QLabel]:
         frame = QFrame()
         frame.setFrameShape(QFrame.Shape.StyledPanel)
 
@@ -103,8 +134,8 @@ class UtilityDashboard(QFrame):
         iconButton = QPushButton()
         icon = QIcon(iconPath)
         iconButton.setIcon(icon)
-        iconButton.setIconSize(QSize(40, 40))  
-        iconButton.setFixedSize(40, 40)
+        iconButton.setIconSize(QSize(35, 35))  
+        iconButton.setFixedSize(35, 35)
         iconButton.setStyleSheet("""
             QPushButton {
                 border: none;
@@ -132,7 +163,7 @@ class UtilityDashboard(QFrame):
 
         return frame, labelValue
     
-    def createSummaryWidget(self):
+    def createSummaryWidget(self)-> None:
         container = QFrame()
         layout = QHBoxLayout()
         container.setLayout(layout)
@@ -157,7 +188,7 @@ class UtilityDashboard(QFrame):
         delta = (endDate - startDate) / (divisions - 1)
         return [startDate + i * delta for i in range(divisions)]
 
-    def praseDateRange(self, range):
+    def praseDateRange(self, range: str) -> int:
         if range == "1M":
             return 1
         elif range == "3M":
@@ -169,10 +200,10 @@ class UtilityDashboard(QFrame):
         elif range == "2Y":
             return 24
 
-    def createChart(self, data):
+    def createChart(self, data: dict[str, list[dict[str, str]]]):
         self.figure = Figure(figsize=(7, 5))
         self.canvas = FigureCanvas(self.figure)
-        self.canvas.setMinimumSize(400, 300)
+        self.canvas.setMinimumSize(400, 200)
         self.ax = self.figure.add_subplot(111)
 
         self.canvas.setStyleSheet("background-color: #1C1C1C; border: none;")
@@ -186,12 +217,13 @@ class UtilityDashboard(QFrame):
         self.ax.xaxis.label.set_color('#CCCCCC')
         self.ax.title.set_color('#FFFFFF')
 
-        self.updateChart(data)
+        self.updateChart(data, self.utilityFilters)
         self.figure.tight_layout()
         return self.canvas
     
-    def updateChart(self, data):
+    def updateChart(self, data, utilityFilters: list[str]) -> None:
         self.ax.clear()
+        self.plottedPoints = []
 
         self.ax.set_facecolor('#1C1C1C')                
         self.ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.5, color="#333333")
@@ -201,6 +233,8 @@ class UtilityDashboard(QFrame):
         self.ax.yaxis.label.set_color('#CCCCCC')
         self.ax.xaxis.label.set_color('#CCCCCC')
         self.ax.title.set_color('#FFFFFF')
+
+        self.ax.margins(x=0.13, y=0.2)
 
         today = datetime.today()
         months = self.praseDateRange(self.dateRange)
@@ -220,6 +254,8 @@ class UtilityDashboard(QFrame):
             "Maintenance": "#9370DB",
             "Miscellaneous": "#CCCCCC"
         }
+        # Filter for which utility to display
+        categoryColors = {category: color for category, color in categoryColors.items() if category in utilityFilters}
 
         for category, color in categoryColors.items():
             bills = [
@@ -230,6 +266,12 @@ class UtilityDashboard(QFrame):
 
             x_points = []
             y_points = []
+
+            reference_y = None
+            for billDate, amount in reversed(bills):
+                if billDate < tickDates[0].date():
+                    reference_y = amount
+                    break
 
             for billDate, amount in bills:
                 for i in range(len(tickDates) - 1):
@@ -246,7 +288,18 @@ class UtilityDashboard(QFrame):
                         break
 
             if x_points:
-                self.ax.plot(x_points, y_points, label=category, color=color)
+                if x_points[0] > 0 and reference_y is not None:
+                    x_points.insert(0, 0)
+                    y_points.insert(0, reference_y)
+
+                line, = self.ax.plot(x_points, y_points, label=category, color=color)
+                for x_val, y_val in zip(x_points, y_points):
+                    label = next((
+                        d.strftime("%b %d, %Y")
+                        for i, d in enumerate(tickDates)
+                        if int(x_val) == i
+                    ), "")
+                    self.plottedPoints.append((x_val, y_val, label, category))
 
         self.ax.set_xticks(x)
         self.ax.set_xticklabels(tickLabels, rotation=45, fontsize=8, ha="right")
@@ -256,9 +309,45 @@ class UtilityDashboard(QFrame):
         self.ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: formatMoneyNoDecimal(x)))
         self.ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.35), ncol=4, framealpha=0, labelcolor="white")
 
+        self.annotation = self.ax.annotate("", xy=(0, 0), xytext=(15, 15),
+            textcoords="offset points",
+            bbox=dict(boxstyle="round", fc="black", ec="white", lw=0.5),
+            fontsize=8, color="white",
+            arrowprops=dict(arrowstyle="->", color="white"))
+        self.annotation.set_visible(False)
+        self.annotation.set_clip_on((False))
+
         self.canvas.draw()
 
-    def handleRangeUpdate(self):
+    def onHover(self, event):
+        if not event.inaxes:
+            self.annotation.set_visible(False)
+            self.canvas.draw_idle()
+            return
+
+        # Set a small hover threshold in display coords
+        display_threshold = 6  # pixels
+        closest_point = None
+        closest_dist = float("inf")
+
+        for x, y, label, category in self.plottedPoints:
+            disp_coords = self.ax.transData.transform((x, y))
+            dist = ((disp_coords[0] - event.x) ** 2 + (disp_coords[1] - event.y) ** 2) ** 0.5
+            if dist < display_threshold and dist < closest_dist:
+                closest_dist = dist
+                closest_point = (x, y, label, category)
+
+        if closest_point:
+            x, y, label, category = closest_point
+            self.annotation.xy = (x, y)
+            self.annotation.set_text(f"{category}\n₱{y:,}\n{label}")
+            self.annotation.set_visible(True)
+            self.canvas.draw_idle()
+        else:
+            self.annotation.set_visible(False)
+            self.canvas.draw_idle()
+
+    def handleRangeUpdate(self) -> None:
         for btn in self.rangeButtons:
             if btn.isChecked():
                 btn.setStyleSheet("""
@@ -301,7 +390,7 @@ class UtilityDashboard(QFrame):
         self.updateWidget()
 
     # UPDATES
-    def updateSummaryCards(self, balance=None, paid=None, unpaid=None):
+    def updateSummaryCards(self, balance=None, paid=None, unpaid=None) -> None:
         if balance is not None:
             self.summaryLabels["balance"].setText(balance)
         if paid is not None:
@@ -309,7 +398,7 @@ class UtilityDashboard(QFrame):
         if unpaid is not None:
             self.summaryLabels["unpaid"].setText(unpaid)
 
-    def updateWidget(self):
+    def updateWidget(self) -> None:
         dataRange = self.praseDateRange(self.dateRange)
         print(f"Fetching data for {dataRange} months")
         # fetch chart data
@@ -317,9 +406,12 @@ class UtilityDashboard(QFrame):
             startDate=datetime(2024, 4, 1),
             endDate=datetime(2025, 4, 19)
         )
-        self.updateChart(data)
+        self.updateChart(data, self.utilityFilters)
 
         #fetch summary data
         balance, paid, unpaid = ("₱ 40,034.12", "₱ 33,342.00", "6")
         self.updateSummaryCards(balance, paid, unpaid)
 
+    def handleFilterUpdate(self):
+        self.utilityFilters = self.filterComboBox.checkedItems()
+        self.updateWidget()
