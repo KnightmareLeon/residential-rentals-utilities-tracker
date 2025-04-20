@@ -378,7 +378,7 @@ class Utility(Table):
             cursor = DatabaseConnection.getConnection().cursor()
             cursor.execute("CREATE TABLE IF NOT EXISTS utility (" +
                 "UtilityID int NOT NULL, " + 
-                "Type varchar(30) NOT NULL, " +
+                "Type enum('Electricity','Water','Gas','Wifi','Trash','Maintenance','Miscellaneous') NOT NULL, " +
                 "Status enum('Active','Inactive') NOT NULL, " +
                 "BillingCycle enum('Monthly','Quarterly','Annually','Irregular') NOT NULL," +
                 "PRIMARY KEY (UtilityID))"
