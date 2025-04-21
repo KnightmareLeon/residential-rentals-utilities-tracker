@@ -95,6 +95,7 @@ class UtilityDashboard(QFrame):
         self.filterComboBox.addItem("Trash")
         self.filterComboBox.addItem("Maintenance")
         self.filterComboBox.onItemCheckedChanged(self.handleFilterUpdate)
+        self.filterComboBox.setCursor(Qt.CursorShape.PointingHandCursor)
 
         chartHeader.addWidget(self.filterComboBox)
 

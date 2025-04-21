@@ -10,11 +10,14 @@ class CheckableComboBox(QComboBox):
         self.setEditable(True)
         self.lineEdit().setReadOnly(True)
         self.lineEdit().setPlaceholderText("Filter by:")
+        self.lineEdit().setCursor(Qt.CursorShape.PointingHandCursor)
 
         self.selectedItems = []
         self.onCheckedChangedCallback = None
 
+        self.installEventFilter(self)
         self.lineEdit().installEventFilter(self)
+        self.view().viewport().installEventFilter(self) 
 
     def addItem(self, text, checked=False):
         item = QStandardItem(text)
@@ -42,8 +45,11 @@ class CheckableComboBox(QComboBox):
         self.lineEdit().setText("Filter by:")
     
     def eventFilter(self, source, event):
-        if source == self.lineEdit() and event.type() == event.Type.MouseButtonPress:
-            self.showPopup()
+        if (source == self or source == self.lineEdit()) and event.type() == event.Type.MouseButtonPress:
+            if self.view().isVisible():
+                self.hidePopup()
+            else:
+                self.showPopup()
             return True
         return super().eventFilter(source, event)
     
