@@ -26,6 +26,7 @@ from src.utils.formatMoney import formatMoneyNoDecimal, formatMoney
 from src.utils.constants import categoryColors
 from src.utils.sampleDataGenerator import generateRandomUtilityData
 from src.views.widgets.CheckableComboBox import CheckableComboBox
+from src.controllers.dashboardController import DashboardController
 
 class UtilityDashboard(QFrame):
     def __init__(self, parent=None):
@@ -201,7 +202,7 @@ class UtilityDashboard(QFrame):
         delta = (endDate - startDate) / (divisions - 1)
         return [startDate + i * delta for i in range(divisions)]
 
-    def praseDateRange(self, range: str) -> int:
+    def parseDateRangeToMonths(self, range: str) -> int:
         if range == "1M":
             return 1
         elif range == "3M":
@@ -250,7 +251,7 @@ class UtilityDashboard(QFrame):
         self.ax.margins(x=0.13, y=0.2)
 
         today = datetime.today()
-        months = self.praseDateRange(self.dateRange)
+        months = self.parseDateRangeToMonths(self.dateRange)
         startDate = today - relativedelta(months=months)
         endDate = today
 
@@ -403,16 +404,15 @@ class UtilityDashboard(QFrame):
             self.summaryLabels["unpaid"].setText(unpaid)
 
     def updateWidget(self) -> None:
-        dataRange = self.praseDateRange(self.dateRange)
-        print(f"Fetching data for {dataRange} months")
-        # fetch chart data
+        dataRange = self.parseDateRangeToMonths(self.dateRange)
+        data = DashboardController.fetchUtilityDashboard(dataRange)
         data = generateRandomUtilityData(
             startDate=datetime(2024, 4, 1),
             endDate=datetime(2025, 4, 19)
         )
         self.updateChart(data, self.utilityFilters)
 
-        #fetch summary data
+        balance, paid, unpaid = DashboardController.fetchBillsSummary(dataRange)
         balance, paid, unpaid = ("₱ 40,034.12", "₱ 33,342.00", "6")
         self.updateSummaryCards(balance, paid, unpaid)
 

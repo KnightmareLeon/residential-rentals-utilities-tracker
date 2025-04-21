@@ -21,7 +21,7 @@ class BillsTable(BaseTableWidget):
         else:
             sortingOrderStr = "ASC"
 
-        data, count = BillsController.fetchData(currentPage, sortingOrderStr, sortingField, searchValue)
+        data, count = BillsController.fetchBills(currentPage, sortingOrderStr, sortingField, searchValue)
         #self.populateTable(data)
         self.parentWidget().totalPages = count
         self.parentWidget().pageLabel.setText(f"Page {currentPage} of {count}")
@@ -33,7 +33,7 @@ class BillsTable(BaseTableWidget):
             return
     
         id = item.text()
-        unitData = BillsController.viewRecord(id)
+        unitData = BillsController.viewBill(id)
 
         if unitData:
             #open unit view dialog
@@ -48,7 +48,7 @@ class BillsTable(BaseTableWidget):
         
         id = item.text()
         #open unit edit dialog
-        response = BillsController.editRecord(id, None)
+        response = BillsController.editBill(id, None, None, None, None, None, None, None)
 
         self.updateTable()
 
@@ -59,6 +59,6 @@ class BillsTable(BaseTableWidget):
         
         id = item.text()
         #open unit delete dialog
-        response = BillsController.deleteRecord(id)
+        response = BillsController.deleteBill(id)
 
         self.updateTable()

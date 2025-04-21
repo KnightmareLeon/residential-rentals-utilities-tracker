@@ -11,5 +11,5 @@ class BillsPage(BasePageWidget):
         self.table.updateTable()
 
     def handleAddButton(self):
-        response = BillsController.addRecord(None)
+        response = BillsController.addBill(None, None, None, None, None, None, None)
         self.table.updateTable()
