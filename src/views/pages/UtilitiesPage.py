@@ -1,4 +1,4 @@
-from src.views.pages.BasePageWidget import BasePageWidget
+from src.views.widgets.BasePageWidget import BasePageWidget
 from src.views.components.UtilitiesTable import UtilitiesTable
 from src.controllers.utilitiesController import UtilitiesController
 

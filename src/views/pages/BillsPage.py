@@ -1,4 +1,4 @@
-from src.views.pages.BasePageWidget import BasePageWidget
+from src.views.widgets.BasePageWidget import BasePageWidget
 from src.views.components.BillsTable import BillsTable
 from src.controllers.billsController import BillsController
 

@@ -7,11 +7,23 @@ from PyQt6.QtGui import QFont, QPixmap, QIcon
 from PyQt6.QtCore import Qt, QSize
 
 import matplotlib.pyplot as plt
-plt.rcParams['font.family'] = "Montserrat"
+from matplotlib import font_manager
+
+urbanistFontPath = "assets/fonts/Urbanist-VariableFont_wght.ttf"
+font_manager.fontManager.addfont(urbanistFontPath)
+
+montserratFontPath = "assets/fonts/Montserrat-VariableFont_wght.ttf"
+font_manager.fontManager.addfont(montserratFontPath)
+
+urbanistFont = font_manager.FontProperties(fname=urbanistFontPath)
+montserratFont = font_manager.FontProperties(fname=montserratFontPath)
+plt.rcParams['font.family'] = [urbanistFont.get_name(), montserratFont.get_name()]
+
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from src.utils.formatMoney import formatMoneyNoDecimal, formatMoney
+from src.utils.constants import categoryColors
 from src.utils.sampleDataGenerator import generateRandomUtilityData
 from src.views.widgets.CheckableComboBox import CheckableComboBox
 
@@ -246,19 +258,10 @@ class UtilityDashboard(QFrame):
         tickLabels = [d.strftime("%b %d, %Y") for d in tickDates]
         x = list(range(len(tickDates)))
 
-        categoryColors = {
-            "Electricity": "#FFA500",
-            "Water": "#00BFFF",
-            "Gas": "#FF1493",
-            "Wifi": "#00FF7F",
-            "Trash": "#A52A2A",
-            "Maintenance": "#9370DB",
-            "Miscellaneous": "#CCCCCC"
-        }
         # Filter for which utility to display
-        categoryColors = {category: color for category, color in categoryColors.items() if category in utilityFilters}
+        filteredCategoryColors = {category: color for category, color in categoryColors.items() if category in utilityFilters}
 
-        for category, color in categoryColors.items():
+        for category, color in filteredCategoryColors.items():
             bills = [
                 (datetime.strptime(entry["BillingPeriodEnd"], "%Y-%m-%d").date(), int(entry["TotalAmount"]))
                 for entry in data.get(category, [])
