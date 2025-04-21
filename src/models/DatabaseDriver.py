@@ -84,7 +84,6 @@ class Table(ABC):
     
     @classmethod
     def read(cls, 
-             all : bool = True,
              columns : list[str] = None,
              referred : dict['Table' : list[str]] = None,
              searchValue : str = None,
@@ -96,7 +95,6 @@ class Table(ABC):
         """
         Reads data from the table. The method accepts various parameters to filter,
         sort, and paginate the results. The parameters include:
-        - all: A boolean indicating whether to select all columns or not.
         - columns: A list of column names to select.
         - referred: A dictionary of referred tables and their columns.
         - searchValue: A string to search for in the columns.
@@ -119,8 +117,6 @@ class Table(ABC):
                 raise ValueError("order must be a string.")
             if searchValue is not None and not isinstance(searchValue, str):
                 raise ValueError("searchValue must be a string.")
-            if not isinstance(all, bool):
-                raise ValueError("all must be a boolean.")
             if columns is not None and not isinstance(columns, list):
                 raise ValueError("columns must be a list.")
             if referred is not None and not isinstance(referred, dict):
@@ -133,25 +129,27 @@ class Table(ABC):
                         raise ValueError(f"Column '{column}' does not exist in the table '{table}'.")
                 if len(referred[table]) == 0:
                     raise ValueError(f"referredColumns for table '{table}' must not be empty.")
-            if not all:
-                if len(columns) == 0:
-                    raise ValueError("columns must not be empty.")
+                
+            
+            # Check if columns is empty, if so, use all columns
+            if len(columns) == 0:
+                columns += cls.columns
+            else: # Check if columns are valid
                 for column in columns:
                     if column not in cls.columns:
                         raise ValueError(f"Column '{column}' does not exist in the table.")
-            
-            searchClause = ""
-            if all:
-                columns += cls.columns
             columns = [f"{cls._tableName}.{column}" for column in columns]
-            if referred:
+
+            searchClause = ""
+
+            if referred: # Check if referred is not empty
                 for table, tableColumns in referred.items():
                     columns += [f"{table.getTableName()}.{column}" for column in tableColumns]
                 if searchClause == "":
                     searchClause = "WHERE "
                 searchClause += " AND ".join([f"{cls._tableName}.{table._primary} = {table.getTableName()}.{table._primary}" for table in referred.keys()])
 
-            if searchValue is not None:
+            if searchValue is not None: # Check if searchValue is not empty
                 allcolumns = "(" + " OR ".join([column + " REGEXP \'" + searchValue + "\'" for column in columns]) + ")"
                 if searchClause == "":
                     searchClause = "WHERE "
@@ -159,9 +157,9 @@ class Table(ABC):
                     searchClause += " AND "
                 searchClause += allcolumns
             
-            if sortBy is None:
+            if sortBy is None: # Check if sortBy is not empty
                 sortBy = cls._primary
-            if sortBy not in cls.columns:
+            if sortBy not in cls.columns: # Check if sortBy is valid
                 columnExists = False
                 for table in referred.keys():
                     if sortBy in table.columns:
@@ -285,8 +283,7 @@ class Table(ABC):
             cursor.close()
     
     @classmethod
-    def totalRows(cls,
-                all : bool = True,
+    def totalCount(cls,
                 columns : list[str] = None,
                 referred : dict['Table' : list[str]] = None,
                 searchValue : str = None,
@@ -294,7 +291,6 @@ class Table(ABC):
         """
         Returns the total number of rows in the table. The method accepts various
         arguments to filter the results. The parameters include:
-        - all: A boolean indicating whether to select all columns or not.
         - columns: A list of column names to select.
         - referred: A dictionary of referred tables and their columns.
         - searchValue: A string to search for in the columns.
@@ -304,8 +300,12 @@ class Table(ABC):
         columns = [] if columns is None else columns
         try:
             searchClause = ""
-            if all:
+            if len(columns) == 0:
                 columns += cls.columns
+            else:
+                for column in columns:
+                    if column not in cls.columns:
+                        raise ValueError(f"Column '{column}' does not exist in the table.")
             columns = [f"{cls._tableName}.{column}" for column in columns]
             if referred:
                 for table, tableColumns in referred.items():
@@ -418,6 +418,7 @@ class Bill(Table):
             raise e
         finally:
             cursor.close()
+
 
 class InstalledUtility(Table):
 
