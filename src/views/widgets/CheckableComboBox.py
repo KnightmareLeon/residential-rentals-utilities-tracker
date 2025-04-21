@@ -1,12 +1,20 @@
-from PyQt6.QtWidgets import QComboBox
+from PyQt6.QtWidgets import QComboBox, QStyledItemDelegate
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QAbstractItemModel, QModelIndex
+
+class CheckBoxDelegate(QStyledItemDelegate):
+    def editorEvent(self, event, model, option, index):
+        if index.flags() & Qt.ItemFlag.ItemIsUserCheckable and event.type() == event.Type.MouseButtonRelease:
+            current_state = model.data(index, Qt.ItemDataRole.CheckStateRole)
+            new_state = Qt.CheckState.Unchecked if current_state == Qt.CheckState.Checked else Qt.CheckState.Checked
+            model.setData(index, new_state, Qt.ItemDataRole.CheckStateRole)
+            return True
+        return super().editorEvent(event, model, option, index)
 
 class CheckableComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setModel(QStandardItemModel(self))
-        self.view().pressed.connect(self.handleItemPressed)
         self.setEditable(True)
         self.lineEdit().setReadOnly(True)
         self.lineEdit().setPlaceholderText("Filter by:")
@@ -14,6 +22,9 @@ class CheckableComboBox(QComboBox):
 
         self.selectedItems = []
         self.onCheckedChangedCallback = None
+
+        self.view().setItemDelegate(CheckBoxDelegate(self))
+        self.model().dataChanged.connect(self.handleCheckChange)
 
         self.installEventFilter(self)
         self.lineEdit().installEventFilter(self)
@@ -27,12 +38,8 @@ class CheckableComboBox(QComboBox):
         self.setCurrentIndex(-1)
         self.lineEdit().setText("Filter by:")
 
-    def handleItemPressed(self, index):
-        item = self.model().itemFromIndex(index)
-        newCheckStaate = Qt.CheckState.Checked if item.checkState() == Qt.CheckState.Unchecked else Qt.CheckState.Unchecked
-        item.setCheckState(newCheckStaate)
+    def handleCheckChange(self):
         self.updateText()
-
         if self.onCheckedChangedCallback:
             self.onCheckedChangedCallback()
 
@@ -58,3 +65,8 @@ class CheckableComboBox(QComboBox):
     
     def checkedItems(self):
         return self.selectedItems
+    
+    def handleCheckChange(self):
+        self.updateText()
+        if self.onCheckedChangedCallback:
+            self.onCheckedChangedCallback()

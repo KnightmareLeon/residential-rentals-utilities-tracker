@@ -1,4 +1,4 @@
-from src.views.components.BaseTableWidget import BaseTableWidget
+from src.views.widgets.BaseTableWidget import BaseTableWidget
 from src.utils.constants import SortOrder
 from src.controllers.utilitiesController import UtilitiesController
 
