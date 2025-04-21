@@ -1,25 +1,42 @@
+from PyQt6.QtCore import QDate
+
 class BillsController:
     
     @staticmethod
-    def fetchData(currentPage: int, sortingOrder: str, sortingField: str, searchValue: str) -> tuple[list[dict[str, str]], int]:
+    def fetchBills(currentPage: int, sortingOrder: str, sortingField: str, searchValue: str) -> tuple[list[dict[str, str]], int]:
+        """
+        Fetches all units with pagination, sorting, and searching.
+        """
         print(f"Fetching data for page {currentPage} with sorting {sortingField} {sortingOrder} and search '{searchValue}'")
         return ([], 5) 
     
     @staticmethod
-    def addRecord(data: dict[str, str]) -> str:
-        print("Adding bill:", data)
+    def addBill(unitID: str, utilityID: str, totalAmount: str, billingPeriodStart: QDate, billingPeriodEnd: QDate, status: str, dueDate: QDate) -> str:
+        """
+        Adds a new unit with the given data.
+        """
+        print("Adding bill:", unitID, utilityID, totalAmount, billingPeriodStart, billingPeriodEnd, status, dueDate)
         return "Bill added successfully"
 
     @staticmethod
-    def viewRecord(id: str) -> dict[str, str]:
+    def viewBill(id: str) -> dict[str, str]:
+        """
+        Fetches all information about a single unit by ID.
+        """
         print("Viewing bill:", id)
 
     @staticmethod
-    def editRecord(id: str, data: dict[str, str]) -> str:
-        print("Editing utility:", id, data)
+    def editBill(originalID: str, unitID: str, utilityID: str, totalAmount: str, billingPeriodStart: QDate, billingPeriodEnd: QDate, status: str, dueDate: QDate) -> str:
+        """
+        Edits a unit with the given data.
+        """
+        print("Editing utility:", originalID, unitID, utilityID, totalAmount, billingPeriodStart, billingPeriodEnd, status, dueDate)
         return "Bill edited successfully"
     
     @staticmethod
-    def deleteRecord(id: str) -> str:
+    def deleteBill(id: str) -> str:
+        """
+        Deletes a new unit with the given data.
+        """
         print("Deleting bill:", id)
         return "Bill deleted successfully"

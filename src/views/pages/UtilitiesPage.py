@@ -11,5 +11,5 @@ class UtilitiesPage(BasePageWidget):
         self.table.updateTable()
 
     def handleAddButton(self):
-        response = UtilitiesController.addRecord(None)
+        response = UtilitiesController.addUtility(None, None, None)
         self.table.updateTable()

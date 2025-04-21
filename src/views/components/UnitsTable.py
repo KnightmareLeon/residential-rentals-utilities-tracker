@@ -21,7 +21,7 @@ class UnitsTable(BaseTableWidget):
         else:
             sortingOrderStr = "ASC"
 
-        data, count = UnitsController.fetchData(currentPage, sortingOrderStr, sortingField, searchValue)
+        data, count = UnitsController.fetchUnits(currentPage, sortingOrderStr, sortingField, searchValue)
         #self.populateTable(data)
         self.parentWidget().totalPages = count
         self.parentWidget().pageLabel.setText(f"Page {currentPage} of {count}")
@@ -32,7 +32,7 @@ class UnitsTable(BaseTableWidget):
             return
     
         id = item.text()
-        unitData = UnitsController.viewRecord(id)
+        unitData = UnitsController.viewUnit(id)
 
         if unitData:
             #open unit view dialog
@@ -47,7 +47,7 @@ class UnitsTable(BaseTableWidget):
         
         id = item.text()
         #open unit edit dialog
-        response = UnitsController.editRecord(id, None)
+        response = UnitsController.editUnit(id, None, None, None, None)
 
         self.updateTable()
 
@@ -58,6 +58,6 @@ class UnitsTable(BaseTableWidget):
         
         id = item.text()
         #open unit delete dialog
-        response = UnitsController.deleteRecord(id)
+        response = UnitsController.deleteUnit(id)
 
         self.updateTable()

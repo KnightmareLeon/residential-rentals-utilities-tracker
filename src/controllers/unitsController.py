@@ -1,25 +1,40 @@
 class UnitsController:
     
     @staticmethod
-    def fetchData(currentPage: int, sortingOrder: str, sortingField: str, searchValue: str) -> tuple[list[dict[str, str]], int]:
+    def fetchUnits(currentPage: int, sortingOrder: str, sortingField: str, searchValue: str) -> tuple[list[dict[str, str]], int]:
+        """
+        Fetches all units with pagination, sorting, and searching.
+        """
         print(f"Fetching data for page {currentPage} with sorting {sortingField} {sortingOrder} and search '{searchValue}'")
         return ([], 5) 
     
     @staticmethod
-    def addRecord(data: dict[str, str]) -> str:
-        print("Adding unit:", data)
+    def addUnit(name: str, address: str, type: str) -> str:
+        """
+        Adds a new unit with the given data.
+        """
+        print("Adding unit:", name, address, type)
         return "Unit added successfully"
 
     @staticmethod
-    def viewRecord(id: str) -> dict[str, str]:
+    def viewUnit(id: str) -> dict[str, str]:
+        """
+        Fetches all information about a single unit by ID.
+        """
         print("Viewing unit:", id)
 
     @staticmethod
-    def editRecord(id: str, data: dict[str, str]) -> str:
-        print("Editing unit:", id, data)
+    def editUnit(originalID: str, unitID: str, name: str, address: str, type: str) -> str:
+        """
+        Edits a unit with the given data.
+        """
+        print("Editing unit:", originalID, unitID, name, address, type)
         return "Unit edited successfully"
     
     @staticmethod
-    def deleteRecord(id: str) -> str:
+    def deleteUnit(id: str) -> str:
+        """
+        Deletes a new unit with the given data.
+        """
         print("Deleting unit:", id)
         return "Unit deleted successfully"
