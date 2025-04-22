@@ -134,6 +134,31 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         return result
 
     @classmethod
+    def getUnitUtilities(cls,
+                   unit : int) -> list[int]:
+        """
+        Returns a list of utility IDs for the given unit ID.
+        """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
+        result = []
+        try:
+            if not isinstance(unit, int):
+                raise ValueError("Unit must be an integer.")
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            sql = f"SELECT UtilityID FROM {cls.getTableName()} WHERE UnitID = {unit}"
+            cursor.execute(sql)
+            result = [row['UtilityID'] for row in cursor.fetchall()]
+
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
+
+    @classmethod
     def _createTable(cls):
         try:
             cursor = DatabaseConnection.getConnection().cursor()
