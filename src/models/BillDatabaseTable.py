@@ -119,3 +119,86 @@ class BillDatabaseTable(DatabaseTable):
         finally:
             cursor.close()
         return result
+
+    @classmethod
+    def totalSumBills(cls,
+                      range: str,
+                      paidOnly: bool = False) -> float:
+        """
+        Returns the total sum of all bills for the given range.
+        The range can be one of the following: 1m, 3m, 6m, 1y.
+        """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
+        result = 0.0
+        try:
+            if not isinstance(range, str):
+                raise ValueError("Range must be a string.")
+            if not range in ["1m", "3m", "6m", "1y"]:
+                raise ValueError("Range must be one of the following: 1m, 3m, 6m, 1y.")
+            if not isinstance(paidOnly, bool):
+                raise ValueError("PaidOnly must be a boolean.")
+            
+            whereClause = ""
+            if range == "1m":
+                whereClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)"
+            elif range == "3m":
+                whereClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)"
+            elif range == "6m":
+                whereClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
+            elif range == "1y":
+                whereClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)"
+
+            if paidOnly:
+                whereClause += " AND Bill.Status = 'Paid'"
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            sql = f"SELECT SUM(Bill.TotalAmount) AS TotalAmount FROM {cls.getTableName()} WHERE {whereClause}"
+            cursor.execute(sql)
+            result = cursor.fetchone()['TotalAmount']
+
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
+    
+    @classmethod
+    def unpaidBillsCount(cls,
+                         range: str) -> int:
+        """
+        Returns the total count of unpaid bills for the given range.
+        The range can be one of the following: 1m, 3m, 6m, 1y.
+        """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
+        result = 0
+        try:
+            if not isinstance(range, str):
+                raise ValueError("Range must be a string.")
+            if not range in ["1m", "3m", "6m", "1y"]:
+                raise ValueError("Range must be one of the following: 1m, 3m, 6m, 1y.")
+            
+            rangeClause = ""
+            if range == "1m":
+                rangeClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)"
+            elif range == "3m":
+                rangeClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)"
+            elif range == "6m":
+                rangeClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
+            elif range == "1y":
+                rangeClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)"
+
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            sql = f"SELECT COUNT(Bill.BillID) AS UnpaidCount FROM {cls.getTableName()} WHERE {rangeClause} AND Bill.Status != 'Paid'"
+            cursor.execute(sql)
+            result = cursor.fetchone()['UnpaidCount']
+
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
