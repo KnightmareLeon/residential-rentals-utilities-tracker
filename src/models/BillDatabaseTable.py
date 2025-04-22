@@ -7,6 +7,7 @@ class BillDatabaseTable(DatabaseTable):
     _tableName = "bill"
     referredTables = [UnitDatabaseTable, UtilityDatabaseTable]
 
+    @classmethod  
     def _createTable(cls):
         try:
             cursor = DatabaseConnection.getConnection().cursor()

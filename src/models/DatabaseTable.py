@@ -12,7 +12,7 @@ class DatabaseTable(ABC):
     @classmethod
     def initialize(cls):
         try:
-            cls._createTable(cls)
+            cls._createTable()
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             cursor.execute("SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE " +
                            f"WHERE TABLE_NAME = '{cls._tableName}' AND CONSTRAINT_NAME = " +

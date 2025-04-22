@@ -5,6 +5,7 @@ class UtilityDatabaseTable(DatabaseTable):
 
     _tableName = "utility"
 
+    @classmethod  
     def _createTable(cls):
         try:
             cursor = DatabaseConnection.getConnection().cursor()
