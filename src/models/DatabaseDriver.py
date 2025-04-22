@@ -419,6 +419,28 @@ class Bill(Table):
         finally:
             cursor.close()
 
+    @classmethod
+    def unitBills(cls,
+                  unit : int) -> list[dict[str, any]]:
+        """
+        Returns a list of dictionaries containing the unit costs for each utility.
+        The list contains dictionaries with the following keys:
+        """
+        result = []
+        try:
+            if not isinstance(unit, int):
+                raise ValueError("Unit must be an integer.")
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            sql = f"SELECT Utility.Type, Bill.TotalAmount, Bill.DueDate, Bill.Status FROM {cls.getTableName()} INNER JOIN utility ON Bill.UtilityID=Utility.UtilityID WHERE Bill.UnitID = {unit}"
+            cursor.execute(sql)
+            result = cursor.fetchall()
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
+
 
 class InstalledUtility(Table):
 
