@@ -40,7 +40,7 @@ class BaseTableWidget(QTableWidget):
         (3, "Active"): "#00FF6F",
         (3, "Inactive"): "#FA1647",
         (5, "Paid"): "#00FF6F",
-        (5, "Unpaid"): "#FAFA16",
+        (5, "Unpaid"): "#FFE921",
         (5, "Overdue"): "#FA1647",
         (5, "Partially Paid"): "#FF8400",
     }
