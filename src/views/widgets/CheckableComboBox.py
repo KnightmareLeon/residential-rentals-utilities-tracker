@@ -1,6 +1,7 @@
-from PyQt6.QtWidgets import QComboBox, QStyledItemDelegate
-from PyQt6.QtGui import QStandardItemModel, QStandardItem
-from PyQt6.QtCore import Qt, QAbstractItemModel, QModelIndex
+from PyQt6.QtWidgets import QComboBox, QStyledItemDelegate, QStyleOptionComboBox
+
+from PyQt6.QtGui import QStandardItemModel, QStandardItem, QPainter
+from PyQt6.QtCore import Qt
 
 class CheckBoxDelegate(QStyledItemDelegate):
     def editorEvent(self, event, model, option, index):
@@ -15,58 +16,45 @@ class CheckableComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setModel(QStandardItemModel(self))
-        self.setEditable(True)
-        self.lineEdit().setReadOnly(True)
-        self.lineEdit().setPlaceholderText("Filter by:")
-        self.lineEdit().setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setEditable(False)
 
         self.selectedItems = []
+        self.staticDisplayText = "Filter:"
         self.onCheckedChangedCallback = None
 
         self.view().setItemDelegate(CheckBoxDelegate(self))
         self.model().dataChanged.connect(self.handleCheckChange)
 
-        self.installEventFilter(self)
-        self.lineEdit().installEventFilter(self)
-        self.view().viewport().installEventFilter(self) 
-
-    def addItem(self, text, checked=False):
+    def addItem(self, text, checked=True):
         item = QStandardItem(text)
         item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsUserCheckable)
-        item.setData(Qt.CheckState.Checked, Qt.ItemDataRole.CheckStateRole)
+        state = Qt.CheckState.Checked if checked else Qt.CheckState.Unchecked
+        item.setData(state, Qt.ItemDataRole.CheckStateRole)
         self.model().appendRow(item)
         self.setCurrentIndex(-1)
-        self.lineEdit().setText("Filter by:")
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        opt = QStyleOptionComboBox()
+        self.initStyleOption(opt)  # Proper usage: pass the QStyleOptionComboBox instance
+        opt.currentText = self.staticDisplayText  # Override displayed text
+        self.style().drawComplexControl(self.style().ComplexControl.CC_ComboBox, opt, painter, self)
+        self.style().drawControl(self.style().ControlElement.CE_ComboBoxLabel, opt, painter, self)
 
     def handleCheckChange(self):
-        self.updateText()
+        self.updateSelectedItems()
         if self.onCheckedChangedCallback:
             self.onCheckedChangedCallback()
 
-    def updateText(self):
+    def updateSelectedItems(self):
         self.selectedItems = []
         for index in range(self.model().rowCount()):
             item = self.model().item(index)
             if item.checkState() == Qt.CheckState.Checked:
                 self.selectedItems.append(item.text())
-        self.lineEdit().setText("Filter by:")
-    
-    def eventFilter(self, source, event):
-        if (source == self or source == self.lineEdit()) and event.type() == event.Type.MouseButtonPress:
-            if self.view().isVisible():
-                self.hidePopup()
-            else:
-                self.showPopup()
-            return True
-        return super().eventFilter(source, event)
-    
+
     def onItemCheckedChanged(self, callback):
         self.onCheckedChangedCallback = callback
-    
+
     def checkedItems(self):
         return self.selectedItems
-    
-    def handleCheckChange(self):
-        self.updateText()
-        if self.onCheckedChangedCallback:
-            self.onCheckedChangedCallback()
