@@ -9,7 +9,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
     referredTables = [UnitDatabaseTable, UtilityDatabaseTable]
 
     @classmethod
-    def initialize(cls):
+    def _initialize(cls):
         try:
             cls._createTable()
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
@@ -46,7 +46,9 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         - limit: An integer indicating the number of records per page.
         The method returns a list of dictionaries where each dictionary represents a row
         """
-
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
         result = []
         referred = {} if referred is None else referred
         columns = [] if columns is None else columns
@@ -155,4 +157,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         """
         Disabled the delete method for this class, to delete data from the table,
         use the delete method of either the Unit or Utility class."""
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
         pass

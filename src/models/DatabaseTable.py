@@ -6,11 +6,12 @@ class DatabaseTable(ABC):
     
     _tableName = None
     _primary = None
+    _initialized = False
     columns = []
     referredTables = []
 
     @classmethod
-    def initialize(cls):
+    def _initialize(cls):
         try:
             cls._createTable()
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
@@ -35,6 +36,9 @@ class DatabaseTable(ABC):
         """
         Returns the name of the table.
         """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
         return cls._tableName
     
     @classmethod
@@ -59,6 +63,9 @@ class DatabaseTable(ABC):
         - limit: An integer indicating the number of records per page.
         The method returns a list of dictionaries where each dictionary represents a row
         """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
 
         result = []
         referred = {} if referred is None else referred
@@ -153,6 +160,9 @@ class DatabaseTable(ABC):
         raise an error if the primary key is not included or if the data is not a
         dictionary.
         """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
         try:
             if not isinstance(data, dict):
                 raise ValueError("Data must be a dictionary.")
@@ -193,6 +203,9 @@ class DatabaseTable(ABC):
         and must exist in the table. The method will raise an error if the key is not
         an integer or if the key does not exist in the table.
         """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
         try:
             if not isinstance(keys, list):
                 raise ValueError("Keys must be a list of integers.")
@@ -218,6 +231,9 @@ class DatabaseTable(ABC):
         The method will raise an error if the key is not an integer or if the key does
         not exist in the table.
         """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
         try:
             if not isinstance(key, int):
                 raise ValueError("Key must be an integer.")
@@ -250,6 +266,9 @@ class DatabaseTable(ABC):
         - referred: A dictionary of referred tables and their columns.
         - searchValue: A string to search for in the columns.
         """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
         total = 0
         referred = {} if referred is None else referred
         columns = [] if columns is None else columns
