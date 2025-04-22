@@ -2,6 +2,8 @@ from models.DatabaseTable import DatabaseTable
 from models.DatabaseConnection import DatabaseConnection
 from models.UnitDatabaseTable import UnitDatabaseTable
 from models.UtilityDatabaseTable import UtilityDatabaseTable
+from models.InstalledUtilityDatabaseTable import InstalledUtilityDatabaseTable
+
 class BillDatabaseTable(DatabaseTable):
 
     _tableName = "bill"
@@ -36,19 +38,50 @@ class BillDatabaseTable(DatabaseTable):
 
     @classmethod
     def unitBills(cls,
-                  unit : int) -> list[dict[str, any]]:
+                  unit : int,
+                  range: str) -> dict[str, list[dict[str, str]]]:
         """
-        Returns a list of dictionaries containing the unit costs for each utility.
-        The list contains dictionaries with the following keys:
+        Returns a dictionary of bills for the given unit ID and range.
+        The dictionary keys are the utility types, and the values are lists of bills.
+        Each bill is represented as a dictionary with keys: BillID, TotalAmount, BillingPeriodEnd.
+        The range can be one of the following: 1m, 3m, 6m, 1y.
+        1m: Last month
+        3m: Last 3 months
+        6m: Last 6 months
+        1y: Last year
         """
-        result = []
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
+        result = {}
         try:
             if not isinstance(unit, int):
                 raise ValueError("Unit must be an integer.")
+            if not isinstance(range, str):
+                raise ValueError("Range must be a string.")
+            if not range in ["1m", "3m", "6m", "1y"]:
+                raise ValueError("Range must be one of the following: 1m, 3m, 6m, 1y.")
+            
+            rangeClause = ""
+            if range == "1m":
+                rangeClause = "AND Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)"
+            elif range == "3m":
+                rangeClause = "AND Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)"
+            elif range == "6m":
+                rangeClause = "AND Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
+            elif range == "1y":
+                rangeClause = "AND Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)"
+
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
-            sql = f"SELECT Utility.Type, Bill.TotalAmount, Bill.DueDate, Bill.Status FROM {cls.getTableName()} INNER JOIN utility ON Bill.UtilityID=Utility.UtilityID WHERE Bill.UnitID = {unit}"
-            cursor.execute(sql)
-            result = cursor.fetchall()
+            for utilityID in InstalledUtilityDatabaseTable.getUnitUtilities(unit):
+                sql1 = f"SELECT Type FROM {UtilityDatabaseTable.getTableName()} WHERE UtilityID = {utilityID}"
+                cursor.execute(sql1)
+                utilityType = cursor.fetchone()['Type']
+
+                sql2 = f"SELECT Bill.BillID, Bill.TotalAmount, Bill.BillingPeriodEnd FROM {cls.getTableName()} WHERE Bill.UtilityID = {utilityID} AND Bill.UnitID = {unit} {rangeClause}"
+                cursor.execute(sql2)
+                result[utilityType] = cursor.fetchall()
+
         except Exception as e:
             print(f"Error: {e}")
             raise e
