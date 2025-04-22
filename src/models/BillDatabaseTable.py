@@ -39,16 +39,17 @@ class BillDatabaseTable(DatabaseTable):
     @classmethod
     def unitBills(cls,
                   unit : int,
-                  range: str) -> dict[str, list[dict[str, str]]]:
+                  range: str) -> dict[str, list[dict[str]]]:
         """
         Returns a dictionary of bills for the given unit ID and range.
         The dictionary keys are the utility types, and the values are lists of bills.
         Each bill is represented as a dictionary with keys: BillID, TotalAmount, BillingPeriodEnd.
+        
         The range can be one of the following: 1m, 3m, 6m, 1y.
-        1m: Last month
-        3m: Last 3 months
-        6m: Last 6 months
-        1y: Last year
+        - 1m: Last month
+        - 3m: Last 3 months
+        - 6m: Last 6 months
+        - 1y: Last year
         """
         if not cls._initialized:
             cls._initialize()
@@ -57,6 +58,41 @@ class BillDatabaseTable(DatabaseTable):
         try:
             if not isinstance(unit, int):
                 raise ValueError("Unit must be an integer.")
+            if not isinstance(range, str):
+                raise ValueError("Range must be a string.")
+            if not range in ["1m", "3m", "6m", "1y"]:
+                raise ValueError("Range must be one of the following: 1m, 3m, 6m, 1y.")
+
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            for utilityID in InstalledUtilityDatabaseTable.getUnitUtilities(unit):
+                sql = f"SELECT Type FROM {UtilityDatabaseTable.getTableName()} WHERE UtilityID = {utilityID}"
+                cursor.execute(sql)
+                utilityType = cursor.fetchone()['Type']
+
+                result[utilityType] = cls.utilityBills(utilityID, range)
+
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
+
+    @classmethod
+    def utilityBills(cls,
+                     utility : int,
+                     range: str) -> list[dict[str]]:
+        """
+        Returns a list of bills for the given utility ID and range.
+        Each bill is represented as a dictionary with keys: BillID, UnitID, TotalAmount, BillingPeriodEnd.
+        """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
+        result = []
+        try:
+            if not isinstance(utility, int):
+                raise ValueError("Utility must be an integer.")
             if not isinstance(range, str):
                 raise ValueError("Range must be a string.")
             if not range in ["1m", "3m", "6m", "1y"]:
@@ -73,14 +109,9 @@ class BillDatabaseTable(DatabaseTable):
                 rangeClause = "AND Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)"
 
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
-            for utilityID in InstalledUtilityDatabaseTable.getUnitUtilities(unit):
-                sql1 = f"SELECT Type FROM {UtilityDatabaseTable.getTableName()} WHERE UtilityID = {utilityID}"
-                cursor.execute(sql1)
-                utilityType = cursor.fetchone()['Type']
-
-                sql2 = f"SELECT Bill.BillID, Bill.TotalAmount, Bill.BillingPeriodEnd FROM {cls.getTableName()} WHERE Bill.UtilityID = {utilityID} AND Bill.UnitID = {unit} {rangeClause}"
-                cursor.execute(sql2)
-                result[utilityType] = cursor.fetchall()
+            sql = f"SELECT Bill.BillID, Bill.UnitID, Bill.TotalAmount, Bill.BillingPeriodEnd FROM {cls.getTableName()} WHERE Bill.UtilityID = {utility} {rangeClause}"
+            cursor.execute(sql)
+            result = cursor.fetchall()
 
         except Exception as e:
             print(f"Error: {e}")
