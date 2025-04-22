@@ -5,6 +5,7 @@ class UnitDatabaseTable(DatabaseTable):
 
     _tableName = "unit"
 
+    @classmethod  
     def _createTable(cls):
         try:
             cursor = DatabaseConnection.getConnection().cursor()
