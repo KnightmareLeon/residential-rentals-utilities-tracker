@@ -40,7 +40,7 @@ class BillsDashboard(QWidget):
         scrollArea.setFrameShape(QFrame.Shape.NoFrame)
 
         contentWidget = QWidget()
-        contentWidget.setStyleSheet("background-color: #1C1C1C;")
+        contentWidget.setStyleSheet("background-color: #1C1C1C; border-radius: 10px;")
         contentLayout = QVBoxLayout(contentWidget)
         contentLayout.setSpacing(0)
         contentLayout.setContentsMargins(0, 0, 0, 0)
@@ -50,11 +50,16 @@ class BillsDashboard(QWidget):
         headerLayout.setContentsMargins(5, 10, 5, 10)
         headerLayout.setSpacing(5)
 
+        headerLayout.setColumnStretch(0, 3)  # Type
+        headerLayout.setColumnStretch(1, 2)  # Balance
+        headerLayout.setColumnStretch(2, 2)  # Due Date
+        headerLayout.setColumnStretch(3, 2)  # Status
+
         headers = ["Type", "Balance", "Due Date", "Status"]
         for i, text in enumerate(headers):
             label = QLabel(text)
-            label.setFont(QFont("Urbanist", 10))
-            label.setStyleSheet("color: #888888;")
+            label.setFont(QFont("Urbanist", 10, QFont.Weight.Bold))
+            label.setStyleSheet("color: #FFFFFF;")
             headerLayout.addWidget(label, 0, i)
 
         headerWidget = QWidget()
@@ -70,7 +75,7 @@ class BillsDashboard(QWidget):
         for index, bill in enumerate(self.bills[:15]):
             utility = bill["Type"]
             color = categoryColors.get(utility, defaultColor)
-            balance = f"₱{bill['TotalAmount']}"
+            balance = bill['TotalAmount']
             due = bill["DueDate"]
             status = bill["Status"]
 

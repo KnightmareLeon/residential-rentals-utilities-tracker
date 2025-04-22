@@ -36,6 +36,10 @@ class UtilityDashboard(QFrame):
         self.rangeButtons = []
         self.plottedPoints = []
         self.utilityFilters = ["Electricity", "Water", "Gas", "Wifi", "Trash", "Maintenance"]
+        self.data = generateRandomUtilityData(
+            startDate=datetime(2023, 4, 1),
+            endDate=datetime(2025, 4, 22)
+        )
 
         self.setupUI()
 
@@ -126,10 +130,7 @@ class UtilityDashboard(QFrame):
         mainLayout.addLayout(chartHeader)
 
         # === Matplotlib Chart ===
-        data = generateRandomUtilityData(
-            startDate=datetime(2024, 4, 1),
-            endDate=datetime(2025, 4, 19)
-        )
+        data = self.data
 
         canvas = self.createChart(data)
         mainLayout.addWidget(canvas)
@@ -218,6 +219,7 @@ class UtilityDashboard(QFrame):
         self.figure = Figure(figsize=(7, 5))
         self.canvas = FigureCanvas(self.figure)
         self.canvas.setMinimumSize(400, 200)
+        self.canvas.mpl_connect("button_press_event", self.onChartClick)
         self.ax = self.figure.add_subplot(111)
 
         self.canvas.setStyleSheet("background-color: #1C1C1C; border: none;")
@@ -264,7 +266,11 @@ class UtilityDashboard(QFrame):
 
         for category, color in filteredCategoryColors.items():
             bills = [
-                (datetime.strptime(entry["BillingPeriodEnd"], "%Y-%m-%d").date(), int(entry["TotalAmount"]))
+                (
+                    datetime.strptime(entry["BillingPeriodEnd"], "%Y-%m-%d").date(),
+                    int(entry["TotalAmount"]),
+                    entry["BillID"]
+                )
                 for entry in data.get(category, [])
             ]
             bills.sort()
@@ -273,12 +279,12 @@ class UtilityDashboard(QFrame):
             y_points = []
 
             reference_y = None
-            for billDate, amount in reversed(bills):
+            for billDate, amount, _ in reversed(bills):
                 if billDate < tickDates[0].date():
                     reference_y = amount
                     break
 
-            for billDate, amount in bills:
+            for billDate, amount, billID in bills:
                 for i in range(len(tickDates) - 1):
                     start = tickDates[i].date()
                     end = tickDates[i + 1].date()
@@ -290,6 +296,9 @@ class UtilityDashboard(QFrame):
 
                         x_points.append(x_val)
                         y_points.append(amount)
+
+                        label = tickDates[i].strftime("%b %d, %Y")
+                        self.plottedPoints.append((x_val, amount, label, category, billID))
                         break
 
             if x_points:
@@ -297,14 +306,7 @@ class UtilityDashboard(QFrame):
                     x_points.insert(0, 0)
                     y_points.insert(0, reference_y)
 
-                line, = self.ax.plot(x_points, y_points, label=category, color=color)
-                for x_val, y_val in zip(x_points, y_points):
-                    label = next((
-                        d.strftime("%b %d, %Y")
-                        for i, d in enumerate(tickDates)
-                        if int(x_val) == i
-                    ), "")
-                    self.plottedPoints.append((x_val, y_val, label, category))
+                self.ax.plot(x_points, y_points, label=category, color=color)
 
         self.ax.set_xticks(x)
         self.ax.set_xticklabels(tickLabels, rotation=45, fontsize=8, ha="right")
@@ -314,6 +316,7 @@ class UtilityDashboard(QFrame):
         self.ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: formatMoneyNoDecimal(x)))
         self.ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.35), ncol=4, framealpha=0, labelcolor="white")
 
+        # Adding the annotation for hover effect
         self.annotation = self.ax.annotate("", xy=(0, 0), xytext=(15, 15),
             textcoords="offset points",
             bbox=dict(boxstyle="round", fc="black", ec="white", lw=0.5),
@@ -331,19 +334,19 @@ class UtilityDashboard(QFrame):
             return
 
         # Set a small hover threshold in display coords
-        display_threshold = 6  # pixels
-        closest_point = None
-        closest_dist = float("inf")
+        displayThreshold = 12  # pixels
+        closestPoint = None
+        closestDist = float("inf")
 
-        for x, y, label, category in self.plottedPoints:
-            disp_coords = self.ax.transData.transform((x, y))
-            dist = ((disp_coords[0] - event.x) ** 2 + (disp_coords[1] - event.y) ** 2) ** 0.5
-            if dist < display_threshold and dist < closest_dist:
-                closest_dist = dist
-                closest_point = (x, y, label, category)
+        for x, y, label, category, _ in self.plottedPoints:
+            dispCoords = self.ax.transData.transform((x, y))
+            dist = ((dispCoords[0] - event.x) ** 2 + (dispCoords[1] - event.y) ** 2) ** 0.5
+            if dist < displayThreshold and dist < closestDist:
+                closestDist = dist
+                closestPoint = (x, y, label, category)
 
-        if closest_point:
-            x, y, label, category = closest_point
+        if closestPoint:
+            x, y, label, category = closestPoint
             self.annotation.xy = (x, y)
             self.annotation.set_text(f"{category}\n₱{y:,}\n{label}")
             self.annotation.set_visible(True)
@@ -351,6 +354,25 @@ class UtilityDashboard(QFrame):
         else:
             self.annotation.set_visible(False)
             self.canvas.draw_idle()
+
+    def onChartClick(self, event):
+        if event.inaxes != self.ax:
+            return
+        
+        displayThreshold = 12  # pixels
+        closestPoint = None
+        closestDist = float("inf")
+
+        for x, y, label, category, billID in self.plottedPoints:
+            dispCoords = self.ax.transData.transform((x, y))
+            dist = ((dispCoords[0] - event.x) ** 2 + (dispCoords[1] - event.y) ** 2) ** 0.5
+            if dist < displayThreshold and dist < closestDist:
+                closestDist = dist
+                closestPoint = (x, y, label, category, billID)
+
+        if closestPoint:
+            x, y, label, category, billID = closestPoint
+            print(f"Clicked on: BillID={billID}, Category='{category}', Amount={y}, Date={label}")
 
     def handleRangeUpdate(self) -> None:
         for btn in self.rangeButtons:
@@ -405,11 +427,8 @@ class UtilityDashboard(QFrame):
 
     def updateWidget(self) -> None:
         dataRange = self.parseDateRangeToMonths(self.dateRange)
-        data = DashboardController.fetchUtilityDashboard(dataRange)
-        data = generateRandomUtilityData(
-            startDate=datetime(2024, 4, 1),
-            endDate=datetime(2025, 4, 19)
-        )
+        #self.data = DashboardController.fetchUtilityDashboard(dataRange)
+        data = self.data
         self.updateChart(data, self.utilityFilters)
 
         balance, paid, unpaid = DashboardController.fetchBillsSummary(dataRange)
