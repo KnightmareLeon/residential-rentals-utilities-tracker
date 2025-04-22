@@ -1,52 +1,8 @@
-import mysql.connector
 from abc import ABC, abstractmethod
-from dotenv import load_dotenv
-import os
 
-class DatabaseConnection:
+from models.DatabaseConnection import DatabaseConnection
 
-    __db = None
-
-    @staticmethod
-    def startConnection():
-        """
-        Initializes the database connection using the credentials stored in the .env file.
-        """
-        if DatabaseConnection.__db is not None:
-            return
-        
-        load_dotenv()
-        DatabaseConnection.__db = mysql.connector.connect(
-            host = os.getenv("HOST"),
-            user = os.getenv("USER"),
-            password = os.getenv("PASSWORD"),
-            port = 3306,
-            database = os.getenv("DATABASE"),
-            use_pure = True
-        )
-        DatabaseConnection.__db.autocommit = True
-
-    @staticmethod
-    def getConnection():
-        """
-        Returns the database connection object. If the connection is not established,
-        it initializes the connection first.
-        """
-        if DatabaseConnection.__db is None:
-            DatabaseConnection.startConnection()
-        return DatabaseConnection.__db
-
-    @staticmethod
-    def closeConnection():
-        """
-        Closes the database connection if it is open.
-        """
-        if DatabaseConnection.__db is None:
-            return
-        if DatabaseConnection.__db.is_connected():
-            DatabaseConnection.__db.close()
-
-class Table(ABC):
+class DatabaseTable(ABC):
     
     _tableName = None
     _primary = None
@@ -56,7 +12,6 @@ class Table(ABC):
     @classmethod
     def initialize(cls):
         try:
-            cls._tableName = cls.__name__.lower()
             cls._createTable(cls)
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             cursor.execute("SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE " +
@@ -85,7 +40,7 @@ class Table(ABC):
     @classmethod
     def read(cls, 
              columns : list[str] = None,
-             referred : dict['Table' : list[str]] = None,
+             referred : dict['DatabaseTable' : list[str]] = None,
              searchValue : str = None,
              sortBy : str = None, 
              order : str = "ASC",
@@ -208,7 +163,7 @@ class Table(ABC):
             for key in data.keys():
                 if key not in cls.columns:
                     raise ValueError(f"Column '{key}' does not exist in the table.")
-            if list(data.keys()) != cls.columns:
+            if sorted(list(data.keys())) != sorted(cls.columns):
                 raise ValueError(f"Data keys {data.keys()} do not match table columns {cls.columns}.")
         
             cursor = DatabaseConnection.getConnection().cursor()
@@ -352,121 +307,4 @@ class Table(ABC):
         finally:
             cursor.close()
         return columns
-    
-class Unit(Table):
 
-    def _createTable(cls):
-        try:
-            cursor = DatabaseConnection.getConnection().cursor()
-            cursor.execute("CREATE TABLE IF NOT EXISTS unit( " +
-                "UnitID int NOT NULL, " +
-                "Name varchar(30) NOT NULL, " +
-                "Address varchar(255) NOT NULL, " +
-                "Type varchar(30) NOT NULL, " +
-                "PRIMARY KEY (UnitID))"
-            )
-        except Exception as e:
-            print(f"Error: {e}")
-            raise e
-        finally:
-            cursor.close()
-
-class Utility(Table):
-
-    def _createTable(cls):
-        try:
-            cursor = DatabaseConnection.getConnection().cursor()
-            cursor.execute("CREATE TABLE IF NOT EXISTS utility (" +
-                "UtilityID int NOT NULL, " + 
-                "Type enum('Electricity','Water','Gas','Wifi','Trash','Maintenance','Miscellaneous') NOT NULL, " +
-                "Status enum('Active','Inactive') NOT NULL, " +
-                "BillingCycle enum('Monthly','Quarterly','Annually','Irregular') NOT NULL," +
-                "PRIMARY KEY (UtilityID))"
-            )
-        except Exception as e:
-            print(f"Error: {e}")
-            raise e
-        finally:
-            cursor.close()
-
-class Bill(Table):
-
-    referredTables = [Unit, Utility]
-
-    def _createTable(cls):
-        try:
-            cursor = DatabaseConnection.getConnection().cursor()
-            cursor.execute("CREATE TABLE IF NOT EXISTS bill ( " +
-                "BillID int NOT NULL, " +
-                "UnitID int DEFAULT NULL, " +
-                "UtilityID int DEFAULT NULL, " +
-                "TotalAmount decimal(10,2) NOT NULL, " +
-                "BillingPeriodStart date NOT NULL, " +
-                "BillingPeriodEnd date NOT NULL, " +
-                "Status enum('Unpaid','Paid','Partially Paid','Overdue') NOT NULL, " +
-                "DueDate date NOT NULL, " +
-                "PRIMARY KEY (BillID), " +
-                "KEY UnitID (UnitID), " +
-                "KEY UtilityID (UtilityID), " +
-                "CONSTRAINT bill_ibfk_1 FOREIGN KEY (UnitID) REFERENCES unit (UnitID) ON DELETE SET NULL ON UPDATE CASCADE, " +
-                "CONSTRAINT bill_ibfk_2 FOREIGN KEY (UtilityID) REFERENCES utility (UtilityID) ON DELETE SET NULL ON UPDATE CASCADE, " +
-                "CONSTRAINT bill_chk_1 CHECK ((BillingPeriodEnd > BillingPeriodStart)), " +
-                "CONSTRAINT bill_chk_2 CHECK ((DueDate > BillingPeriodEnd)))"
-            )
-        except Exception as e:
-            print(f"Error: {e}")
-            raise e
-        finally:
-            cursor.close()
-
-    @classmethod
-    def unitBills(cls,
-                  unit : int) -> list[dict[str, any]]:
-        """
-        Returns a list of dictionaries containing the unit costs for each utility.
-        The list contains dictionaries with the following keys:
-        """
-        result = []
-        try:
-            if not isinstance(unit, int):
-                raise ValueError("Unit must be an integer.")
-            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
-            sql = f"SELECT Utility.Type, Bill.TotalAmount, Bill.DueDate, Bill.Status FROM {cls.getTableName()} INNER JOIN utility ON Bill.UtilityID=Utility.UtilityID WHERE Bill.UnitID = {unit}"
-            cursor.execute(sql)
-            result = cursor.fetchall()
-        except Exception as e:
-            print(f"Error: {e}")
-            raise e
-        finally:
-            cursor.close()
-        return result
-
-
-class InstalledUtility(Table):
-
-    referredTables = [Unit, Utility]
-
-    def _createTable(cls):
-        try:
-            cursor = DatabaseConnection.getConnection().cursor()
-            cursor.execute("CREATE TABLE IF NOT EXISTS installedutility ( " +
-                "UnitID int NOT NULL, " +
-                "UtilityID int NOT NULL, " +
-                "InstallationDate date NOT NULL, " +
-                "PRIMARY KEY (UnitID,UtilityID), " +
-                "KEY UtilityID (UtilityID), " +
-                "CONSTRAINT installedutility_ibfk_1 FOREIGN KEY (UnitID) REFERENCES unit (UnitID) ON DELETE CASCADE ON UPDATE CASCADE, " +
-                "CONSTRAINT installedutility_ibfk_2 FOREIGN KEY (UtilityID) REFERENCES utility (UtilityID) ON DELETE CASCADE ON UPDATE CASCADE)"
-            )
-        except Exception as e:
-            print(f"Error: {e}")
-            raise e
-        finally:
-            cursor.close()
-
-    @classmethod
-    def delete(cls, keys : list[int]):
-        """
-        Disabled the delete method for this class, to delete data from the table,
-        use the delete method of either the Unit or Utility class."""
-        pass
