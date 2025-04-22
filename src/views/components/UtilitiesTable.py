@@ -21,7 +21,7 @@ class UtilitiesTable(BaseTableWidget):
         else:
             sortingOrderStr = "ASC"
 
-        data, count = UtilitiesController.fetchData(currentPage, sortingOrderStr, sortingField, searchValue)
+        data, count = UtilitiesController.fetchUtilities(currentPage, sortingOrderStr, sortingField, searchValue)
         #self.populateTable(data)
         self.parentWidget().totalPages = count
         self.parentWidget().pageLabel.setText(f"Page {currentPage} of {count}")
@@ -33,9 +33,9 @@ class UtilitiesTable(BaseTableWidget):
             return
     
         id = item.text()
-        unitData = UtilitiesController.viewRecord(id)
+        unitUtilities = UtilitiesController.viewUtility(id)
 
-        if unitData:
+        if unitUtilities:
             #open unit view dialog
             pass
 
@@ -48,7 +48,7 @@ class UtilitiesTable(BaseTableWidget):
         
         id = item.text()
         #open unit edit dialog
-        response = UtilitiesController.editRecord(id, None)
+        response = UtilitiesController.editUtility(id, None, None, None)
 
         self.updateTable()
 
@@ -59,6 +59,6 @@ class UtilitiesTable(BaseTableWidget):
         
         id = item.text()
         #open unit delete dialog
-        response = UtilitiesController.deleteRecord(id)
+        response = UtilitiesController.deleteUtility(id)
 
         self.updateTable()

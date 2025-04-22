@@ -59,7 +59,7 @@ class BillEntry(QWidget):
         # Balance
         labelBalance = QLabel(balance)
         labelBalance.setStyleSheet("color: white;")
-        labelBalance.setFont(QFont("Urbanist", 10, QFont.Weight.Bold))
+        labelBalance.setFont(QFont("Urbanist", 10))
 
         # Due Date
         labelDue = QLabel(due)

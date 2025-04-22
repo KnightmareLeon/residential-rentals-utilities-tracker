@@ -21,6 +21,7 @@ class BillsDashboard(QWidget):
             #DashboardContainer {
                 background-color: #1C1C1C;
                 border-radius: 15px;
+                padding: 10px;
             }
         """)
         container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -34,27 +35,6 @@ class BillsDashboard(QWidget):
         title.setFont(QFont("Urbanist", 15, QFont.Weight.Bold))
         outerLayout.addWidget(title)
 
-        headerLayout = QGridLayout()
-        headerLayout.setContentsMargins(5, 10, 5, 10)
-        headerLayout.setSpacing(5)
-
-        headers = ["Type", "Balance", "Due Date", "Status"]
-        for i, text in enumerate(headers):
-            label = QLabel(text)
-            label.setFont(QFont("Urbanist", 10))
-            label.setStyleSheet("color: #AAAAAA;")
-            headerLayout.addWidget(label, 0, i)
-
-        headerWidget = QWidget()
-        headerWidget.setLayout(headerLayout)
-        outerLayout.addWidget(headerWidget)
-
-        line = QFrame()
-        line.setFrameShape(QFrame.Shape.HLine)
-        line.setFrameShadow(QFrame.Shadow.Sunken)
-        line.setStyleSheet("background-color: #444;")
-        outerLayout.addWidget(line)
-
         scrollArea = QScrollArea()
         scrollArea.setWidgetResizable(True)
         scrollArea.setFrameShape(QFrame.Shape.NoFrame)
@@ -65,6 +45,27 @@ class BillsDashboard(QWidget):
         contentLayout.setSpacing(0)
         contentLayout.setContentsMargins(0, 0, 0, 0)
         contentLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        headerLayout = QGridLayout()
+        headerLayout.setContentsMargins(5, 10, 5, 10)
+        headerLayout.setSpacing(5)
+
+        headers = ["Type", "Balance", "Due Date", "Status"]
+        for i, text in enumerate(headers):
+            label = QLabel(text)
+            label.setFont(QFont("Urbanist", 10))
+            label.setStyleSheet("color: #888888;")
+            headerLayout.addWidget(label, 0, i)
+
+        headerWidget = QWidget()
+        headerWidget.setLayout(headerLayout)
+        contentLayout.addWidget(headerWidget)
+
+        line = QFrame()
+        line.setFrameShape(QFrame.Shape.HLine)
+        line.setFrameShadow(QFrame.Shadow.Sunken)
+        line.setStyleSheet("background-color: #444;")
+        contentLayout.addWidget(line)
 
         for index, bill in enumerate(self.bills[:15]):
             utility = bill["Type"]

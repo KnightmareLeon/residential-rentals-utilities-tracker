@@ -11,5 +11,5 @@ class UnitsPage(BasePageWidget):
         self.table.updateTable()
 
     def handleAddButton(self):
-        response = UnitsController.addRecord(None)
+        response = UnitsController.addUnit(None, None, None)
         self.table.updateTable()

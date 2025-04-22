@@ -1,25 +1,40 @@
 class UtilitiesController:
     
     @staticmethod
-    def fetchData(currentPage: int, sortingOrder: str, sortingField: str, searchValue: str) -> tuple[list[dict[str, str]], int]:
+    def fetchUtilities(currentPage: int, sortingOrder: str, sortingField: str, searchValue: str) -> tuple[list[dict[str, str]], int]:
+        """
+        Fetches all utilitys with pagination, sorting, and searching.
+        """
         print(f"Fetching data for page {currentPage} with sorting {sortingField} {sortingOrder} and search '{searchValue}'")
         return ([], 5) 
     
     @staticmethod
-    def addRecord(data: dict[str, str]) -> str:
-        print("Adding utility:", data)
+    def addUtility(type: str, status: str, billingCycle: str) -> str:
+        """
+        Adds a new utility with the given data.
+        """
+        print("Adding utility:", type, status, billingCycle)    
         return "Utility added successfully"
 
     @staticmethod
-    def viewRecord(id: str) -> dict[str, str]:
+    def viewUtility(id: str) -> dict[str, str]:
+        """
+        Fetches all information about a single utility by ID.
+        """
         print("Viewing utility:", id)
 
     @staticmethod
-    def editRecord(id: str, data: dict[str, str]) -> str:
-        print("Editing utility:", id, data)
+    def editUtility(originalID: str, type: str, status: str, billingCycle: str) -> str:
+        """
+        Edits a utility with the given data.
+        """
+        print("Editing utility:", originalID, type, status, billingCycle)
         return "Utility edited successfully"
     
     @staticmethod
-    def deleteRecord(id: str) -> str:
+    def deleteUtility(id: str) -> str:
+        """
+        Deletes a new utility with the given data.
+        """
         print("Deleting utility:", id)
         return "Utility deleted successfully"
