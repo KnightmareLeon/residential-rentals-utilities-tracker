@@ -32,6 +32,13 @@ from src.controllers.dashboardController import DashboardController
 class UtilityDashboard(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.currentPage = 1
+        self.totalPages = 5
+        self.dateRange = "1M"
+        self.chartDivisions = 10
+        self.rangeButtons = []
+        self.plottedPoints = []
+        self.utilityFilters = ["Electricity", "Water", "Gas", "Wifi", "Trash", "Maintenance"]
         self.data = generateRandomUtilityData(
             startDate=datetime(2023, 4, 1),
             endDate=datetime(2025, 4, 22)
@@ -78,14 +85,22 @@ class UtilityDashboard(QFrame):
 
         # === Summary Cards ===
         summaryLayout = QHBoxLayout()
+
         summaryLayout.addWidget(self.createSummaryWidget())
+
         mainLayout.addLayout(summaryLayout)
 
-        # === Utility Chart ===
+        # === Chart Header ===
+        chartHeader = QHBoxLayout()
+        chartTitle = QLabel("Total Utilities Cost of All Units")
+        chartTitle.setFont(QFont("Urbanist", 16, QFont.Weight.Bold))
+        chartHeader.addWidget(chartTitle)
+        chartHeader.addStretch()
+
+        # === Matplotlib Chart ===
         data = self.data
 
         self.chartWidget = UtilityChartWidget(data=self.data)
-        self.chartWidget.updateWidgetSignal.connect(self.updateWidgets)
         mainLayout.addWidget(self.chartWidget)
 
         self.chartWidget.handleRangeUpdate()
@@ -160,14 +175,21 @@ class UtilityDashboard(QFrame):
         if unpaid is not None:
             self.summaryLabels["unpaid"].setText(unpaid)
 
-    def updateWidgets(self) -> None:
+    def updateWidget(self) -> None:
+        dataRange = self.parseDateRangeToMonths(self.dateRange)
+        currPage = self.currentPage
+
         # data, lastPage = DashboardController.fetchUtilityDashboard(dataRange, currPage)
-        self.chartWidget.totalPages = 5
-        self.chartWidget.updatePageLabel()
+        self.lastPage = 5
+        self.pageLabel.setText(f"Page {self.currentPage} of {self.totalPages}")
         
         data = self.data
-        self.chartWidget.updateChart(data)
+        self.updateChart(data, self.utilityFilters)
 
-        # balance, paid, unpaid = DashboardController.fetchBillsSummary(dataRange, currPage)
+        balance, paid, unpaid = DashboardController.fetchBillsSummary(dataRange, currPage)
         balance, paid, unpaid = ("₱ 40,034.12", "₱ 33,342.00", "6")
         self.updateSummaryCards(balance, paid, unpaid)
+
+    def handleFilterUpdate(self):
+        self.utilityFilters = self.filterComboBox.checkedItems()
+        self.chartWidget.updateChart(self.data, self.utilityFilters)
