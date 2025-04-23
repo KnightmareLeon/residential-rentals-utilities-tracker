@@ -114,7 +114,7 @@ class BillsDashboard(QWidget):
 
     def handleRowClick(self, index):
         clickedBill = self.bills[index]
-        print(f"Bill ID: {clickedBill["BillID"]}")
+        print(f"Bill ID: {clickedBill['BillID']}")
 
     def updateDashboard(self):
         #fetch new bills
