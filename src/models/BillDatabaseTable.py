@@ -79,6 +79,42 @@ class BillDatabaseTable(DatabaseTable):
         return result
 
     @classmethod
+    def allUnitsBills(cls,
+                      range: str) -> dict[str, list[dict[str, any]]]:
+        """
+        Returns a dictionary of all bills for the given range.
+        The dictionary keys are the utility types, and the values are lists of bills.
+        Each bill is represented as a dictionary with keys: BillID, TotalAmount, BillingPeriodEnd.
+        """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
+        result = {}
+        try:
+            if not isinstance(range, str):
+                raise ValueError("Range must be a string.")
+            if not range in ["1m", "3m", "6m", "1y"]:
+                raise ValueError("Range must be one of the following: 1m, 3m, 6m, 1y.")
+
+            rangeClause = cls.__rangeClause(range)
+
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            for utility in ["Electricity", "Water", "Gas", "Wifi", "Trash", "Maintenance", "Miscellaneous"]:
+                sql = f"SELECT Bill.BillID, Bill.TotalAmount, Bill.BillingPeriodEnd FROM bill " + \
+                    f"INNER JOIN utility ON Utility.UtilityID=Bill.UtilityID WHERE Utility.Type='{utility}'" + \
+                    f"AND {rangeClause} "             
+                cursor.execute(sql)
+
+                result[utility] = cursor.fetchall()
+
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
+
+    @classmethod
     def utilityBills(cls,
                      utility : int,
                      range: str) -> list[dict[str, any]]:
