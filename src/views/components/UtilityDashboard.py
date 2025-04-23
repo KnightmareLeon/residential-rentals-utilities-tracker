@@ -31,6 +31,8 @@ from src.controllers.dashboardController import DashboardController
 class UtilityDashboard(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.currentPage = 1
+        self.totalPages = 5
         self.dateRange = "1M"
         self.chartDivisions = 10
         self.rangeButtons = []
@@ -67,7 +69,9 @@ class UtilityDashboard(QFrame):
 
                            QPushButton {
                             background-color: #303030;
+                            border: none;
                             color: 'white';
+                            border-radius: 5px;
                            }
 
                            QPushButton:hover {
@@ -135,6 +139,29 @@ class UtilityDashboard(QFrame):
         canvas = self.createChart(data)
         mainLayout.addWidget(canvas)
 
+        paginationLayout = QHBoxLayout()
+        paginationLayout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        paginationLayout.setSpacing(20)
+
+        self.prevButton = QPushButton("←")
+        self.prevButton.setFixedSize(32, 32)
+        self.prevButton.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.prevButton.clicked.connect(self.handlePrevPage)
+
+        self.pageLabel = QLabel("Page 1 of 5")
+        self.pageLabel.setFont(QFont("Urbanist", 12, QFont.Weight.Normal))
+        self.pageLabel.setStyleSheet("color: white;")
+
+        self.nextButton = QPushButton("→")
+        self.nextButton.setFixedSize(32, 32)
+        self.nextButton.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.nextButton.clicked.connect(self.handleNextPage)
+
+        paginationLayout.addWidget(self.prevButton)
+        paginationLayout.addWidget(self.pageLabel)
+        paginationLayout.addWidget(self.nextButton)
+
+        mainLayout.addLayout(paginationLayout)
         self.handleRangeUpdate()
 
     # SUMMARY CARDS
@@ -427,14 +454,33 @@ class UtilityDashboard(QFrame):
 
     def updateWidget(self) -> None:
         dataRange = self.parseDateRangeToMonths(self.dateRange)
-        #self.data = DashboardController.fetchUtilityDashboard(dataRange)
+        currPage = self.currentPage
+
+        # data, lastPage = DashboardController.fetchUtilityDashboard(dataRange, currPage)
+        self.lastPage = 5
+        self.pageLabel.setText(f"Page {self.currentPage} of {self.totalPages}")
+        
         data = self.data
         self.updateChart(data, self.utilityFilters)
 
-        balance, paid, unpaid = DashboardController.fetchBillsSummary(dataRange)
+        balance, paid, unpaid = DashboardController.fetchBillsSummary(dataRange, currPage)
         balance, paid, unpaid = ("₱ 40,034.12", "₱ 33,342.00", "6")
         self.updateSummaryCards(balance, paid, unpaid)
 
     def handleFilterUpdate(self):
         self.utilityFilters = self.filterComboBox.checkedItems()
+        self.updateWidget()
+    
+    def handlePrevPage(self):
+        if self.currentPage > 1:
+            self.currentPage -= 1
+            self.updatePageLabel()
+
+    def handleNextPage(self):
+        if self.currentPage < self.totalPages:
+            self.currentPage += 1
+            self.updatePageLabel()
+
+    def updatePageLabel(self):
+        self.pageLabel.setText(f"Page {self.currentPage} of {self.totalPages}")
         self.updateWidget()
