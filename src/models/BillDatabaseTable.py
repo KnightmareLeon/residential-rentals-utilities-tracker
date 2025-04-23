@@ -98,15 +98,7 @@ class BillDatabaseTable(DatabaseTable):
             if not range in ["1m", "3m", "6m", "1y"]:
                 raise ValueError("Range must be one of the following: 1m, 3m, 6m, 1y.")
             
-            rangeClause = ""
-            if range == "1m":
-                rangeClause = "AND Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)"
-            elif range == "3m":
-                rangeClause = "AND Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)"
-            elif range == "6m":
-                rangeClause = "AND Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
-            elif range == "1y":
-                rangeClause = "AND Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)"
+            rangeClause = "AND " + cls.__rangeClause(range)
 
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             sql = f"SELECT Bill.BillID, Bill.UnitID, Bill.TotalAmount, Bill.BillingPeriodEnd FROM {cls.getTableName()} WHERE Bill.UtilityID = {utility} {rangeClause}"
@@ -140,15 +132,7 @@ class BillDatabaseTable(DatabaseTable):
             if not isinstance(paidOnly, bool):
                 raise ValueError("PaidOnly must be a boolean.")
             
-            whereClause = ""
-            if range == "1m":
-                whereClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)"
-            elif range == "3m":
-                whereClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)"
-            elif range == "6m":
-                whereClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
-            elif range == "1y":
-                whereClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)"
+            whereClause = cls.__rangeClause(range)
 
             if paidOnly:
                 whereClause += " AND Bill.Status = 'Paid'"
@@ -181,15 +165,7 @@ class BillDatabaseTable(DatabaseTable):
             if not range in ["1m", "3m", "6m", "1y"]:
                 raise ValueError("Range must be one of the following: 1m, 3m, 6m, 1y.")
             
-            rangeClause = ""
-            if range == "1m":
-                rangeClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)"
-            elif range == "3m":
-                rangeClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)"
-            elif range == "6m":
-                rangeClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
-            elif range == "1y":
-                rangeClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)"
+            rangeClause = cls.__rangeClause(range)
 
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             sql = f"SELECT COUNT(Bill.BillID) AS UnpaidCount FROM {cls.getTableName()} WHERE {rangeClause} AND Bill.Status != 'Paid'"
@@ -202,3 +178,55 @@ class BillDatabaseTable(DatabaseTable):
         finally:
             cursor.close()
         return result
+
+    @classmethod
+    def urgentBills(cls,
+                    limit: int = 15) -> list[dict[str]]:
+        """
+        Returns a list of urgent bills.
+        An urgent bill is defined as a bill that is not yet paid.
+        The list is limited to the specified number of bills.
+        """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
+        result = []
+        try:
+            if not isinstance(limit, int):
+                raise ValueError("Limit must be an integer.")
+            if limit <= 0:
+                raise ValueError("Limit must be greater than 0.")
+            
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            sql = f"SELECT Bill.BillID, Utility.Type, Bill.TotalAmount, Bill.DueDate, Bill.Status, " + \
+                f"DATEDIFF(Bill.DueDate, CURDATE()) AS closest FROM {cls.getTableName()} " + \
+                f"JOIN {UtilityDatabaseTable.getTableName()} ON Bill.UtilityID = Utility.UtilityID " + \
+                f"WHERE Bill.Status != 'Paid'" + \
+                f"ORDER BY closest ASC LIMIT {limit}"
+            cursor.execute(sql)
+            result = cursor.fetchall()
+
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
+
+    @classmethod
+    def __rangeClause(cls,
+                      range: str) -> str:
+        """
+        Returns the range clause for the given range.
+        The range can be one of the following: 1m, 3m, 6m, 1y.
+        """
+        rangeClause = ""
+        if range == "1m":
+            rangeClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)"
+        elif range == "3m":
+            rangeClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)"
+        elif range == "6m":
+            rangeClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
+        elif range == "1y":
+            rangeClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)"
+        return rangeClause
