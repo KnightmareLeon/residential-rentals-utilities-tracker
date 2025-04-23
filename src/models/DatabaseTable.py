@@ -42,9 +42,19 @@ class DatabaseTable(ABC):
         return cls._tableName
     
     @classmethod
+    def getPrimaryKey(cls) -> str:
+        """
+        Returns the primary key of the table.
+        """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
+        return cls._primary
+
+    @classmethod
     def read(cls, 
              columns : list[str] = None,
-             referred : dict['DatabaseTable' : list[str]] = None,
+             referred : dict['DatabaseTable', list[str]] = None,
              searchValue : str = None,
              sortBy : str = None, 
              order : str = "ASC",
@@ -109,7 +119,7 @@ class DatabaseTable(ABC):
                     columns += [f"{table.getTableName()}.{column}" for column in tableColumns]
                 if searchClause == "":
                     searchClause = "WHERE "
-                searchClause += " AND ".join([f"{cls._tableName}.{table._primary} = {table.getTableName()}.{table._primary}" for table in referred.keys()])
+                searchClause += " AND ".join([f"{cls._tableName}.{table.getPrimaryKey()} = {table.getTableName()}.{table.getPrimaryKey()}" for table in referred.keys()])
 
             if searchValue is not None: # Check if searchValue is not empty
                 allcolumns = "(" + " OR ".join([column + " REGEXP \'" + searchValue + "\'" for column in columns]) + ")"
@@ -256,7 +266,7 @@ class DatabaseTable(ABC):
     @classmethod
     def totalCount(cls,
                 columns : list[str] = None,
-                referred : dict['Table' : list[str]] = None,
+                referred : dict['DatabaseTable', list[str]] = None,
                 searchValue : str = None,
              ) -> int:
         """

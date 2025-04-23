@@ -39,7 +39,7 @@ class BillDatabaseTable(DatabaseTable):
     @classmethod
     def unitBills(cls,
                   unit : int,
-                  range: str) -> dict[str, list[dict[str]]]:
+                  range: str) -> dict[str, list[dict[str, any]]]:
         """
         Returns a dictionary of bills for the given unit ID and range.
         The dictionary keys are the utility types, and the values are lists of bills.
@@ -81,7 +81,7 @@ class BillDatabaseTable(DatabaseTable):
     @classmethod
     def utilityBills(cls,
                      utility : int,
-                     range: str) -> list[dict[str]]:
+                     range: str) -> list[dict[str, any]]:
         """
         Returns a list of bills for the given utility ID and range.
         Each bill is represented as a dictionary with keys: BillID, UnitID, TotalAmount, BillingPeriodEnd.
@@ -101,7 +101,7 @@ class BillDatabaseTable(DatabaseTable):
             rangeClause = "AND " + cls.__rangeClause(range)
 
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
-            sql = f"SELECT Bill.BillID, Bill.UnitID, Bill.TotalAmount, Bill.BillingPeriodEnd FROM {cls.getTableName()} WHERE Bill.UtilityID = {utility} {rangeClause}"
+            sql = f"SELECT Bill.BillID, Bill.TotalAmount, Bill.BillingPeriodEnd FROM {cls.getTableName()} WHERE Bill.UtilityID = {utility} {rangeClause}"
             cursor.execute(sql)
             result = cursor.fetchall()
 
@@ -181,7 +181,7 @@ class BillDatabaseTable(DatabaseTable):
 
     @classmethod
     def urgentBills(cls,
-                    limit: int = 15) -> list[dict[str]]:
+                    limit: int = 15) -> list[dict[str, any]]:
         """
         Returns a list of urgent bills.
         An urgent bill is defined as a bill that is not yet paid.
