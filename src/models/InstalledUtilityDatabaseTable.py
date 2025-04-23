@@ -25,6 +25,16 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             cursor.close()
     
     @classmethod
+    def getPrimaryKey(cls) -> list[str]:
+        """
+        Returns the primary key of the table.
+        """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
+        return cls._primary
+    
+    @classmethod
     def read(cls, 
              columns : list[str] = None,
              referred : dict['DatabaseTable' : list[str]] = None,
