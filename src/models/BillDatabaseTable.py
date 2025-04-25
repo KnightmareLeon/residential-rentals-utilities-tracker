@@ -4,6 +4,8 @@ from models.UnitDatabaseTable import UnitDatabaseTable
 from models.UtilityDatabaseTable import UtilityDatabaseTable
 from models.InstalledUtilityDatabaseTable import InstalledUtilityDatabaseTable
 
+from utils.constants import Range
+
 class BillDatabaseTable(DatabaseTable):
 
     _tableName = "bill"
@@ -39,17 +41,14 @@ class BillDatabaseTable(DatabaseTable):
     @classmethod
     def unitBills(cls,
                   unit : int,
-                  range: str) -> dict[str, list[dict[str, any]]]:
+                  range: Range,
+                  offset: int = 1) -> dict[str, list[dict[str, any]]]:
         """
         Returns a dictionary of bills for the given unit ID and range.
         The dictionary keys are the utility types, and the values are lists of bills.
         Each bill is represented as a dictionary with keys: BillID, TotalAmount, BillingPeriodEnd.
         
         The range can be one of the following: 1m, 3m, 6m, 1y.
-        - 1m: Last month
-        - 3m: Last 3 months
-        - 6m: Last 6 months
-        - 1y: Last year
         """
         if not cls._initialized:
             cls._initialize()
@@ -58,18 +57,14 @@ class BillDatabaseTable(DatabaseTable):
         try:
             if not isinstance(unit, int):
                 raise ValueError("Unit must be an integer.")
-            if not isinstance(range, str):
-                raise ValueError("Range must be a string.")
-            if not range in ["1m", "3m", "6m", "1y"]:
-                raise ValueError("Range must be one of the following: 1m, 3m, 6m, 1y.")
-
+            
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             for utilityID in InstalledUtilityDatabaseTable.getUnitUtilities(unit):
                 sql = f"SELECT Type FROM {UtilityDatabaseTable.getTableName()} WHERE UtilityID = {utilityID}"
                 cursor.execute(sql)
                 utilityType = cursor.fetchone()['Type']
 
-                result[utilityType] = cls.utilityBills(utilityID, range)
+                result[utilityType] = cls.utilityBills(utilityID, range, offset)
 
         except Exception as e:
             print(f"Error: {e}")
@@ -80,9 +75,11 @@ class BillDatabaseTable(DatabaseTable):
 
     @classmethod
     def allUnitsBills(cls,
-                      range: str) -> dict[str, list[dict[str, any]]]:
+                      range: Range,
+                      offset: int = 1) -> dict[str, list[dict[str, any]]]:
         """
         Returns a dictionary of all bills for the given range.
+        The range can be one of the following: 1m, 3m, 6m, 1y.
         The dictionary keys are the utility types, and the values are lists of bills.
         Each bill is represented as a dictionary with keys: BillID, TotalAmount, BillingPeriodEnd.
         """
@@ -91,12 +88,8 @@ class BillDatabaseTable(DatabaseTable):
             cls._initialized = True
         result = {}
         try:
-            if not isinstance(range, str):
-                raise ValueError("Range must be a string.")
-            if not range in ["1m", "3m", "6m", "1y"]:
-                raise ValueError("Range must be one of the following: 1m, 3m, 6m, 1y.")
 
-            rangeClause = cls.__rangeClause(range)
+            rangeClause = cls.__rangeClause(range, offset)
 
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             for utility in ["Electricity", "Water", "Gas", "Wifi", "Trash", "Maintenance", "Miscellaneous"]:
@@ -117,7 +110,8 @@ class BillDatabaseTable(DatabaseTable):
     @classmethod
     def utilityBills(cls,
                      utility : int,
-                     range: str) -> list[dict[str, any]]:
+                     range: Range,
+                     offset: int = 1) -> list[dict[str, any]]:
         """
         Returns a list of bills for the given utility ID and range.
         Each bill is represented as a dictionary with keys: BillID, UnitID, TotalAmount, BillingPeriodEnd.
@@ -127,14 +121,8 @@ class BillDatabaseTable(DatabaseTable):
             cls._initialized = True
         result = []
         try:
-            if not isinstance(utility, int):
-                raise ValueError("Utility must be an integer.")
-            if not isinstance(range, str):
-                raise ValueError("Range must be a string.")
-            if not range in ["1m", "3m", "6m", "1y"]:
-                raise ValueError("Range must be one of the following: 1m, 3m, 6m, 1y.")
             
-            rangeClause = "AND " + cls.__rangeClause(range)
+            rangeClause = "AND " + cls.__rangeClause(range, offset)
 
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             sql = f"SELECT Bill.BillID, Bill.TotalAmount, Bill.BillingPeriodEnd FROM {cls.getTableName()} WHERE Bill.UtilityID = {utility} {rangeClause}"
@@ -150,7 +138,8 @@ class BillDatabaseTable(DatabaseTable):
 
     @classmethod
     def totalSumBills(cls,
-                      range: str,
+                      range: Range,
+                      offset: int = 1,
                       paidOnly: bool = False) -> float:
         """
         Returns the total sum of all bills for the given range.
@@ -160,15 +149,10 @@ class BillDatabaseTable(DatabaseTable):
             cls._initialize()
             cls._initialized = True
         result = 0.0
+
         try:
-            if not isinstance(range, str):
-                raise ValueError("Range must be a string.")
-            if not range in ["1m", "3m", "6m", "1y"]:
-                raise ValueError("Range must be one of the following: 1m, 3m, 6m, 1y.")
-            if not isinstance(paidOnly, bool):
-                raise ValueError("PaidOnly must be a boolean.")
             
-            whereClause = cls.__rangeClause(range)
+            whereClause = cls.__rangeClause(range, offset)
 
             if paidOnly:
                 whereClause += " AND Bill.Status = 'Paid'"
@@ -186,7 +170,8 @@ class BillDatabaseTable(DatabaseTable):
     
     @classmethod
     def unpaidBillsCount(cls,
-                         range: str) -> int:
+                         range: Range,
+                         offset: int = 1) -> int:
         """
         Returns the total count of unpaid bills for the given range.
         The range can be one of the following: 1m, 3m, 6m, 1y.
@@ -196,12 +181,8 @@ class BillDatabaseTable(DatabaseTable):
             cls._initialized = True
         result = 0
         try:
-            if not isinstance(range, str):
-                raise ValueError("Range must be a string.")
-            if not range in ["1m", "3m", "6m", "1y"]:
-                raise ValueError("Range must be one of the following: 1m, 3m, 6m, 1y.")
             
-            rangeClause = cls.__rangeClause(range)
+            rangeClause = cls.__rangeClause(range, offset)
 
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             sql = f"SELECT COUNT(Bill.BillID) AS UnpaidCount FROM {cls.getTableName()} WHERE {rangeClause} AND Bill.Status != 'Paid'"
@@ -251,18 +232,21 @@ class BillDatabaseTable(DatabaseTable):
 
     @classmethod
     def __rangeClause(cls,
-                      range: str) -> str:
+                      range: Range,
+                      offset: int) -> str:
         """
         Returns the range clause for the given range.
         The range can be one of the following: 1m, 3m, 6m, 1y.
         """
-        rangeClause = ""
-        if range == "1m":
-            rangeClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)"
-        elif range == "3m":
-            rangeClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)"
-        elif range == "6m":
-            rangeClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
-        elif range == "1y":
-            rangeClause = "Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)"
+        if not isinstance(range, Range):
+            raise ValueError("Range must be an instance of Range enum.")
+        if not range in [Range.ONE_MONTH, Range.THREE_MONTHS, Range.SIX_MONTHS, Range.ONE_YEAR]:
+            raise ValueError("Range must be one of the following: 1m, 3m, 6m, 1y.")
+        if offset <= 0:
+            raise ValueError("Offset must be greater than 0.")
+        if not isinstance(offset, int):
+            raise ValueError("Offset must be an integer.")
+        
+        rangeClause = f"Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL {range.value * offset} MONTH) AND" + \
+            f" Bill.BillingPeriodEnd <= DATE_SUB(CURDATE(), INTERVAL {range.value * (offset - 1)} MONTH)"
         return rangeClause
