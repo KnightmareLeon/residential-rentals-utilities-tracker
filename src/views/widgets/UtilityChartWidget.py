@@ -30,8 +30,8 @@ class UtilityChartWidget(QFrame):
 
     def __init__(self, data, parent=None):
         super().__init__(parent)
-        self.currentPage = 1
-        self.totalPages = 5
+        self.currDateOffset = datetime.now()
+        self.lastDateOffset = datetime.now() - relativedelta(months=48)
         self.dateRange = "1M"
         self.chartDivisions = 10
         self.rangeButtons = []
@@ -124,9 +124,11 @@ class UtilityChartWidget(QFrame):
         self.prevButton.setCursor(Qt.CursorShape.PointingHandCursor)
         self.prevButton.clicked.connect(self.handlePrevPage)
 
-        self.pageLabel = QLabel("Page 1 of 5")
+        self.pageLabel = QLabel(f"{datetime.now().strftime('%B %d, %Y')}")
         self.pageLabel.setFont(QFont("Urbanist", 12, QFont.Weight.Normal))
         self.pageLabel.setStyleSheet("color: white;")
+        self.pageLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.pageLabel.setFixedWidth(150)
 
         self.nextButton = QPushButton("→")
         self.nextButton.setFixedSize(32, 32)
@@ -213,8 +215,7 @@ class UtilityChartWidget(QFrame):
                         x_points.append(x_val)
                         y_points.append(amount)
 
-                        label = tickDates[i].strftime("%b %d, %Y")
-                        self.plottedPoints.append((x_val, amount, label, category, billID))
+                        self.plottedPoints.append((x_val, amount, billDate, category, billID))
                         break
 
             if x_points:
@@ -254,17 +255,19 @@ class UtilityChartWidget(QFrame):
         closestPoint = None
         closestDist = float("inf")
 
-        for x, y, label, category, _ in self.plottedPoints:
+        for x, y, billDate, category, _ in self.plottedPoints:
             dispCoords = self.ax.transData.transform((x, y))
             dist = ((dispCoords[0] - event.x) ** 2 + (dispCoords[1] - event.y) ** 2) ** 0.5
             if dist < displayThreshold and dist < closestDist:
                 closestDist = dist
-                closestPoint = (x, y, label, category)
+                closestPoint = (x, y, billDate, category)
 
         if closestPoint:
-            x, y, label, category = closestPoint
+            x, y, billDate, category = closestPoint
+            dateStr = billDate.strftime("%b %d, %Y")
+
             self.annotation.xy = (x, y)
-            self.annotation.set_text(f"{category}\n₱{y:,}\n{label}")
+            self.annotation.set_text(f"{category}\n₱{y:,}\n{dateStr}")
             self.annotation.set_visible(True)
             self.canvas.draw_idle()
         else:
@@ -279,16 +282,16 @@ class UtilityChartWidget(QFrame):
         closestPoint = None
         closestDist = float("inf")
 
-        for x, y, label, category, billID in self.plottedPoints:
+        for x, y, billDate, category, billID in self.plottedPoints:
             dispCoords = self.ax.transData.transform((x, y))
             dist = ((dispCoords[0] - event.x) ** 2 + (dispCoords[1] - event.y) ** 2) ** 0.5
             if dist < displayThreshold and dist < closestDist:
                 closestDist = dist
-                closestPoint = (x, y, label, category, billID)
+                closestPoint = (x, y, billDate, category, billID)
 
         if closestPoint:
-            x, y, label, category, billID = closestPoint
-            print(f"Clicked on: BillID={billID}, Category='{category}', Amount={y}, Date={label}")
+            x, y, billDate, category, billID = closestPoint
+            print(f"Clicked on: BillID={billID}, Category='{category}', Amount={y}, Date={billDate}")
 
     def generateEvenDateTicks(self, startDate: datetime, endDate: datetime, divisions: int):
         delta = (endDate - startDate) / (divisions - 1)
@@ -340,18 +343,27 @@ class UtilityChartWidget(QFrame):
                         background-color: #3E3E3E;
                     }
                 """)
+        self.currDateOffset = datetime.now()
+        self.updatePageLabel()
         self.updateWidgetSignal.emit()
 
     def handlePrevPage(self):
-        if self.currentPage > 1:
-            self.currentPage -= 1
+        curr = self.currDateOffset.replace(hour=0, minute=0, second=0, microsecond=0)
+        last = self.lastDateOffset.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        if curr > last:
+            self.currDateOffset -= relativedelta(months=self.parseDateRangeToMonths(self.dateRange))
             self.updatePageLabel()
             self.updateWidgetSignal.emit()
 
     def handleNextPage(self):
-        if self.currentPage < self.totalPages:
-            self.currentPage += 1
+        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        current = self.currDateOffset.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        if current < today:
+            self.currDateOffset += relativedelta(months=self.parseDateRangeToMonths(self.dateRange))
+            self.updatePageLabel()
             self.updateWidgetSignal.emit()
 
     def updatePageLabel(self):
-        self.pageLabel.setText(f"Page {self.currentPage} of {self.totalPages}")
+        self.pageLabel.setText(f"{self.currDateOffset.strftime('%B %d, %Y')}")
