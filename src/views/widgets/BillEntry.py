@@ -34,6 +34,7 @@ class BillEntry(QWidget):
         self.frame.setStyleSheet("background-color: #1C1C1C; border-radius: 5px; padding: 8px;")
         self.frame.setContentsMargins(0, 0, 0, 0)
         self.frame.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.frame.setFixedHeight(45)
 
         layout = QGridLayout(self.frame)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -47,7 +48,9 @@ class BillEntry(QWidget):
         # Utility + Icon
         icon = ColorDot(QColor(color))
 
-        labelUtility = QLabel(insertSoftBreaks(utility))
+        if utility == "Miscellaneous":
+            utility = "Misc"
+        labelUtility = QLabel(utility)
         labelUtility.setStyleSheet("color: white;")
         labelUtility.setFont(QFont("Urbanist", 10))
         labelUtility.setWordWrap(True)
@@ -61,7 +64,8 @@ class BillEntry(QWidget):
 
         utilityWidget = QWidget()
         utilityWidget.setLayout(utilityLayout)
-        utilityWidget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        utilityWidget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        utilityWidget.setFixedWidth(100)
 
         # Balance
         labelBalance = QLabel(formatMoneyNoDecimal(balance))
@@ -69,6 +73,7 @@ class BillEntry(QWidget):
         labelBalance.setFont(QFont("Urbanist", 10))
         labelBalance.setWordWrap(True)
         labelBalance.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        labelBalance.setFixedWidth(70)
 
         # Due Date
         labelDue = QLabel(due)
@@ -76,6 +81,7 @@ class BillEntry(QWidget):
         labelDue.setFont(QFont("Urbanist", 10))
         labelDue.setWordWrap(True)
         labelDue.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        labelDue.setFixedWidth(70)
 
         # Status
         labelStatus = QLabel(status)
