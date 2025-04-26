@@ -1,3 +1,6 @@
+import datetime
+import math
+
 from models.DatabaseTable import DatabaseTable
 from models.DatabaseConnection import DatabaseConnection
 from models.UnitDatabaseTable import UnitDatabaseTable
@@ -39,7 +42,7 @@ class BillDatabaseTable(DatabaseTable):
             cursor.close()
 
     @classmethod
-    def unitBills(cls,
+    def getUnitBills(cls,
                   unit : int,
                   range: Range,
                   offset: int = 1) -> dict[str, list[dict[str, any]]]:
@@ -64,7 +67,7 @@ class BillDatabaseTable(DatabaseTable):
                 cursor.execute(sql)
                 utilityType = cursor.fetchone()['Type']
 
-                result[utilityType] = cls.utilityBills(utilityID, range, offset)
+                result[utilityType] = cls.getUtilityBills(utilityID, range, offset)
 
         except Exception as e:
             print(f"Error: {e}")
@@ -74,7 +77,7 @@ class BillDatabaseTable(DatabaseTable):
         return result
 
     @classmethod
-    def allUnitsBills(cls,
+    def getAllUnitsBills(cls,
                       range: Range,
                       offset: int = 1) -> dict[str, list[dict[str, any]]]:
         """
@@ -108,7 +111,7 @@ class BillDatabaseTable(DatabaseTable):
         return result
 
     @classmethod
-    def utilityBills(cls,
+    def getUtilityBills(cls,
                      utility : int,
                      range: Range,
                      offset: int = 1) -> list[dict[str, any]]:
@@ -137,7 +140,7 @@ class BillDatabaseTable(DatabaseTable):
         return result
 
     @classmethod
-    def totalSumBills(cls,
+    def billsTotalSum(cls,
                       range: Range,
                       offset: int = 1,
                       paidOnly: bool = False) -> float:
@@ -231,6 +234,77 @@ class BillDatabaseTable(DatabaseTable):
         return result
 
     @classmethod
+    def getUnitBillsMaxOffset(cls,
+                             unit: int,
+                             range: Range) -> dict[str, int]:
+        """
+        Returns the maximum offset for the given unit ID and range.
+        The range can be one of the following: 1m, 3m, 6m, 1y.
+        """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
+        result = {}
+        try:
+            if not isinstance(unit, int):
+                raise ValueError("Unit must be an integer.")
+            
+            for utilityID, utilityDate in cls.__getEarliestUnitBillDates(unit).items():
+                sql = f"SELECT Type FROM {UtilityDatabaseTable.getTableName()} WHERE UtilityID = {utilityID}"
+                cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+                cursor.execute(sql)
+                utilityType = cursor.fetchone()['Type']
+                result[utilityType] = cls.__getMaxOffset(utilityDate, range)
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        return result
+
+    @classmethod
+    def getUtilityBillsMaxOffset(cls,
+                                utility: int,
+                                range: Range) -> int:
+            """
+            Returns the maximum offset for the given utility ID and range.
+            The range can be one of the following: 1m, 3m, 6m, 1y.
+            """
+            if not cls._initialized:
+                cls._initialize()
+                cls._initialized = True
+            result = {}
+            try:
+                if not isinstance(utility, int):
+                    raise ValueError("Utility must be an integer.")
+                
+                result = cls.__getMaxOffset(cls.__getEarliestUtilityBillDates(utility), range)
+    
+            except Exception as e:
+                print(f"Error: {e}")
+                raise e
+            return result
+    
+    @classmethod
+    def getAllUnitBillsMaxOffset(cls,
+                                range: Range) -> int:
+            """
+            Returns the maximum offset for the given range.
+            The range can be one of the following: 1m, 3m, 6m, 1y.
+            """
+            if not cls._initialized:
+                cls._initialize()
+                cls._initialized = True
+            result = 0
+            try:
+                cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+                sql = f"SELECT Bill.BillingPeriodEnd FROM bill LIMIT 1"
+                cursor.execute(sql)
+                result = cls.__getMaxOffset(cursor.fetchone()['BillingPeriodEnd'], range)
+            except Exception as e:
+                print(f"Error: {e}")
+                raise e
+            return result
+    
+    @classmethod
     def __rangeClause(cls,
                       range: Range,
                       offset: int) -> str:
@@ -250,3 +324,112 @@ class BillDatabaseTable(DatabaseTable):
         rangeClause = f"Bill.BillingPeriodEnd >= DATE_SUB(CURDATE(), INTERVAL {range.value * offset} MONTH) AND" + \
             f" Bill.BillingPeriodEnd <= DATE_SUB(CURDATE(), INTERVAL {range.value * (offset - 1)} MONTH)"
         return rangeClause
+    
+    @classmethod
+    def __getEarliestUnitBillDates(cls,
+                                    unit: int
+                                    ) -> dict[int, 'datetime.date']:
+        """
+        Returns the earliest billing period end dates for the given unit ID
+        per utility installed in the unit.
+        """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
+        result = {}
+        try:
+            if not isinstance(unit, int):
+                raise ValueError("Unit must be an integer.")
+            
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            for utilityID in InstalledUtilityDatabaseTable.getUnitUtilities(unit):
+                sql = f"SELECT Bill.BillingPeriodEnd FROM {cls.getTableName()} " + \
+                    f"WHERE Bill.UtilityID = {utilityID} AND Bill.UnitID = {unit}" + \
+                    f" LIMIT 1"
+                cursor.execute(sql)
+                result[utilityID] = cursor.fetchone()['BillingPeriodEnd']
+
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
+
+    @classmethod
+    def __getEarliestUtilityBillDates(cls,
+                                       utility: int
+                                       ) -> 'datetime.date':
+        """
+        Returns the earliest billing period end dates for the given utility ID.
+        """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
+        result = {}
+        try:
+            if not isinstance(utility, int):
+                raise ValueError("Utility must be an integer.")
+            
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            sql = f"SELECT Bill.BillingPeriodEnd FROM {cls.getTableName()} " + \
+                f"WHERE Bill.UtilityID = {utility} " + \
+                f"ORDER BY Bill.BillingPeriodEnd ASC LIMIT 1"
+            cursor.execute(sql)
+            result = cursor.fetchone()['BillingPeriodEnd']
+
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
+
+    @classmethod
+    def __getMaxOffset(cls,
+                       date: 'datetime.date',
+                       range: Range) -> int:
+        """
+        Returns the maximum offset for the given date and range.
+        The range can be one of the following: 1m, 3m, 6m, 1y.
+        """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
+        if not isinstance(date, datetime.date):
+            raise ValueError("Date must be a datetime.date object.")
+        if not isinstance(range, Range):
+            raise ValueError("Range must be an instance of Range enum.")
+        if not range in [Range.ONE_MONTH, Range.THREE_MONTHS, Range.SIX_MONTHS, Range.ONE_YEAR]:
+            raise ValueError("Range must be one of the following: 1m, 3m, 6m, 1y.")
+        try:
+            date = "'" + date.strftime("%Y-%m-%d") + "'"
+            
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            sql = f"SELECT " + \
+                f"TIMESTAMPDIFF(MONTH, {date}, CURDATE()) +" + \
+                f"DATEDIFF( " + \
+                f"    CURDATE(), " + \
+                f"    {date} + INTERVAL " + \
+                f"    TIMESTAMPDIFF(MONTH, {date}, CURDATE()) " + \
+                f"    MONTH " + \
+                f") / " + \
+                f"DATEDIFF(" + \
+                f"    {date} + INTERVAL " + \
+                f"    TIMESTAMPDIFF(MONTH, {date}, CURDATE()) + 1 " + \
+                f"    MONTH, " + \
+                f"    {date} + INTERVAL " + \
+                f"    TIMESTAMPDIFF(MONTH, {date}, CURDATE()) " + \
+                f"    MONTH " + \
+                f") AS MaxOffset " + \
+                f"FROM {cls.getTableName()} " + \
+                f"WHERE Bill.BillingPeriodEnd = {date} " + \
+                f"ORDER BY Bill.BillingPeriodEnd DESC LIMIT 1"
+            cursor.execute(sql)
+            result = math.ceil(cursor.fetchone()['MaxOffset'] / range.value)
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
