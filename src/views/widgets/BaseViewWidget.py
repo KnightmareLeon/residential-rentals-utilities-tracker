@@ -1,83 +1,166 @@
 from PyQt6.QtWidgets import (
-  QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFrame
+QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFrame, QSizePolicy, QPushButton
 )
-from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import Qt, QSize
 
 
 class BaseViewWidget(QWidget):
-  def __init__(self, mainTitle: str, parent=None):
-    super().__init__(parent)
-    self.mainTitle = mainTitle
-    self.sections = []  # Store section layout references
-    self.setupBaseStyle()
+    def __init__(self, mainTitle: str, iconPath: str = None, parent=None,):
+        super().__init__(parent)
+        self.setObjectName("BaseViewWidget")
+        self.setMinimumSize(1075, 650)
+        self.setMaximumSize(1300, 850)
+        self.setWindowTitle("UtiliTrack - View Details")
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
 
-    self.layout = QVBoxLayout(self)
-    self.layout.setSpacing(15)
+        self.mainTitle = mainTitle
+        self.iconPath = iconPath
+        self.sections = []
 
-    # Main header
-    mainHeader = QLabel(mainTitle)
-    mainHeader.setObjectName("heading")
-    self.layout.addWidget(mainHeader)
+        # Setup main layout
+        self.mainLayout = QVBoxLayout(self)
+        self.mainLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.mainLayout.setContentsMargins(20, 20, 20, 20)
+        self.mainLayout.setSpacing(15)
 
-  def setupBaseStyle(self):
-    self.setStyleSheet("""
-      QLabel#heading {
-        font-family: "Urbanist";
-        font-size: 20px;
-        font-weight: bold;
-        color: white;
-      }
-      QLabel#label {
-        font-family: "Urbanist";
-        font-size: 14px;
-        color: white;
-      }
-      QLabel#value {
-        font-family: "Urbanist";
-        font-size: 14px;
-        color: white;
-        font-weight: bold;
-      }
-      QFrame#card {
-        background-color: #1C1C1C;
-        border-radius: 15px;
-        padding: 15px;
-      }
-    """)
+        # Create title bar (icon + title)
+        self.setupTitleBar()
 
-  def addSection(self, title: str):
-    # Section header
-    sectionHeader = QLabel(title)
-    sectionHeader.setObjectName("heading")
-    self.layout.addWidget(sectionHeader)
+        # Create sections container
+        self.layout = QHBoxLayout()
+        self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.layout.setSpacing(20)
+        self.mainLayout.addLayout(self.layout)
 
-    # Section card container
-    sectionCard = QFrame()
-    sectionCard.setObjectName("card")
-    sectionLayout = QVBoxLayout(sectionCard)
-    sectionLayout.setSpacing(8)
+        self.setupBaseStyle()
 
-    self.layout.addWidget(sectionCard)
-    self.sections.append(sectionLayout)
-    return len(self.sections) - 1  # Return index for reference
+    def setupTitleBar(self):
+        titleLayout = QHBoxLayout()
+        titleLayout.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        titleLayout.setSpacing(10)
 
-  def addDetail(self, sectionIndex: int, labelText: str, valueText: str):
-    if sectionIndex >= len(self.sections):
-      return  # Invalid section index
+        iconButton = QPushButton()
+        iconButton.setFixedSize(30, 30)
+        iconButton.setObjectName("iconButton")
+        iconButton.setCursor(Qt.CursorShape.PointingHandCursor)
 
-    row = QHBoxLayout()
-    label = QLabel(f"{labelText}:")
-    label.setObjectName("label")
-    label.setFixedWidth(70)
+        if self.iconPath:
+            icon = QIcon(self.iconPath)
+            iconButton.setIcon(icon)
+            iconButton.setIconSize(QSize(24, 24))
+        else:
+            iconButton.setText("")
 
-    value = QLabel(valueText)
-    value.setObjectName("value")
-    value.setWordWrap(True)
+        # Title label
+        titleLabel = QLabel(self.mainTitle)
+        titleLabel.setObjectName("mainTitle")
+        titleLabel.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        titleLabel.setStyleSheet("font-size: 24px; font-weight: bold;")
 
-    row.addWidget(label)
-    row.addWidget(value, 1)
-    self.sections[sectionIndex].addLayout(row)
+        # Add widgets to layout
+        titleLayout.addWidget(iconButton)
+        titleLayout.addWidget(titleLabel)
 
-  def addWidgetToSection(self, sectionIndex: int, widget: QWidget):
-    if sectionIndex < len(self.sections):
-      self.sections[sectionIndex].addWidget(widget)
+        self.mainLayout.addLayout(titleLayout)
+
+    def setupBaseStyle(self):
+        self.setStyleSheet("""
+            QWidget#BaseViewWidget {
+                background-color: #080808;
+                padding: 15px;
+            }
+            QLabel#title {
+                font-family: "Urbanist";
+                font-size: 28px;
+                font-weight: bold;
+                color: white;
+            }
+            QLabel#heading {
+                font-family: "Urbanist";
+                font-size: 20px;
+                font-weight: bold;
+                color: white;
+            }
+            QLabel#label {
+                font-family: "Urbanist";
+                font-size: 15px;
+                color: white;
+            }
+            QLabel#value {
+                font-family: "Urbanist";
+                font-size: 15px;
+                color: white;
+                font-weight: bold;
+            }
+            QFrame#card {
+                background-color: #1C1C1C;
+                border-radius: 15px;
+                padding: 15px;
+            }
+            #iconButton {
+                border: none;
+                background-color: transparent;
+            }
+            #iconButton:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+                border-radius: 6px;
+            }
+        """)
+
+    def addSection(self, title: str):
+        # Create a vertical layout that holds both header and section details
+        sectionCard = QFrame()
+        sectionCard.setObjectName("card")
+
+        sectionLayout = QVBoxLayout(sectionCard)
+        sectionLayout.setContentsMargins(10, 10, 10, 10)
+        sectionLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        sectionLayout.setSpacing(8)
+
+        # Section header inside the card
+        sectionHeader = QLabel(title)
+        sectionHeader.setObjectName("heading")
+        sectionHeader.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        sectionHeader.setFixedHeight(30)
+        sectionLayout.addWidget(sectionHeader)
+
+        # Add the whole card to the horizontal main layout
+        self.layout.addWidget(sectionCard)
+        self.sections.append(sectionLayout)
+        return len(self.sections) - 1
+
+    def addDetail(self, sectionIndex: int, labelText: str, valueText: str):
+        if sectionIndex >= len(self.sections):
+            return  # Invalid section index
+
+        row = QHBoxLayout()
+        row.setSpacing(10)
+        row.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        label = QLabel(f"{labelText}:")
+        label.setObjectName("label")
+        label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        label.setFixedWidth(80)
+        label.setAlignment(Qt.AlignmentFlag.AlignTop)
+        label.setCursor(Qt.CursorShape.IBeamCursor)
+
+        value = QLabel(valueText)
+        value.setObjectName("value")
+        value.setWordWrap(True)
+        value.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        value.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        value.setMaximumWidth(200)
+        value.setCursor(Qt.CursorShape.IBeamCursor)
+
+        row.addWidget(label)
+        row.addWidget(value, 1)
+
+        container = QWidget()
+        container.setLayout(row)
+
+        self.sections[sectionIndex].addWidget(container)
+
+    def addWidgetToSection(self, sectionIndex: int, widget: QWidget):
+        if sectionIndex < len(self.sections):
+            self.sections[sectionIndex].addWidget(widget)

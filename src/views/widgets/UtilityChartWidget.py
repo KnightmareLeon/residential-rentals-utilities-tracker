@@ -24,11 +24,11 @@ from matplotlib.figure import Figure
 from src.utils.formatMoney import formatMoneyNoDecimal, formatMoney
 from src.utils.constants import categoryColors
 from src.views.widgets.CheckableComboBox import CheckableComboBox
+from src.controllers.dashboardController import DashboardController
 
 class UtilityChartWidget(QFrame):
-    updateWidgetSignal = pyqtSignal()
 
-    def __init__(self, data, parent=None):
+    def __init__(self, data, title, parent=None):
         super().__init__(parent)
         self.currDateOffset = datetime.now()
         self.lastDateOffset = datetime.now() - relativedelta(months=48)
@@ -38,6 +38,7 @@ class UtilityChartWidget(QFrame):
         self.plottedPoints = []
         self.utilityFilters = ["Electricity", "Water", "Gas", "Wifi", "Trash", "Maintenance"]
         self.data = data
+        self.title = title
 
         self.setupUI()
 
@@ -86,7 +87,7 @@ class UtilityChartWidget(QFrame):
         headerLayout = QHBoxLayout()
         headerLayout.setContentsMargins(0, 0, 0, 15)
 
-        chartTitle = QLabel("Total Utilities Cost of All Units")
+        chartTitle = QLabel(self.title)
         chartTitle.setFont(QFont("Urbanist", 16, QFont.Weight.Bold))
         chartTitle.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         headerLayout.addWidget(chartTitle)
@@ -345,7 +346,7 @@ class UtilityChartWidget(QFrame):
                 """)
         self.currDateOffset = datetime.now()
         self.updatePageLabel()
-        self.updateWidgetSignal.emit()
+        self.updateWidget()
 
     def handlePrevPage(self):
         curr = self.currDateOffset.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -354,7 +355,8 @@ class UtilityChartWidget(QFrame):
         if curr > last:
             self.currDateOffset -= relativedelta(months=self.parseDateRangeToMonths(self.dateRange))
             self.updatePageLabel()
-            self.updateWidgetSignal.emit()
+            self.updateWidget()
+
 
     def handleNextPage(self):
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -363,7 +365,16 @@ class UtilityChartWidget(QFrame):
         if current < today:
             self.currDateOffset += relativedelta(months=self.parseDateRangeToMonths(self.dateRange))
             self.updatePageLabel()
-            self.updateWidgetSignal.emit()
+            self.updateWidget()
 
     def updatePageLabel(self):
         self.pageLabel.setText(f"{self.currDateOffset.strftime('%B %d, %Y')}")
+    
+    # Controllers
+    def updateWidget(self) -> None:
+        # data, lastDateOffset = DashboardController.fetchUtilityDashboard(dataRange, currPage)
+        self.lastDateOffset = datetime.now() - relativedelta(months=48)
+        self.updatePageLabel()
+        
+        data = self.data
+        self.updateChart(data)

@@ -84,8 +84,7 @@ class UtilityDashboard(QFrame):
         # === Utility Chart ===
         data = self.data
 
-        self.chartWidget = UtilityChartWidget(data=self.data)
-        self.chartWidget.updateWidgetSignal.connect(self.updateWidgets)
+        self.chartWidget = UtilityChartWidget(self.data, "Total Utilities Cost of All Units")
         mainLayout.addWidget(self.chartWidget)
 
         self.chartWidget.handleRangeUpdate()
@@ -161,12 +160,7 @@ class UtilityDashboard(QFrame):
             self.summaryLabels["unpaid"].setText(unpaid)
 
     def updateWidgets(self) -> None:
-        # data, lastPage = DashboardController.fetchUtilityDashboard(dataRange, currPage)
-        self.chartWidget.totalPages = 5
-        self.chartWidget.updatePageLabel()
-        
-        data = self.data
-        self.chartWidget.updateChart(data)
+        self.chartWidget.updateWidget()
 
         # balance, paid, unpaid = DashboardController.fetchBillsSummary(dataRange, currPage)
         balance, paid, unpaid = ("₱ 40,034.12", "₱ 33,342.00", "6")
