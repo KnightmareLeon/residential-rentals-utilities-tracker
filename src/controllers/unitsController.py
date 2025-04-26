@@ -28,7 +28,7 @@ class UnitsController:
         return ({
             "UnitID": id,
             "Name": "B1R001",
-            "Address": "123 Main St",
+            "Address": "123 Main St, New York, NY",
             "Type": "Individual",
         }, generateRandomUtilityData())
 

@@ -9,8 +9,6 @@ class BaseViewWidget(QWidget):
     def __init__(self, mainTitle: str, iconPath: str = None, parent=None,):
         super().__init__(parent)
         self.setObjectName("BaseViewWidget")
-        self.setMinimumSize(1075, 650)
-        self.setMaximumSize(1300, 850)
         self.setWindowTitle("UtiliTrack - View Details")
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
 
@@ -152,6 +150,7 @@ class BaseViewWidget(QWidget):
         value.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         value.setMaximumWidth(200)
         value.setCursor(Qt.CursorShape.IBeamCursor)
+        value.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
 
         row.addWidget(label)
         row.addWidget(value, 1)

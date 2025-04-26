@@ -88,7 +88,7 @@ class UtilityChartWidget(QFrame):
         headerLayout.setContentsMargins(0, 0, 0, 15)
 
         chartTitle = QLabel(self.title)
-        chartTitle.setFont(QFont("Urbanist", 16, QFont.Weight.Bold))
+        chartTitle.setFont(QFont("Urbanist", 14, QFont.Weight.Bold))
         chartTitle.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         headerLayout.addWidget(chartTitle)
         headerLayout.addStretch()
@@ -121,6 +121,7 @@ class UtilityChartWidget(QFrame):
         paginationLayout.setSpacing(20)
 
         self.prevButton = QPushButton("←")
+        self.prevButton.setFont(QFont("Urbanist", 12, QFont.Weight.Bold))
         self.prevButton.setFixedSize(32, 32)
         self.prevButton.setCursor(Qt.CursorShape.PointingHandCursor)
         self.prevButton.clicked.connect(self.handlePrevPage)
@@ -132,6 +133,7 @@ class UtilityChartWidget(QFrame):
         self.pageLabel.setFixedWidth(150)
 
         self.nextButton = QPushButton("→")
+        self.nextButton.setFont(QFont("Urbanist", 12, QFont.Weight.Bold))
         self.nextButton.setFixedSize(32, 32)
         self.nextButton.setCursor(Qt.CursorShape.PointingHandCursor)
         self.nextButton.clicked.connect(self.handleNextPage)
@@ -269,7 +271,9 @@ class UtilityChartWidget(QFrame):
 
             self.annotation.xy = (x, y)
             self.annotation.set_text(f"{category}\n₱{y:,}\n{dateStr}")
+            self.annotation.set_fontsize(8)
             self.annotation.set_visible(True)
+            self.annotation.set_position((5, 5))
             self.canvas.draw_idle()
         else:
             self.annotation.set_visible(False)
@@ -372,8 +376,8 @@ class UtilityChartWidget(QFrame):
     
     # Controllers
     def updateWidget(self) -> None:
-        # data, lastDateOffset = DashboardController.fetchUtilityDashboard(dataRange, currPage)
-        self.lastDateOffset = datetime.now() - relativedelta(months=48)
+        data, lastDateOffset = DashboardController.fetchUtilityDashboard(self.dateRange, self.currDateOffset)
+        self.lastDateOffset = lastDateOffset
         self.updatePageLabel()
         
         data = self.data

@@ -2,7 +2,7 @@ import datetime
 from dateutil.relativedelta import relativedelta
 
 from src.views.widgets.BaseTableWidget import BaseTableWidget
-from src.views.widgets.BaseViewWidget import BaseViewWidget
+from src.views.components.UnitView import UnitView
 from src.views.widgets.UtilityChartWidget import UtilityChartWidget
 from src.utils.constants import SortOrder
 from src.controllers.unitsController import UnitsController
@@ -38,19 +38,10 @@ class UnitsTable(BaseTableWidget):
     
         id = item.text()
         unitData, unitBillsData = UnitsController.viewUnit(id)
-        print(id)
+
         if unitData:
-            self.viewWindow = BaseViewWidget("Unit Details", iconPath="assets/icons/units.png")
-            unitInfoSection = self.viewWindow.addSection("Unit Information")
-            self.viewWindow.addDetail(unitInfoSection, self.headers[0], unitData[self.databaseHeaders[0]])
-            self.viewWindow.addDetail(unitInfoSection, self.headers[1], unitData[self.databaseHeaders[1]])
-            self.viewWindow.addDetail(unitInfoSection, self.headers[2], unitData[self.databaseHeaders[2]])
-            self.viewWindow.addDetail(unitInfoSection, self.headers[3], unitData[self.databaseHeaders[3]])
-            billInfoSection = self.viewWindow.addSection("Unit Bills")
-            chartWidget = UtilityChartWidget(unitBillsData, "Total Utilities Cost of Unit " + id)
-            self.viewWindow.addWidgetToSection(billInfoSection, chartWidget)
+            self.viewWindow = UnitView(id, unitData, unitBillsData, self.headers, self.databaseHeaders)
             self.viewWindow.show()
-            pass
 
         self.updateTable()
 

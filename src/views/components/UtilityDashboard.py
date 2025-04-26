@@ -6,28 +6,8 @@ from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButto
 from PyQt6.QtGui import QFont, QPixmap, QIcon
 from PyQt6.QtCore import Qt, QSize
 
-import matplotlib.pyplot as plt
-from matplotlib import font_manager
-
-urbanistFontPath = "assets/fonts/Urbanist-VariableFont_wght.ttf"
-font_manager.fontManager.addfont(urbanistFontPath)
-
-montserratFontPath = "assets/fonts/Montserrat-VariableFont_wght.ttf"
-font_manager.fontManager.addfont(montserratFontPath)
-
-urbanistFont = font_manager.FontProperties(fname=urbanistFontPath)
-montserratFont = font_manager.FontProperties(fname=montserratFontPath)
-plt.rcParams['font.family'] = [urbanistFont.get_name(), montserratFont.get_name()]
-
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-
-from src.utils.formatMoney import formatMoneyNoDecimal, formatMoney
-from src.utils.constants import categoryColors
 from src.utils.sampleDataGenerator import generateRandomUtilityData
 from src.views.widgets.UtilityChartWidget import UtilityChartWidget
-from src.views.widgets.CheckableComboBox import CheckableComboBox
-from src.controllers.dashboardController import DashboardController
 
 class UtilityDashboard(QFrame):
     def __init__(self, parent=None):
