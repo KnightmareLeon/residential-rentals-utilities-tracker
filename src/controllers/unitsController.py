@@ -1,3 +1,5 @@
+from src.utils.sampleDataGenerator import generateRandomUtilityData
+
 class UnitsController:
     
     @staticmethod
@@ -17,11 +19,18 @@ class UnitsController:
         return "Unit added successfully"
 
     @staticmethod
-    def viewUnit(id: str) -> dict[str, str]:
+    def viewUnit(id: str) -> tuple[dict[str, str], tuple[list[dict[str, str]], int]]:
         """
         Fetches all information about a single unit by ID.
         """
         print("Viewing unit:", id)
+
+        return ({
+            "UnitID": id,
+            "Name": "B1R001",
+            "Address": "123 Main St",
+            "Type": "Individual",
+        }, generateRandomUtilityData())
 
     @staticmethod
     def editUnit(originalID: str, unitID: str, name: str, address: str, type: str) -> str:
