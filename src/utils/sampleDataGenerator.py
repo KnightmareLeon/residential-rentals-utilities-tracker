@@ -31,7 +31,7 @@ def generateUnitData():
             "UnitID": unit_id,
             "Name": name,
             "Address": address,
-            "UnitType": unit_type,
+            "Type": unit_type,
             "Status": status,
             "PaymentStatus": payment_status
         })

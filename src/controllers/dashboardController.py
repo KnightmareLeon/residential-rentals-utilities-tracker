@@ -1,3 +1,6 @@
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+
 class DashboardController:
     
     @staticmethod
@@ -6,7 +9,7 @@ class DashboardController:
         Fetches all bills per utility within a given range of months as well as the total number of pages needed for the monthRange.
         """
         print(f"Fetching utility cost data for {monthRange} months and page {currPage}")
-        return ({}, 1)
+        return ({}, datetime.now() - relativedelta(months=48))
     
     @staticmethod
     def fetchBillsSummary(monthRange: int, currPage: int) -> tuple[float, float, int]:
