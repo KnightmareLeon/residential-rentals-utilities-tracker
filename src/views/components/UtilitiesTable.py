@@ -1,4 +1,5 @@
 from src.views.widgets.BaseTableWidget import BaseTableWidget
+from src.views.components.UtilityView import UtilityView
 from src.utils.constants import SortOrder
 from src.controllers.utilitiesController import UtilitiesController
 
@@ -33,11 +34,11 @@ class UtilitiesTable(BaseTableWidget):
             return
     
         id = item.text()
-        unitUtilities = UtilitiesController.viewUtility(id)
+        utilityData, utilityBillsData = UtilitiesController.viewUtility(id)
 
-        if unitUtilities:
-            #open unit view dialog
-            pass
+        if utilityData:
+            self.viewWindow = UtilityView(id, utilityData, utilityBillsData, self.headers, self.databaseHeaders)
+            self.viewWindow.show()
 
         self.updateTable()
 

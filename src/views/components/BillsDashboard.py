@@ -35,7 +35,7 @@ class BillsDashboard(QWidget):
         outerLayout.setContentsMargins(15, 15, 15, 15)
         outerLayout.setSpacing(10)
 
-        title = QLabel("Upcoming Bills")
+        title = QLabel("Urgent Bills")
         title.setFont(QFont("Urbanist", 15, QFont.Weight.Bold))
         title.setStyleSheet("color: white;")
         outerLayout.addWidget(title)

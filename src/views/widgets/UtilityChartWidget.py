@@ -38,7 +38,7 @@ class UtilityChartWidget(QFrame):
         self.chartDivisions = 10
         self.rangeButtons = []
         self.plottedPoints = []
-        self.utilityFilters = ["Electricity", "Water", "Gas", "Wifi", "Trash", "Maintenance"]
+        self.utilityFilters = data.keys()
         self.data = data
         self.title = title
 

@@ -1,3 +1,5 @@
+from src.utils.sampleDataGenerator import generateRandomUtilityData, generateRandomeUtilityBills
+
 class UtilitiesController:
     
     @staticmethod
@@ -21,7 +23,13 @@ class UtilitiesController:
         """
         Fetches all information about a single utility by ID.
         """
-        print("Viewing utility:", id)
+        return ({
+            "UtilityID": id,
+            "Type": "Electricity",
+            "UnitName": "B01R02",
+            "Status": "Active",
+            "BillingCycle": "Monthly",
+        }, generateRandomeUtilityBills("Electricity"))
 
     @staticmethod
     def editUtility(originalID: str, type: str, status: str, billingCycle: str) -> str:
