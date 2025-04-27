@@ -8,6 +8,7 @@ from src.views.components.BillsDashboard import BillsDashboard
 class HomePage(QWidget):
     def __init__(self, parent=None, mainWindow=None):
         super().__init__(parent)
+        self.mainWindow = mainWindow
         self.setupUI()
 
     def setupUI(self):
@@ -31,6 +32,7 @@ class HomePage(QWidget):
         billsData = generateBillsDataFromUtility()
 
         billsDashboard = BillsDashboard(billsData)
+        billsDashboard.viewBills.connect(self.openBillsPage)
 
         # bottomRightWidget = QFrame()
         # bottomRightWidget.setStyleSheet("background-color: #1c1c1c; border-radius: 15px")
@@ -40,3 +42,6 @@ class HomePage(QWidget):
         rightLayout.addWidget(billsDashboard)
         # rightLayout.addSpacing(15)
         # rightLayout.addWidget(bottomRightWidget)
+    
+    def openBillsPage(self):
+        self.mainWindow.updatePage(self.mainWindow.billsPage, self.mainWindow.billsButton, "Bills")
