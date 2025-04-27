@@ -6,6 +6,17 @@ class SortOrder:
     DESC = 2
 
 class Range(Enum):
+    """
+    Enum class for storing constant range values. Each constant
+    stores a value equivalent to the number of months that they
+    are describing when converted.
+
+    The constant values stored are:
+    - ONE_MONTH = 1
+    - THREE_MONTHS = 3
+    - SIX_MONTHS = 6
+    - ONE_YEAR = 12
+    """
     ONE_MONTH = 1
     THREE_MONTHS = 3
     SIX_MONTHS = 6
@@ -19,6 +30,7 @@ categoryColors = {
             "Trash": "#A52A2A",
             "Maintenance": "#9370DB",
             "Miscellaneous": "#CCCCCC"
+
         }
 
 defaultColor = "#AAAAAA"

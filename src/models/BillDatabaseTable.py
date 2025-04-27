@@ -249,7 +249,7 @@ class BillDatabaseTable(DatabaseTable):
             if not isinstance(unit, int):
                 raise ValueError("Unit must be an integer.")
             
-            for utilityID, utilityDate in cls.__getEarliestUnitBillDates(unit).items():
+            for utilityID, utilityDate in cls.getEarliestUnitBillDates(unit).items():
                 sql = f"SELECT Type FROM {UtilityDatabaseTable.getTableName()} WHERE UtilityID = {utilityID}"
                 cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
                 cursor.execute(sql)
@@ -276,7 +276,7 @@ class BillDatabaseTable(DatabaseTable):
                 if not isinstance(utility, int):
                     raise ValueError("Utility must be an integer.")
                 
-                result = cls.__getMaxOffset(cls.__getEarliestUtilityBillDates(utility), range)
+                result = cls.__getMaxOffset(cls.getEarliestUtilityBillDates(utility), range)
     
             except Exception as e:
                 print(f"Error: {e}")
@@ -326,7 +326,7 @@ class BillDatabaseTable(DatabaseTable):
         return rangeClause
     
     @classmethod
-    def __getEarliestUnitBillDates(cls,
+    def getEarliestUnitBillDates(cls,
                                     unit: int
                                     ) -> dict[int, 'datetime.date']:
         """
@@ -357,7 +357,7 @@ class BillDatabaseTable(DatabaseTable):
         return result
 
     @classmethod
-    def __getEarliestUtilityBillDates(cls,
+    def getEarliestUtilityBillDates(cls,
                                        utility: int
                                        ) -> 'datetime.date':
         """
