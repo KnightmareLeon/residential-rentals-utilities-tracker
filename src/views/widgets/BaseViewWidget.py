@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (
-QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFrame, QSizePolicy, QPushButton
+QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFrame, QSizePolicy, QPushButton, QSpacerItem
 )
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import Qt, QSize
@@ -107,7 +107,6 @@ class BaseViewWidget(QWidget):
         """)
 
     def addSection(self, title: str):
-        # Create a vertical layout that holds both header and section details
         sectionCard = QFrame()
         sectionCard.setObjectName("card")
 
@@ -116,21 +115,27 @@ class BaseViewWidget(QWidget):
         sectionLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         sectionLayout.setSpacing(8)
 
-        # Section header inside the card
         sectionHeader = QLabel(title)
         sectionHeader.setObjectName("heading")
         sectionHeader.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         sectionHeader.setFixedHeight(30)
         sectionLayout.addWidget(sectionHeader)
 
-        # Add the whole card to the horizontal main layout
         self.layout.addWidget(sectionCard)
         self.sections.append(sectionLayout)
         return len(self.sections) - 1
 
     def addDetail(self, sectionIndex: int, labelText: str, valueText: str):
         if sectionIndex >= len(self.sections):
-            return  # Invalid section index
+            return
+
+        layout = self.sections[sectionIndex]
+
+        count = layout.count()
+        if count > 0:
+            lastItem = layout.itemAt(count - 1)
+            if isinstance(lastItem.spacerItem(), QSpacerItem):
+                layout.takeAt(count - 1)
 
         row = QHBoxLayout()
         row.setSpacing(10)
@@ -140,7 +145,6 @@ class BaseViewWidget(QWidget):
         label.setObjectName("label")
         label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         label.setFixedWidth(80)
-        label.setAlignment(Qt.AlignmentFlag.AlignTop)
         label.setCursor(Qt.CursorShape.IBeamCursor)
 
         value = QLabel(valueText)
@@ -148,17 +152,19 @@ class BaseViewWidget(QWidget):
         value.setWordWrap(True)
         value.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         value.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        value.setMaximumWidth(200)
         value.setCursor(Qt.CursorShape.IBeamCursor)
         value.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        value.setMinimumWidth(150)
+
+        container = QWidget()
+        container.setLayout(row)
+        container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
         row.addWidget(label)
         row.addWidget(value, 1)
 
-        container = QWidget()
-        container.setLayout(row)
-
-        self.sections[sectionIndex].addWidget(container)
+        layout.addWidget(container)
+        layout.addSpacerItem(QSpacerItem(1, 1, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
     def addWidgetToSection(self, sectionIndex: int, widget: QWidget):
         if sectionIndex < len(self.sections):

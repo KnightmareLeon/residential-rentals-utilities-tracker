@@ -25,7 +25,6 @@ def generateUnitData():
         address = f"{100 + i * 3} {random.choice(street_names)} St"
         unit_type = random.choice(unit_types)
         status = random.choice(statuses)
-        payment_status = random.choice(payment_statuses)
 
         sampleData1.append({
             "UnitID": unit_id,
@@ -33,7 +32,6 @@ def generateUnitData():
             "Address": address,
             "Type": unit_type,
             "Status": status,
-            "PaymentStatus": payment_status
         })
 
     return sampleData1

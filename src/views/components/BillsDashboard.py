@@ -1,11 +1,13 @@
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QScrollArea, QPushButton, QFrame, QSizePolicy, QGridLayout
-from PyQt6.QtGui import QFont, QColor, QPainter, QBrush
-from PyQt6.QtCore import Qt, QSize, pyqtSignal
+from PyQt6.QtGui import QFont
+from PyQt6.QtCore import Qt, pyqtSignal
 
 from src.utils.constants import categoryColors, defaultColor
 from src.views.widgets.BillEntry import BillEntry
 
 class BillsDashboard(QWidget):
+    viewBills = pyqtSignal()
+
     def __init__(self, bills):
         super().__init__()
 
@@ -105,6 +107,7 @@ class BillsDashboard(QWidget):
         """)
         viewAllButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         viewAllButton.setCursor(Qt.CursorShape.PointingHandCursor)
+        viewAllButton.clicked.connect(self.viewBills.emit)
         outerLayout.addWidget(viewAllButton)
 
         # Final layout for this widget
