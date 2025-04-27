@@ -1,10 +1,14 @@
 from src.views.widgets.BaseViewWidget import BaseViewWidget
-from src.views.widgets.UtilityChartWidget import UtilityChartWidget
 
 class BillView(BaseViewWidget):
-    def __init__(self, id: str, unitData: dict, unitBillsData: list, headers: list, databaseHeaders: list, parent=None):
-        super().__init__("Unit Details", parent=parent, iconPath="assets/icons/units.png")
+    def __init__(self, id: str, unitData: dict, headers: list, databaseHeaders: list, parent=None):
+        super().__init__("Bill Details", parent=parent, iconPath="assets/icons/bills.png")
+        self.setMaximumSize(500, 700)
 
-        unitInfoSection = self.addSection("Unit Information")
+        billInfo = self.addSection("Bill Information")
         for i in range(4):
-            self.addDetail(unitInfoSection, headers[i], unitData[databaseHeaders[i]])
+            self.addDetail(billInfo, headers[i], unitData[databaseHeaders[i]])
+        
+        billDetails = self.addSection("Bill Details")
+        for i in range(4,9):
+            self.addDetail(billDetails, headers[i], unitData[databaseHeaders[i]])

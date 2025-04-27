@@ -1,16 +1,18 @@
 from PyQt6.QtWidgets import (
-QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFrame, QSizePolicy, QPushButton, QSpacerItem
+QWidget, QDialog, QLabel, QVBoxLayout, QHBoxLayout, QFrame, QSizePolicy, QPushButton, QSpacerItem
 )
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import Qt, QSize
 
 
-class BaseViewWidget(QWidget):
+class BaseViewWidget(QDialog):
     def __init__(self, mainTitle: str, iconPath: str = None, parent=None,):
         super().__init__(parent)
+        self.setWindowIcon(QIcon("assets/logos/logoIcon.png"))
         self.setObjectName("BaseViewWidget")
         self.setWindowTitle("UtiliTrack - View Details")
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        self.setModal(True)
 
         self.mainTitle = mainTitle
         self.iconPath = iconPath
@@ -65,7 +67,7 @@ class BaseViewWidget(QWidget):
     def setupBaseStyle(self):
         self.setStyleSheet("""
             QWidget#BaseViewWidget {
-                background-color: #080808;
+                background-color: #131313;
                 padding: 15px;
             }
             QLabel#title {
@@ -144,10 +146,13 @@ class BaseViewWidget(QWidget):
         label = QLabel(f"{labelText}:")
         label.setObjectName("label")
         label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-        label.setFixedWidth(80)
+        label.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
+        label.setWordWrap(True)
+        label.setMinimumWidth(100)
         label.setCursor(Qt.CursorShape.IBeamCursor)
+        label.setContentsMargins(0, 0, 10, 0)
 
-        value = QLabel(valueText)
+        value = QLabel(str(valueText))
         value.setObjectName("value")
         value.setWordWrap(True)
         value.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
@@ -155,6 +160,18 @@ class BaseViewWidget(QWidget):
         value.setCursor(Qt.CursorShape.IBeamCursor)
         value.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         value.setMinimumWidth(150)
+        if value.text() == "Active":
+            value.setStyleSheet("color: #00FF6F;")
+        elif value.text() == "Inactive":
+            value.setStyleSheet("color: #FA1647;")
+        elif value.text() == "Paid":
+            value.setStyleSheet("color: #00FF6F;")
+        elif value.text() == "Unpaid":
+            value.setStyleSheet("color: #FFE921;")
+        elif value.text() == "Overdue":
+            value.setStyleSheet("color: #FA1647;")
+        elif value.text() == "Partially Paid":
+            value.setStyleSheet("color: #FF8400;")
 
         container = QWidget()
         container.setLayout(row)
@@ -162,6 +179,7 @@ class BaseViewWidget(QWidget):
 
         row.addWidget(label)
         row.addWidget(value, 1)
+        row.setContentsMargins(0, 0, 0, 0)
 
         layout.addWidget(container)
         layout.addSpacerItem(QSpacerItem(1, 1, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))

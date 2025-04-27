@@ -12,7 +12,10 @@ if __name__ == "__main__":
         print("Failed to load font.")
     else:
         print("Font loaded successfully!")
+
     window = MainWindow()
     window.setWindowTitle("UtiliTrack")
+    window.setMinimumSize(1280, 720)
     window.show()
+    
     sys.exit(app.exec())

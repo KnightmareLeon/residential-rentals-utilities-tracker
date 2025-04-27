@@ -1,5 +1,6 @@
 from src.views.widgets.BaseTableWidget import BaseTableWidget
-from src.utils.constants import SortOrder
+from src.views.components.BillView import BillView
+from src.utils.constants import SortOrder, billDataDatabaseHeaders, billDataHeaders
 from src.controllers.billsController import BillsController
 
 class BillsTable(BaseTableWidget):
@@ -33,11 +34,11 @@ class BillsTable(BaseTableWidget):
             return
     
         id = item.text()
-        unitData = BillsController.viewBill(id)
+        billData = BillsController.viewBill(id)
 
-        if unitData:
-            #open unit view dialog
-            pass
+        if billData:
+            self.viewWindow = BillView(id, billData, billDataHeaders, billDataDatabaseHeaders)
+            self.viewWindow.show()
 
         self.updateTable()
 
