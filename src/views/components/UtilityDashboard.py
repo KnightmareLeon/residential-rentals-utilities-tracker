@@ -12,10 +12,7 @@ from src.views.widgets.UtilityChartWidget import UtilityChartWidget
 class UtilityDashboard(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.data = generateRandomUtilityData(
-            startDate=datetime(2023, 4, 1),
-            endDate=datetime(2025, 4, 22)
-        )
+        self.data = generateRandomUtilityData()
 
         self.setupUI()
 

@@ -81,9 +81,9 @@ def generateBillData():
 
 def generateRandomUtilityData(startDate=None, endDate=None):
     if startDate is None:
-        startDate = datetime.today() - timedelta(days=365)
+        startDate = datetime(2023, 4, 1)
     if endDate is None:
-        endDate = datetime.today()
+        endDate = datetime(2025, 4, 22)
 
     def month_range(start, end):
         current = start.replace(day=1)
@@ -169,3 +169,72 @@ def generateBillsDataFromUtility():
         del bill["_sort_key"]
 
     return flat_list
+
+def generateRandomeUtilityBills(utility, startDate=None, endDate=None):
+    if startDate is None:
+        startDate = datetime(2023, 4, 1)
+    if endDate is None:
+        endDate = datetime(2025, 4, 22)
+
+    def month_range(start, end):
+        current = start.replace(day=1)
+        while current <= end:
+            yield current
+            current += relativedelta(months=1)
+
+    def random_date(start, end):
+        delta = end - start
+        return start + timedelta(days=random.randint(0, delta.days))
+
+    # Define the utility categories and their ranges
+    monthly_categories = {
+        "Electricity": (1000, 10000),
+        "Water": (50, 250),
+        "Trash": (500, 500),
+        "Wifi": (1000, 3500),
+    }
+
+    random_categories = {
+        "Gas": (1000, 2000),
+        "Maintenance": (100, 5000),
+        "Miscellaneous": (0, 5000)
+    }
+
+    data = {}
+    bill_id_counter = 1
+
+    # Check if the utility is in the predefined categories
+    if utility in monthly_categories:
+        category = utility
+        min_amt, max_amt = monthly_categories[category]
+        bills = []
+        for month in month_range(startDate, endDate):
+            amount = random.randint(min_amt, max_amt)
+            bill_date = (month + relativedelta(day=28))  # Approx last day of month
+            bills.append({
+                "BillID": bill_id_counter,
+                "TotalAmount": str(amount),
+                "BillingPeriodEnd": bill_date.strftime("%Y-%m-%d")
+            })
+            bill_id_counter += 1
+        data[category] = bills
+    elif utility in random_categories:
+        category = utility
+        min_amt, max_amt = random_categories[category]
+        bills = []
+        num_entries = random.randint(0, 10)
+        for _ in range(num_entries):
+            bill_date = random_date(startDate, endDate)
+            amount = random.randint(min_amt, max_amt)
+            bills.append({
+                "BillID": bill_id_counter,
+                "TotalAmount": str(amount),
+                "BillingPeriodEnd": bill_date.strftime("%Y-%m-%d")
+            })
+            bill_id_counter += 1
+        bills.sort(key=lambda b: b["BillingPeriodEnd"])
+        data[category] = bills
+    else:
+        return f"Utility '{utility}' not found."
+
+    return data

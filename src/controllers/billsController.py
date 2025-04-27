@@ -26,7 +26,7 @@ class BillsController:
         return {
             "BillID": id,
             "UnitName": "B01R02",
-            "UtilityName": "ELE001",
+            "UtilityID": "E001",
             "Type": "Electricity",
             "TotalAmount": "100.00",
             "BillingPeriodStart": QDate.currentDate().addMonths(-1).toString(),
