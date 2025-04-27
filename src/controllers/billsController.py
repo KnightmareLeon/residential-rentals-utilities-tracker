@@ -23,7 +23,17 @@ class BillsController:
         """
         Fetches all information about a single unit by ID.
         """
-        print("Viewing bill:", id)
+        return {
+            "BillID": id,
+            "UnitName": "B01R02",
+            "UtilityName": "ELE001",
+            "Type": "Electricity",
+            "TotalAmount": "100.00",
+            "BillingPeriodStart": QDate.currentDate().addMonths(-1).toString(),
+            "BillingPeriodEnd": QDate.currentDate().toString(),
+            "Status": "Paid",
+            "DueDate": QDate.currentDate().toString()
+        }
 
     @staticmethod
     def editBill(originalID: str, unitID: str, utilityID: str, totalAmount: str, billingPeriodStart: QDate, billingPeriodEnd: QDate, status: str, dueDate: QDate) -> str:

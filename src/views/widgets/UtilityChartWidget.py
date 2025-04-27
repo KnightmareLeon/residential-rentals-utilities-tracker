@@ -1,7 +1,7 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QButtonGroup
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QButtonGroup, QSizePolicy
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt, pyqtSignal
 
@@ -22,9 +22,11 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from src.utils.formatMoney import formatMoneyNoDecimal, formatMoney
-from src.utils.constants import categoryColors
+from src.utils.constants import categoryColors, billDataHeaders, billDataDatabaseHeaders
 from src.views.widgets.CheckableComboBox import CheckableComboBox
+from src.views.components.BillView import BillView
 from src.controllers.dashboardController import DashboardController
+from src.controllers.billsController import BillsController
 
 class UtilityChartWidget(QFrame):
 
@@ -89,7 +91,10 @@ class UtilityChartWidget(QFrame):
 
         chartTitle = QLabel(self.title)
         chartTitle.setFont(QFont("Urbanist", 14, QFont.Weight.Bold))
+        chartTitle.setStyleSheet("color: white;")
         chartTitle.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        chartTitle.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        chartTitle.setWordWrap(True)
         headerLayout.addWidget(chartTitle)
         headerLayout.addStretch()
 
@@ -296,7 +301,11 @@ class UtilityChartWidget(QFrame):
 
         if closestPoint:
             x, y, billDate, category, billID = closestPoint
-            print(f"Clicked on: BillID={billID}, Category='{category}', Amount={y}, Date={billDate}")
+
+            billData = BillsController.viewBill(billID)
+            if billData:
+                self.viewWindow = BillView(billID, billData, billDataHeaders, billDataDatabaseHeaders)
+                self.viewWindow.show()
 
     def generateEvenDateTicks(self, startDate: datetime, endDate: datetime, divisions: int):
         delta = (endDate - startDate) / (divisions - 1)

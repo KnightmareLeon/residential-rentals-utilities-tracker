@@ -1,9 +1,5 @@
-import datetime
-from dateutil.relativedelta import relativedelta
-
 from src.views.widgets.BaseTableWidget import BaseTableWidget
 from src.views.components.UnitView import UnitView
-from src.views.widgets.UtilityChartWidget import UtilityChartWidget
 from src.utils.constants import SortOrder
 from src.controllers.unitsController import UnitsController
 

@@ -2,8 +2,10 @@ from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QScrollAr
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt, pyqtSignal
 
-from src.utils.constants import categoryColors, defaultColor
+from src.utils.constants import categoryColors, defaultColor, billDataDatabaseHeaders, billDataHeaders
 from src.views.widgets.BillEntry import BillEntry
+from src.views.components.BillView import BillView
+from src.controllers.billsController import BillsController
 
 class BillsDashboard(QWidget):
     viewBills = pyqtSignal()
@@ -35,6 +37,7 @@ class BillsDashboard(QWidget):
 
         title = QLabel("Upcoming Bills")
         title.setFont(QFont("Urbanist", 15, QFont.Weight.Bold))
+        title.setStyleSheet("color: white;")
         outerLayout.addWidget(title)
 
         scrollArea = QScrollArea()
@@ -117,7 +120,12 @@ class BillsDashboard(QWidget):
 
     def handleRowClick(self, index):
         clickedBill = self.bills[index]
-        print(f"Bill ID: {clickedBill['BillID']}")
+        billID = clickedBill["BillID"]
+        billData = BillsController.viewBill(billID)
+
+        if billData:
+            self.viewWindow = BillView(billID, billData, billDataHeaders, billDataDatabaseHeaders)
+            self.viewWindow.show()
 
     def updateDashboard(self):
         #fetch new bills
