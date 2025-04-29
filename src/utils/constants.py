@@ -12,15 +12,15 @@ class Range(Enum):
     are describing when converted.
 
     The constant values stored are:
-    - ONE_MONTH = 1
     - THREE_MONTHS = 3
     - SIX_MONTHS = 6
     - ONE_YEAR = 12
+    - TWO_YEARS = 24
     """
-    ONE_MONTH = 1
     THREE_MONTHS = 3
     SIX_MONTHS = 6
     ONE_YEAR = 12
+    TWO_YEARS = 24
 
 categoryColors = {
             "Electricity": "#FFA500",
