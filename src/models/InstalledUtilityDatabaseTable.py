@@ -145,21 +145,31 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
 
     @classmethod
     def getUnitUtilities(cls,
-                   unit : int) -> list[int]:
+                   unit : int,
+                   type: bool = False) -> list[int] | dict[int, str]:
         """
         Returns a list of utility IDs for the given unit ID.
         """
         if not cls._initialized:
             cls._initialize()
             cls._initialized = True
-        result = []
+        result = None
         try:
             if not isinstance(unit, int):
                 raise ValueError("Unit must be an integer.")
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
-            sql = f"SELECT UtilityID FROM {cls.getTableName()} WHERE UnitID = {unit}"
+            ifTypeText = f"SELECT UtilityID, Utility.Type FROM {cls.getTableName()} " + \
+                         f"JOIN {UtilityDatabaseTable.getTableName()} USING (UtilityID)"
+            defaultText = f"SELECT UtilityID FROM {cls.getTableName()}"
+            sql = ifTypeText if type else defaultText
+            sql += f" WHERE UnitID = {unit}"
             cursor.execute(sql)
-            result = [row['UtilityID'] for row in cursor.fetchall()]
+            if not type:
+                result = [row["UtilityID"] for row in cursor.fetchall()]
+            else:
+                result = {}
+                for row in cursor.fetchall():
+                    result[row["UtilityID"]] = row["Type"]
 
         except Exception as e:
             print(f"Error: {e}")

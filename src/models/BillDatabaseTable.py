@@ -51,7 +51,7 @@ class BillDatabaseTable(DatabaseTable):
         The dictionary keys are the utility types, and the values are lists of bills.
         Each bill is represented as a dictionary with keys: BillID, TotalAmount, BillingPeriodEnd.
         
-        The range can be one of the following: 1m, 3m, 6m, 1y.
+        The range can be one of the following: 3m, 6m, 1y, 2y.
         """
         if not cls._initialized:
             cls._initialize()
@@ -82,7 +82,7 @@ class BillDatabaseTable(DatabaseTable):
                       offset: int = 1) -> dict[str, list[dict[str, any]]]:
         """
         Returns a dictionary of all bills for the given range.
-        The range can be one of the following: 1m, 3m, 6m, 1y.
+        The range can be one of the following: 3m, 6m, 1y, 2y.
         The dictionary keys are the utility types, and the values are lists of bills.
         Each bill is represented as a dictionary with keys: BillID, TotalAmount, BillingPeriodEnd.
         """
@@ -146,7 +146,7 @@ class BillDatabaseTable(DatabaseTable):
                       paidOnly: bool = False) -> float:
         """
         Returns the total sum of all bills for the given range.
-        The range can be one of the following: 1m, 3m, 6m, 1y.
+        The range can be one of the following: 3m, 6m, 1y, 2y.
         """
         if not cls._initialized:
             cls._initialize()
@@ -177,7 +177,7 @@ class BillDatabaseTable(DatabaseTable):
                          offset: int = 1) -> int:
         """
         Returns the total count of unpaid bills for the given range.
-        The range can be one of the following: 1m, 3m, 6m, 1y.
+        The range can be one of the following: 3m, 6m, 1y, 2y.
         """
         if not cls._initialized:
             cls._initialize()
@@ -239,7 +239,7 @@ class BillDatabaseTable(DatabaseTable):
                              range: Range) -> dict[str, int]:
         """
         Returns the maximum offset for the given unit ID and range.
-        The range can be one of the following: 1m, 3m, 6m, 1y.
+        The range can be one of the following: 3m, 6m, 1y, 2y.
         """
         if not cls._initialized:
             cls._initialize()
@@ -266,7 +266,7 @@ class BillDatabaseTable(DatabaseTable):
                                 range: Range) -> int:
             """
             Returns the maximum offset for the given utility ID and range.
-            The range can be one of the following: 1m, 3m, 6m, 1y.
+            The range can be one of the following: 3m, 6m, 1y, 2y.
             """
             if not cls._initialized:
                 cls._initialize()
@@ -288,7 +288,7 @@ class BillDatabaseTable(DatabaseTable):
                                 range: Range) -> int:
             """
             Returns the maximum offset for the given range.
-            The range can be one of the following: 1m, 3m, 6m, 1y.
+            The range can be one of the following: 3m, 6m, 1y, 2y.
             """
             if not cls._initialized:
                 cls._initialize()
@@ -310,12 +310,12 @@ class BillDatabaseTable(DatabaseTable):
                       offset: int) -> str:
         """
         Returns the range clause for the given range.
-        The range can be one of the following: 1m, 3m, 6m, 1y.
+        The range can be one of the following: 3m, 6m, 1y, 2y.
         """
         if not isinstance(range, Range):
             raise ValueError("Range must be an instance of Range enum.")
-        if not range in [Range.ONE_MONTH, Range.THREE_MONTHS, Range.SIX_MONTHS, Range.ONE_YEAR]:
-            raise ValueError("Range must be one of the following: 1m, 3m, 6m, 1y.")
+        if not range in [Range.THREE_MONTHS, Range.SIX_MONTHS, Range.ONE_YEAR, Range.TWO_YEARS]:
+            raise ValueError("Range must be one of the following: 3m, 6m, 1y, 2y.")
         if offset <= 0:
             raise ValueError("Offset must be greater than 0.")
         if not isinstance(offset, int):
@@ -391,7 +391,7 @@ class BillDatabaseTable(DatabaseTable):
                        range: Range) -> int:
         """
         Returns the maximum offset for the given date and range.
-        The range can be one of the following: 1m, 3m, 6m, 1y.
+        The range can be one of the following: 3m, 6m, 1y, 2y.
         """
         if not cls._initialized:
             cls._initialize()
@@ -400,8 +400,8 @@ class BillDatabaseTable(DatabaseTable):
             raise ValueError("Date must be a datetime.date object.")
         if not isinstance(range, Range):
             raise ValueError("Range must be an instance of Range enum.")
-        if not range in [Range.ONE_MONTH, Range.THREE_MONTHS, Range.SIX_MONTHS, Range.ONE_YEAR]:
-            raise ValueError("Range must be one of the following: 1m, 3m, 6m, 1y.")
+        if not range in [Range.THREE_MONTHS, Range.SIX_MONTHS, Range.ONE_YEAR, Range.TWO_YEARS]:
+            raise ValueError("Range must be one of the following: 3m, 6m, 1y, 2y.")
         try:
             date = "'" + date.strftime("%Y-%m-%d") + "'"
             
