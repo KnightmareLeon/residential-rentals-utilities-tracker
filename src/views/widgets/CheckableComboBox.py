@@ -5,11 +5,13 @@ from PyQt6.QtCore import Qt
 
 class CheckBoxDelegate(QStyledItemDelegate):
     def editorEvent(self, event, model, option, index):
-        if index.flags() & Qt.ItemFlag.ItemIsUserCheckable and event.type() == event.Type.MouseButtonRelease:
-            current_state = model.data(index, Qt.ItemDataRole.CheckStateRole)
-            new_state = Qt.CheckState.Unchecked if current_state == Qt.CheckState.Checked else Qt.CheckState.Checked
-            model.setData(index, new_state, Qt.ItemDataRole.CheckStateRole)
-            return True
+        if (index.flags() & Qt.ItemFlag.ItemIsUserCheckable) and event.type() == event.Type.MouseButtonRelease:
+            # Check if the event is inside the item's rectangle
+            if event.button() == event.Button.LeftButton:
+                current_state = model.data(index, Qt.ItemDataRole.CheckStateRole)
+                new_state = Qt.CheckState.Unchecked if current_state == Qt.CheckState.Checked else Qt.CheckState.Checked
+                model.setData(index, new_state, Qt.ItemDataRole.CheckStateRole)
+                return True
         return super().editorEvent(event, model, option, index)
 
 class CheckableComboBox(QComboBox):

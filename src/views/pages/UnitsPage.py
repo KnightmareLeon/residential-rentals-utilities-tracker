@@ -1,5 +1,6 @@
 from src.views.widgets.BasePageWidget import BasePageWidget
 from src.views.components.UnitsTable import UnitsTable
+from src.views.dialogs.AddUnitForm import AddUnitForm
 from src.controllers.unitsController import UnitsController
 
 class UnitsPage(BasePageWidget):
@@ -11,5 +12,9 @@ class UnitsPage(BasePageWidget):
         self.table.updateTable()
 
     def handleAddButton(self):
-        response = UnitsController.addUnit(None, None, None)
-        self.table.updateTable()
+        dialog = AddUnitForm()
+        if dialog.exec():
+            response = UnitsController.addUnit(None, None, None)
+            self.table.updateTable()
+        
+        
