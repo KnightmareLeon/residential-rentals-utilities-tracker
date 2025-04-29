@@ -6,6 +6,8 @@ class AddUnitForm(BaseCreateWidget):
         self.setWindowTitle("UtiliTrack - Add Unit")
         self.setMinimumWidth(400)
 
-        self.nameInput = self.addTextInput("Unit Name", placeholder="Enter name...")
-        self.addressInput = self.addTextInput("Address", placeholder="Enter address...")
-        self.unitTypeInput = self.addComboBox("Unit Type", ["Individual", "Shared", "Common"])
+        self.addSection("Unit Information")
+
+        self.nameInput = self.addTextInput("Unit Name", placeholder="Enter name...", sectionTitle="Unit Information")
+        self.addressInput = self.addTextInput("Address", placeholder="Enter address...", sectionTitle="Unit Information")
+        self.unitTypeInput = self.addComboBox("Unit Type", ["Individual", "Shared", "Common"], sectionTitle="Unit Information")
