@@ -144,6 +144,13 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         return result
 
     @classmethod
+    def readOne(cls, id : int):
+        """
+        Method disabled
+        """
+        pass
+
+    @classmethod
     def getUnitUtilities(cls,
                    unit : int,
                    type: bool = False) -> list[int] | dict[int, str]:

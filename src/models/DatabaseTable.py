@@ -162,6 +162,28 @@ class DatabaseTable(ABC):
         return result
 
     @classmethod
+    def readOne(cls, id: int) -> dict[str, int | str ]:
+        """
+        Read one data from the table. The method returns a dictionary as the result.
+        """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
+        result = {}
+        try:
+            cursor = DatabaseConnection.getConnection().cursor()
+            sql = f"SELECT * FROM {cls.getTableName()} WHERE {cls.getPrimaryKey()} = {id}"
+            cursor.execute(sql)
+
+            result = cursor.fetchone()
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+
+        return result
+    @classmethod
     def create(cls, data : dict[str, any]):
         """
         Inserts data into the table. The data must be a dictionary where the keys
