@@ -10,7 +10,7 @@ class BaseViewWidget(QDialog):
         super().__init__(parent)
         self.setWindowIcon(QIcon("assets/logos/logoIcon.png"))
         self.setObjectName("BaseViewWidget")
-        self.setWindowTitle("UtiliTrack - View Details")
+        self.setWindowTitle(f"UtiliTrack - View {mainTitle}")
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         self.setModal(True)
 
@@ -56,11 +56,18 @@ class BaseViewWidget(QDialog):
         titleLabel = QLabel(self.mainTitle)
         titleLabel.setObjectName("mainTitle")
         titleLabel.setAlignment(Qt.AlignmentFlag.AlignVCenter)
-        titleLabel.setStyleSheet("font-size: 24px; font-weight: bold;")
+
+        exitButton = QPushButton(icon=QIcon("assets/icons/exit.png"))
+        exitButton.setFixedSize(45, 45)
+        exitButton.setObjectName("exitButton")
+        exitButton.setCursor(Qt.CursorShape.PointingHandCursor)
+        exitButton.clicked.connect(self.handleExitClicked)
 
         # Add widgets to layout
         titleLayout.addWidget(iconButton)
         titleLayout.addWidget(titleLabel)
+        titleLayout.addStretch()
+        titleLayout.addWidget(exitButton)
 
         self.mainLayout.addLayout(titleLayout)
 
@@ -70,7 +77,7 @@ class BaseViewWidget(QDialog):
                 background-color: #131313;
                 padding: 15px;
             }
-            QLabel#title {
+            QLabel#mainTitle {
                 font-family: "Urbanist";
                 font-size: 28px;
                 font-weight: bold;
@@ -102,9 +109,17 @@ class BaseViewWidget(QDialog):
                 border: none;
                 background-color: transparent;
             }
-            #iconButton:hover {
-                background-color: rgba(255, 255, 255, 0.1);
+            QPushButton#exitButton {
+                background-color: #2b2b2b;
+                border: none;
+                color: white;
+                font-size: 30px;
+                font-weight: bold;
                 border-radius: 6px;
+                padding: 5px;
+            }
+            QPushButton#exitButton:hover {
+                background-color: #3b3b3b;
             }
         """)
 
@@ -149,8 +164,7 @@ class BaseViewWidget(QDialog):
         label.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
         label.setWordWrap(True)
         label.setMinimumWidth(100)
-        label.setCursor(Qt.CursorShape.IBeamCursor)
-        label.setContentsMargins(0, 0, 10, 0)
+        label.setContentsMargins(0, 0, 5, 0)
 
         value = QLabel(str(valueText))
         value.setObjectName("value")
@@ -179,7 +193,7 @@ class BaseViewWidget(QDialog):
 
         row.addWidget(label)
         row.addWidget(value, 1)
-        row.setContentsMargins(0, 0, 0, 0)
+        row.setContentsMargins(0, 10, 0, 0)
 
         layout.addWidget(container)
         layout.addSpacerItem(QSpacerItem(1, 1, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
@@ -187,3 +201,6 @@ class BaseViewWidget(QDialog):
     def addWidgetToSection(self, sectionIndex: int, widget: QWidget):
         if sectionIndex < len(self.sections):
             self.sections[sectionIndex].addWidget(widget)
+
+    def handleExitClicked(self):
+        self.close()

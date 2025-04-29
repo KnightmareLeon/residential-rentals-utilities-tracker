@@ -1,5 +1,5 @@
 from src.views.widgets.BaseTableWidget import BaseTableWidget
-from src.views.components.UnitView import UnitView
+from src.views.dialogs.UnitView import UnitView
 from src.utils.constants import SortOrder
 from src.controllers.unitsController import UnitsController
 

@@ -4,7 +4,7 @@ from PyQt6.QtCore import Qt, pyqtSignal
 
 from src.utils.constants import categoryColors, defaultColor, billDataDatabaseHeaders, billDataHeaders
 from src.views.widgets.BillEntry import BillEntry
-from src.views.components.BillView import BillView
+from src.views.dialogs.BillView import BillView
 from src.controllers.billsController import BillsController
 
 class BillsDashboard(QWidget):

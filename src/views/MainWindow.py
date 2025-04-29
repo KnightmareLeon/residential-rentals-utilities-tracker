@@ -33,75 +33,113 @@ class MainWindow(QMainWindow):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1102, 737)
-        MainWindow.setStyleSheet("QMainWindow {\n"
-"    font-family: \"Urbanist\";\n"
-"     background-color: #080808;\n"
-"}\n"
-"\n"
-"QFrame {\n"
-"      border: none;\n"
-"}\n"
-"\n"
-"/* Sidebar */\n"
-"#sidebarFrame QPushButton {\n"
-"    font-family: \"Urbanist\";\n"
-"    color: white;\n"
-"    font-size: 18px;\n"
-"    border: none;\n"
-"    padding: 15px 30px;\n"
-"    border-radius: 15px;\n"
-"    text-align: left;\n"
-"}\n"
-"#sidebarFrame QPushButton::hover {\n"
-"   background-color: #15161a;\n"
-"}\n"
-"\n"
-"#homeButton {\n"
-"    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0,\n"
-"              stop:0.4 #3A0CA3, stop:1 #F72585);\n"
-"      color: white;\n"
-"}\n"
-"\n"
-"/*Header*/\n"
-"QFrame#searchBarFrame {\n"
-"    background-color: #15161a;\n"
-"    border-radius: 12px;\n"
-"    margin: 5px;\n"
-"    padding: 12px;\n"
-"}\n"
-"\n"
-"QLabel#searchIconLabel {\n"
-"      min-width: 35px;\n"
-"      min-height: 25px;\n"
-"      margin-left: 8px;\n"
-"      margin-right: 6px;\n"
-"}\n"
-"\n"
-"QLineEdit#searchInputLineEdit {\n"
-"      border: none;\n"
-"      background: transparent;\n"
-"      color: white;\n"
-"      font-size: 18px;\n"
-"    font-family: \"Urbanist\";\n"
-"}\n"
-"\n"
-"QLineEdit#searchInputLineEdit::placeholder {\n"
-"      color: #A0A0A0;\n"
-"}\n"
-"\n"
-"QLabel#windowLabel {\n"
-"    font-size: 40px;\n"
-"    font-weight: 700;\n"
-"    font-family: \"Urbanist\";\n"
-"    color: white;\n"
-"}\n"
-"\n"
-"QLabel#userNameLabel {\n"
-"    font-family: \"Urbanist\";\n"
-"    font-size: 20px;\n"
-"    color: white;\n"
-"    margin: 15px;\n"
-"}")
+        MainWindow.setStyleSheet("""
+            QMainWindow {
+                font-family: "Urbanist";
+                background-color: #080808;
+            }
+
+            QFrame {
+                border: none;
+            }
+
+            /* Sidebar */
+            #sidebarFrame QPushButton {
+                font-family: "Urbanist";
+                color: white;
+                font-size: 18px;
+                border: none;
+                padding: 15px 30px;
+                border-radius: 15px;
+                text-align: left;
+            }
+            #sidebarFrame QPushButton::hover {
+                background-color: #15161a;
+            }
+
+            #homeButton {
+                background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0,
+                        stop:0.4 #3A0CA3, stop:1 #F72585);
+                color: white;
+            }
+
+            /* Header */
+            QFrame#searchBarFrame {
+                background-color: #15161a;
+                border-radius: 12px;
+                margin: 5px;
+                padding: 12px;
+            }
+
+            QLabel#searchIconLabel {
+                min-width: 35px;
+                min-height: 25px;
+                margin-left: 8px;
+                margin-right: 6px;
+            }
+
+            QLineEdit#searchInputLineEdit {
+                border: none;
+                background: transparent;
+                color: white;
+                font-size: 18px;
+                font-family: "Urbanist";
+            }
+
+            QLineEdit#searchInputLineEdit::placeholder {
+                color: #A0A0A0;
+            }
+
+            QLabel#windowLabel {
+                font-size: 40px;
+                font-weight: 700;
+                font-family: "Urbanist";
+                color: white;
+            }
+
+            QLabel#userNameLabel {
+                font-family: "Urbanist";
+                font-size: 20px;
+                color: white;
+                margin: 15px;
+            }
+            QScrollBar:vertical {
+                background: #2e2e2e;
+                width: 12px;
+                margin: 0px 0px 0px 0px;
+                border-radius: 6px;
+            }
+            QScrollBar::handle:vertical {
+                background: #888;
+                min-height: 20px;
+                border-radius: 6px;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                background: none;
+                height: 0px;
+            }
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                background: none;
+            }
+            QScrollBar:horizontal { 
+                background: #2e2e2e;
+                height: 12px;
+                margin: 0px 0px 0px 0px;
+                border-radius: 6px;
+            }
+            QScrollBar::handle:horizontal {
+                background: #888;
+                min-width: 20px;
+                border-radius: 6px;
+            }
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+                background: none;
+                width: 0px;
+            }
+            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+                background: none;
+            }
+            """)
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralwidget)

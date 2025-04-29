@@ -1,5 +1,5 @@
 from src.views.widgets.BaseTableWidget import BaseTableWidget
-from src.views.components.UtilityView import UtilityView
+from src.views.dialogs.UtilityView import UtilityView
 from src.utils.constants import SortOrder
 from src.controllers.utilitiesController import UtilitiesController
 

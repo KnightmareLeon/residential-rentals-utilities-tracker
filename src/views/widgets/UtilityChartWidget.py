@@ -1,7 +1,7 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QButtonGroup, QSizePolicy
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QButtonGroup, QSizePolicy, QListView
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt, pyqtSignal
 
@@ -24,7 +24,7 @@ from matplotlib.figure import Figure
 from src.utils.formatMoney import formatMoneyNoDecimal, formatMoney
 from src.utils.constants import categoryColors, billDataHeaders, billDataDatabaseHeaders
 from src.views.widgets.CheckableComboBox import CheckableComboBox
-from src.views.components.BillView import BillView
+from src.views.dialogs.BillView import BillView
 from src.controllers.dashboardController import DashboardController
 from src.controllers.billsController import BillsController
 
@@ -99,6 +99,7 @@ class UtilityChartWidget(QFrame):
         headerLayout.addStretch()
 
         self.filterComboBox = CheckableComboBox()
+        self.filterComboBox.setView(QListView())
         for label in self.utilityFilters:
             self.filterComboBox.addItem(label)
         self.filterComboBox.onItemCheckedChanged(self.handleFilterUpdate)

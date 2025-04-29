@@ -1,5 +1,6 @@
 from src.views.widgets.BasePageWidget import BasePageWidget
 from src.views.components.BillsTable import BillsTable
+from src.views.dialogs.AddBillForm import AddBillForm
 from src.controllers.billsController import BillsController
 
 class BillsPage(BasePageWidget):
@@ -11,5 +12,7 @@ class BillsPage(BasePageWidget):
         self.table.updateTable()
 
     def handleAddButton(self):
-        response = BillsController.addBill(None, None, None, None, None, None, None)
-        self.table.updateTable()
+        dialog = AddBillForm()
+        if dialog.exec():
+            response = BillsController.addBill(None, None, None, None, None, None, None)
+            self.table.updateTable()

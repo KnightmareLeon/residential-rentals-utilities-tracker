@@ -1,9 +1,5 @@
-from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
-import random
-
 from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QButtonGroup, QComboBox
-from PyQt6.QtGui import QFont, QPixmap, QIcon
+from PyQt6.QtGui import QFont, QIcon
 from PyQt6.QtCore import Qt, QSize
 
 from src.utils.sampleDataGenerator import generateRandomUtilityData

@@ -1,5 +1,5 @@
 from src.views.widgets.BaseTableWidget import BaseTableWidget
-from src.views.components.BillView import BillView
+from src.views.dialogs.BillView import BillView
 from src.utils.constants import SortOrder, billDataDatabaseHeaders, billDataHeaders
 from src.controllers.billsController import BillsController
 

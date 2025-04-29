@@ -23,8 +23,8 @@ categoryColors = {
 
 defaultColor = "#AAAAAA"
 
-billDataHeaders = ["Bill ID", "Unit Name", "Utility ID", "Type", "Total Amount", "Status", "Billing Period Start", "Billing Period End", "Due Date"]
-billDataDatabaseHeaders = ["BillID", "UnitName", "UtilityID", "Type", "TotalAmount", "Status", "BillingPeriodStart", "BillingPeriodEnd", "DueDate"]
+billDataHeaders = ["Bill ID", "Unit Name", "Utility ID", "Type",  "Status", "Total Amount", "Billing Period Start", "Billing Period End", "Due Date"]
+billDataDatabaseHeaders = ["BillID", "UnitName", "UtilityID", "Type", "Status", "TotalAmount", "BillingPeriodStart", "BillingPeriodEnd", "DueDate"]
 
 utilityDataHeaders = ["Utility ID", "Type", "Unit Name", "Status", "Billing Cycle"]
 utilityDataDatabaseHeaders = ["UtilityID", "Type", "UnitName", "Status", "BillingCycle"]
