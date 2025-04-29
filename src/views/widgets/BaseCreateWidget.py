@@ -18,9 +18,12 @@ class BaseCreateWidget(QDialog):
         self.mainLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.mainLayout.setContentsMargins(20, 20, 20, 20)
         self.mainLayout.setSpacing(15)
+        self.setObjectName("BaseViewWidget")
 
         self.setupTitleBar(mainTitle, iconPath)
 
+        self.sections = {}
+        self.fields = {}
         self.fieldsLayout = QHBoxLayout()
         self.fieldsLayout.setSpacing(10)
         self.mainLayout.addLayout(self.fieldsLayout)
