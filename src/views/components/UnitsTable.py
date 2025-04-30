@@ -1,5 +1,6 @@
 from src.views.widgets.BaseTableWidget import BaseTableWidget
 from src.views.dialogs.UnitView import UnitView
+from src.views.dialogs.EditUnitForm import EditUnitForm
 from src.utils.constants import SortOrder
 from src.controllers.unitsController import UnitsController
 
@@ -33,10 +34,10 @@ class UnitsTable(BaseTableWidget):
             return
     
         id = item.text()
-        unitData, unitBillsData = UnitsController.viewUnit(id)
+        unitData, unitUtilities, unitBillsData = UnitsController.viewUnit(id)
 
         if unitData:
-            self.viewWindow = UnitView(id, unitData, unitBillsData, self.headers, self.databaseHeaders)
+            self.viewWindow = UnitView(id, unitData, unitUtilities, unitBillsData, self.headers, self.databaseHeaders)
             self.viewWindow.show()
 
         self.updateTable()
@@ -46,9 +47,20 @@ class UnitsTable(BaseTableWidget):
         if not item:
             return
         
-        id = item.text()
-        #open unit edit dialog
-        response = UnitsController.editUnit(id, None, None, None, None)
+        unitID = item.text()
+        unit, _, _ = UnitsController.viewUnit(unitID)
+
+        dialog = EditUnitForm(name=unit["Name"], address=unit["Address"], type=unit["Type"])
+
+        if dialog.exec():
+            updatedData = dialog.getFormData()
+            
+            UnitsController.editUnit(
+                unitID,
+                updatedData["Unit Name"],
+                updatedData["Address"],
+                updatedData["Unit Type"]
+            )
 
         self.updateTable()
 

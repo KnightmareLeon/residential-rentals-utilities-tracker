@@ -2,14 +2,14 @@ from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QComboBox, QSpinBox,
     QPushButton, QWidget, QSizePolicy, QFrame, QDateEdit
 )
-from PyQt6.QtGui import QIcon, QValidator, QDoubleValidator, QIntValidator
+from PyQt6.QtGui import QIcon, QDoubleValidator, QIntValidator
 from PyQt6.QtCore import Qt, QSize, QDate
 
-class BaseCreateWidget(QDialog):
+class BaseEditWidget(QDialog):
     def __init__(self, mainTitle: str, iconPath: str = None, parent=None):
         super().__init__(parent)
         self.setWindowIcon(QIcon("assets/logos/logoIcon.png"))
-        self.setWindowTitle("UtiliTrack - Create Item")
+        self.setWindowTitle("UtiliTrack - Edit Item")
         self.setModal(True)
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         self.fields = {}
@@ -18,7 +18,7 @@ class BaseCreateWidget(QDialog):
         self.mainLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.mainLayout.setContentsMargins(20, 20, 20, 20)
         self.mainLayout.setSpacing(15)
-        self.setObjectName("BaseViewWidget")
+        self.setObjectName("BaseEditWidget")
 
         self.setupTitleBar(mainTitle, iconPath)
 
@@ -30,7 +30,7 @@ class BaseCreateWidget(QDialog):
 
         self.setupBaseStyle()
 
-        self.addButton = QPushButton(f"Add {mainTitle.split()[1]}")
+        self.addButton = QPushButton(f"Edit {mainTitle.split()[1]}")
         self.addButton.setStyleSheet("""
             QPushButton {
                 background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0,
@@ -88,7 +88,7 @@ class BaseCreateWidget(QDialog):
 
     def setupBaseStyle(self):
         self.setStyleSheet("""
-            QWidget#BaseViewWidget {
+            QWidget#BaseEditWidget {
                 background: qlineargradient(
                     x1: 0, y1: 0, x2: 1, y2: 1,
                     stop: 0 #1C1C1C, 
@@ -277,36 +277,41 @@ class BaseCreateWidget(QDialog):
         self.fields[label] = widget
         return widget
 
-    def addFloatInput(self, label: str, minValue=0, maxValue=999999999, sectionTitle: str | None = None):
+    def addFloatInput(self, label: str, minValue=0, maxValue=999999999, sectionTitle: str | None = None, defaultValue: float = 0.0):
         lineEdit = QLineEdit()
         lineEdit.setValidator(QDoubleValidator(float(minValue), float(maxValue), 2))
         lineEdit.setPlaceholderText(label)
+        lineEdit.setText(str(defaultValue))
         lineEdit.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         return self._addField(label, lineEdit, sectionTitle)
 
-    def addIntInput(self, label: str, minValue=0, maxValue=999999999, sectionTitle: str | None = None):
+    def addIntInput(self, label: str, minValue=0, maxValue=999999999, sectionTitle: str | None = None, defaultValue: int = 0):
         lineEdit = QLineEdit()
         lineEdit.setValidator(QIntValidator(minValue, maxValue))
         lineEdit.setPlaceholderText(label)
+        lineEdit.setText(str(defaultValue))
         lineEdit.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         return self._addField(label, lineEdit, sectionTitle)
 
-    def addTextInput(self, label: str, placeholder: str = "", sectionTitle: str | None = None):
+    def addTextInput(self, label: str, placeholder: str = "", sectionTitle: str | None = None, defaultValue: str = ""):
         lineEdit = QLineEdit()
         lineEdit.setPlaceholderText(placeholder)
+        lineEdit.setText(defaultValue)
         return self._addField(label, lineEdit, sectionTitle)
 
-    def addComboBox(self, label: str, options: list[str], sectionTitle: str | None = None):
+    def addComboBox(self, label: str, options: list[str], sectionTitle: str | None = None, defaultValue: str = ""):
         combo = QComboBox()
         combo.addItems(options)
+        combo.setPlaceholderText(label)
         return self._addField(label, combo, sectionTitle)
 
-    def addSpinBox(self, label: str, minValue=0, maxValue=100, sectionTitle: str | None = None):
+    def addSpinBox(self, label: str, minValue=0, maxValue=100, sectionTitle: str | None = None, defaultValue: int = 0):
         spin = QSpinBox()
         spin.setRange(minValue, maxValue)
+        spin.setValue(defaultValue)
         return self._addField(label, spin, sectionTitle)
 
-    def addDateInput(self, label: str, defaultDate: QDate = QDate.currentDate(), sectionTitle: str | None = None):
+    def addDateInput(self, label: str, defaultDate: QDate = QDate.currentDate(), sectionTitle: str | None = None, placeholder: str = ""):
         dateEdit = QDateEdit(defaultDate)
         dateEdit.setDisplayFormat("yyyy-MM-dd")
         dateEdit.setCalendarPopup(True)
@@ -321,11 +326,15 @@ class BaseCreateWidget(QDialog):
                 data[label] = widget.currentText()
             elif isinstance(widget, QSpinBox):
                 data[label] = widget.value()
+            elif isinstance(widget, QDateEdit):
+                data[label] = widget.date().toString("yyyy-MM-dd")
+            else:
+                data[label] = None
         return data
 
     def onAddClicked(self):
         formData = self.getFormData()
-        print(f"Adding {self.windowTitle()}: {formData}")
+        print(f"Editing {self.windowTitle()}: {formData}")
         self.accept()
 
     def handleExitClicked(self):

@@ -1,10 +1,12 @@
-from src.views.widgets.BaseCreateWidget import BaseCreateWidget
+from src.views.widgets.BaseEditWidget import BaseEditWidget
 from src.controllers.unitsController import UnitsController
+from src.controllers.utilitiesController import UtilitiesController
+from src.utils.constants import UTILITIES
 
-class AddUtilityForm(BaseCreateWidget):
-    def __init__(self):
-        super().__init__(mainTitle="Add Utility", iconPath="assets/icons/utilities.png")
-        self.setWindowTitle("UtiliTrack - Add Utility")
+class EditUtilityForm(BaseEditWidget):
+    def __init__(self, type: str, unitName: str, status: str, billingCycle: str, installationDate: str):
+        super().__init__(mainTitle="Edit Utility", iconPath="assets/icons/utilities.png")
+        self.setWindowTitle("UtiliTrack - Edit Utility")
         self.setMinimumWidth(400)
 
         
@@ -12,7 +14,7 @@ class AddUtilityForm(BaseCreateWidget):
 
         self.addSection("Utility Information")
 
-        self.typeInput = self.addComboBox("Utility Type", ['Electricity','Water','Gas','Wifi','Trash','Maintenance','Miscellaneous'], sectionTitle="Utility Information")
+        self.typeInput = self.addComboBox("Utility", UTILITIES, sectionTitle="Utility Information", defaultValue=type)
         self.unitNameInput = self.addComboBox("Unit", [name["UnitName"] for name in unitNames], sectionTitle="Utility Information")
         self.installationDateInput = self.addDateInput("Installation Date", sectionTitle="Utility Information")
         self.statusInput = self.addComboBox("Status", ['Active','Inactive'], sectionTitle="Utility Information")

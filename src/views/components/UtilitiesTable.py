@@ -1,7 +1,10 @@
 from src.views.widgets.BaseTableWidget import BaseTableWidget
 from src.views.dialogs.UtilityView import UtilityView
+from src.views.dialogs.EditUtilityForm import EditUtilityForm
 from src.utils.constants import SortOrder
 from src.controllers.utilitiesController import UtilitiesController
+
+from src.utils.constants import utilityDataHeaders, utilityDataDatabaseHeaders
 
 class UtilitiesTable(BaseTableWidget):
     def __init__(self, parent=None, mainWindow=None):
@@ -34,10 +37,10 @@ class UtilitiesTable(BaseTableWidget):
             return
     
         id = item.text()
-        utilityData, utilityBillsData = UtilitiesController.viewUtility(id)
+        utilityData, utilityUnits, utilityBillsData = UtilitiesController.viewUtility(id)
 
         if utilityData:
-            self.viewWindow = UtilityView(id, utilityData, utilityBillsData, self.headers, self.databaseHeaders)
+            self.viewWindow = UtilityView(id, utilityData, utilityUnits, utilityBillsData, utilityDataHeaders, utilityDataDatabaseHeaders)
             self.viewWindow.show()
 
         self.updateTable()
@@ -47,9 +50,22 @@ class UtilitiesTable(BaseTableWidget):
         if not item:
             return
         
-        id = item.text()
-        #open unit edit dialog
-        response = UtilitiesController.editUtility(id, None, None, None)
+        utilityID = item.text()
+        utility, _, _ = UtilitiesController.viewUtility(utilityID)
+
+        dialog = EditUtilityForm(utility["Type"], utility["UnitName"], utility["Status"], utility["BillingCycle"], utility["InstallationDate"])
+        
+        if dialog.exec():
+            updatedData = dialog.getFormData()
+            
+            UtilitiesController.editUtility(
+                utilityID,
+                updatedData["Utility Type"],
+                updatedData["Unit"],
+                updatedData["Status"],
+                updatedData["Billing Cycle"],
+                updatedData["Installation Date"]
+            )
 
         self.updateTable()
 
