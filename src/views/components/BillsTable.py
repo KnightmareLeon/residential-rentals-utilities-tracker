@@ -1,6 +1,7 @@
 from src.views.widgets.BaseTableWidget import BaseTableWidget
 from src.views.dialogs.BillView import BillView
 from src.utils.constants import SortOrder, billDataDatabaseHeaders, billDataHeaders
+from src.views.dialogs.EditBillForm import EditBillForm
 from src.controllers.billsController import BillsController
 
 class BillsTable(BaseTableWidget):
@@ -47,9 +48,20 @@ class BillsTable(BaseTableWidget):
         if not item:
             return
         
-        id = item.text()
-        #open unit edit dialog
-        response = BillsController.editBill(id, None, None, None, None, None, None, None)
+        billID = item.text()
+        unit = BillsController.viewBill(billID)
+
+        dialog = EditBillForm(unit["UnitName"], unit["Type"], unit["TotalAmount"], unit["BillingPeriodStart"], unit["BillingPeriodEnd"], unit["Status"], unit["DueDate"])
+
+        if dialog.exec():
+            updatedData = dialog.getFormData()
+            
+            BillsController.editUnit(
+                billID,
+                updatedData["Unit Name"],
+                updatedData["Address"],
+                updatedData["Unit Type"]
+            )
 
         self.updateTable()
 

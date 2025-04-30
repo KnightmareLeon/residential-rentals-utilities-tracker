@@ -19,24 +19,40 @@ class UtilitiesController:
         return "Utility added successfully"
 
     @staticmethod
-    def viewUtility(id: str) -> dict[str, str]:
+    def viewUtility(id: str) -> tuple[dict[str, str], list[dict[str, str]], list[dict[str, str]]]:
         """
         Fetches all information about a single utility by ID.
         """
-        return ({
+        return ({ # UTILITY INFORMATION
             "UtilityID": id,
             "Type": "Electricity",
-            "UnitName": "B01R02",
             "Status": "Active",
             "BillingCycle": "Monthly",
-        }, generateRandomeUtilityBills("Electricity"))
+            "InstallationDate": "2023-10-01",
+        }, 
+        [ # UTILITY UNITS
+            {"UnitID": "U001", "Name": "B01R01 (Main)"}, # butngan ug Main ang main unit niya pero controller na bahala
+            {"UnitID": "U002", "Name": "B01R02"},
+            {"UnitID": "U003", "Name": "B01R03"},
+            {"UnitID": "U001", "Name": "B01R01"},
+            {"UnitID": "U002", "Name": "B01R02"},
+            {"UnitID": "U003", "Name": "B01R03"},
+            {"UnitID": "U001", "Name": "B01R01"},
+            {"UnitID": "U002", "Name": "B01R02"},
+            {"UnitID": "U003", "Name": "B01R03"},
+            {"UnitID": "U001", "Name": "B01R01"},
+            {"UnitID": "U002", "Name": "B01R02"},
+            {"UnitID": "U003", "Name": "B01R03"},
+        ],
+        # UTILITY BILLS
+        generateRandomeUtilityBills("Electricity"))
 
     @staticmethod
-    def editUtility(originalID: str, type: str, status: str, billingCycle: str) -> str:
+    def editUtility(originalID: str, type: str, unitName: str, status: str, billingCycle: str, installationDate) -> str:
         """
         Edits a utility with the given data.
         """
-        print("Editing utility:", originalID, type, status, billingCycle)
+        print("Editing utility:", originalID, type, unitName, status, billingCycle, installationDate)
         return "Utility edited successfully"
     
     @staticmethod
@@ -46,3 +62,14 @@ class UtilitiesController:
         """
         print("Deleting utility:", id)
         return "Utility deleted successfully"
+    
+    @staticmethod
+    def getUtilitiesByUnitID(unitName: str) -> list[dict[str, str]]:
+        """
+        Fetches all utilities with unit ID.
+        """
+        print("Fetching utilities by unit name:", unitName)
+        return [
+            {"UtilityID": "E001", "Type": "Electricity"},
+            {"UtilityID": "W001", "Type": "Water"},
+        ]
