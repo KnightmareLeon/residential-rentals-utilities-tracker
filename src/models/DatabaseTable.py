@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import datetime
 
 from models.DatabaseConnection import DatabaseConnection
 
@@ -19,7 +20,7 @@ class DatabaseTable(ABC):
                            f"WHERE TABLE_NAME = '{cls._tableName}' AND CONSTRAINT_NAME = " +
                            "'PRIMARY'")
             cls._primary = cursor.fetchone()['COLUMN_NAME']
-            cls.columns = cls._getColumns(cls)
+            cls.columns = cls._readColumns(cls)
         except Exception as e:
             print(f"Error: {e}")
             raise e
@@ -60,7 +61,7 @@ class DatabaseTable(ABC):
              order : str = "ASC",
              page : int = 1, 
              limit : int = 50
-             ) -> list[dict[str, any]]:
+             ) -> list[dict[str, int | str | datetime.date]]:
         """
         Reads data from the table. The method accepts various parameters to filter,
         sort, and paginate the results. The parameters include:
@@ -162,7 +163,7 @@ class DatabaseTable(ABC):
         return result
 
     @classmethod
-    def readOne(cls, id: int) -> dict[str, int | str ]:
+    def readOne(cls, id: int) -> dict[str, int | str]:
         """
         Read one data from the table. The method returns a dictionary as the result.
         """
@@ -183,8 +184,9 @@ class DatabaseTable(ABC):
             cursor.close()
 
         return result
+    
     @classmethod
-    def create(cls, data : dict[str, any]):
+    def create(cls, data : dict[str, str]):
         """
         Inserts data into the table. The data must be a dictionary where the keys
         are the column names and the values are the corresponding values to be inserted.
@@ -198,18 +200,19 @@ class DatabaseTable(ABC):
         try:
             if not isinstance(data, dict):
                 raise ValueError("Data must be a dictionary.")
-            if cls._primary not in data:
-                raise ValueError(f"Primary key '{cls._primary}' is required in the data.")
-            if not isinstance(data[cls._primary], int):
-                raise ValueError(f"Primary key '{cls._primary}' must be an integer.")
+            if cls._primary in data:
+                raise ValueError(f"Primary key '{cls._primary}' must not be in the data.")
             for key in data.keys():
                 if key not in cls.columns:
                     raise ValueError(f"Column '{key}' does not exist in the table.")
-            if sorted(list(data.keys())) != sorted(cls.columns):
+            
+            columns = cls.columns.copy()
+            columns.remove(cls._primary)
+            if sorted(list(data.keys())) != sorted(columns):
                 raise ValueError(f"Data keys {data.keys()} do not match table columns {cls.columns}.")
         
             cursor = DatabaseConnection.getConnection().cursor()
-            columns = ', '.join(data.keys())
+            columnsClause = ', '.join(data.keys())
             values = []
             for data in data.values():
                 if isinstance(data, str):
@@ -220,7 +223,7 @@ class DatabaseTable(ABC):
                     raise ValueError(f"Unsupported data type: {type(data)}")
                 values.append(data)
             values = ', '.join(values)
-            sql = f"INSERT INTO {cls._tableName} ({columns}) VALUES ({values})"
+            sql = f"INSERT INTO {cls._tableName} ({columnsClause}) VALUES ({values})"
             cursor.execute(sql)
         except Exception as e:
             print(f"Error: {e}")
@@ -244,6 +247,7 @@ class DatabaseTable(ABC):
             for key in keys:
                 if not isinstance(key, int):
                     raise ValueError("Keys must be a list of integers.")
+
             cursor = DatabaseConnection.getConnection().cursor()
             keysClause = ', '.join([str(key) for key in keys])
             sql = f"DELETE FROM {cls._tableName} WHERE {cls._primary} IN ({keysClause})"
@@ -255,7 +259,7 @@ class DatabaseTable(ABC):
             cursor.close()
 
     @classmethod
-    def update(cls, key : int, data : dict[str, any]):
+    def update(cls, key : int, data : dict[str, str]):
         """
         Updates data in the table based on the primary key. The key must be an integer
         and must exist in the table. The data must be a dictionary where the keys are
@@ -273,12 +277,15 @@ class DatabaseTable(ABC):
                 raise ValueError("Data must be a dictionary.")
             for k in data.keys():
                 if k not in cls.columns:
-                    raise ValueError(f"Column '{k}' does not exist in the table.")    
-        
+                    raise ValueError(f"Column '{k}' does not exist in the table.")
+                if k == cls._primary:
+                    raise ValueError(f"Primary key {k} cannot be updated.")    
+
             cursor = DatabaseConnection.getConnection().cursor()
             set_clause = ', '.join([f"{k} = '{v}'" for k, v in data.items()])
             sql = f"UPDATE {cls._tableName} SET {set_clause} WHERE {cls._primary} = {key}"
             cursor.execute(sql)
+        
         except Exception as e:
             print(f"Error: {e}")
             raise e
@@ -343,7 +350,7 @@ class DatabaseTable(ABC):
             cursor.close()
         return total
     
-    def _getColumns(cls) -> list[str]:
+    def _readColumns(cls) -> list[str]:
         """
         Returns a list of column names in the table.
         """
