@@ -19,7 +19,7 @@ class BillDatabaseTable(DatabaseTable):
         try:
             cursor = DatabaseConnection.getConnection().cursor()
             cursor.execute("CREATE TABLE IF NOT EXISTS bill ( " +
-                "BillID int NOT NULL, " +
+                "BillID int NOT NULL AUTO_INCREMENT, " +
                 "UnitID int DEFAULT NULL, " +
                 "UtilityID int DEFAULT NULL, " +
                 "TotalAmount decimal(10,2) NOT NULL, " +

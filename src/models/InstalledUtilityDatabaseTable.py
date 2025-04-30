@@ -17,7 +17,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
                            f"WHERE TABLE_NAME = '{cls._tableName}' AND CONSTRAINT_NAME = " +
                            "'PRIMARY'")
             cls._primary = [row['COLUMN_NAME'] for row in cursor.fetchall()]
-            cls.columns = cls._getColumns(cls)
+            cls.columns = cls._readColumns(cls)
         except Exception as e:
             print(f"Error: {e}")
             raise e
@@ -27,7 +27,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
     @classmethod
     def getPrimaryKey(cls) -> list[str]:
         """
-        Returns the primary key of the table.
+        Returns the primary keys of the table.
         """
         if not cls._initialized:
             cls._initialize()
@@ -208,7 +208,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
     def delete(cls, keys : list[int]):
         """
         Disabled the delete method for this class, to delete data from the table,
-        use the delete method of either the Unit or Utility class."""
+        use the delete method of either the Unit or Utility table."""
         if not cls._initialized:
             cls._initialize()
             cls._initialized = True

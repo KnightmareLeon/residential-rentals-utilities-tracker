@@ -10,7 +10,7 @@ class UtilityDatabaseTable(DatabaseTable):
         try:
             cursor = DatabaseConnection.getConnection().cursor()
             cursor.execute("CREATE TABLE IF NOT EXISTS utility (" +
-                "UtilityID int NOT NULL, " + 
+                "UtilityID int NOT NULL AUTO_INCREMENT, " + 
                 "Type enum('Electricity','Water','Gas','Wifi','Trash','Maintenance','Miscellaneous') NOT NULL, " +
                 "Status enum('Active','Inactive') NOT NULL, " +
                 "BillingCycle enum('Monthly','Quarterly','Annually','Irregular') NOT NULL," +

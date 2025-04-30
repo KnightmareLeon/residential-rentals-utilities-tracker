@@ -10,7 +10,7 @@ class UnitDatabaseTable(DatabaseTable):
         try:
             cursor = DatabaseConnection.getConnection().cursor()
             cursor.execute("CREATE TABLE IF NOT EXISTS unit( " +
-                "UnitID int NOT NULL, " +
+                "UnitID int NOT NULL AUTO_INCREMENT, " +
                 "Name varchar(30) NOT NULL, " +
                 "Address varchar(255) NOT NULL, " +
                 "Type varchar(30) NOT NULL, " +
