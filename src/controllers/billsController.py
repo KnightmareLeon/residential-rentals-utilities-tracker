@@ -11,11 +11,12 @@ class BillsController:
         return ([], 5) 
     
     @staticmethod
-    def addBill(unitID: str, utilityID: str, totalAmount: str, billingPeriodStart: QDate, billingPeriodEnd: QDate, status: str, dueDate: QDate) -> str:
+    def addBill(unitName: str, utilityType: str, totalAmount: str, billingPeriodStart: QDate, billingPeriodEnd: QDate, status: str, dueDate: QDate) -> str:
         """
         Adds a new unit with the given data.
         """
-        print("Adding bill:", unitID, utilityID, totalAmount, billingPeriodStart, billingPeriodEnd, status, dueDate)
+        # Get unit ID using unitName and UtilityID using utilityType
+        print("Adding bill:", unitName, utilityType, totalAmount, billingPeriodStart, billingPeriodEnd, status, dueDate)
         return "Bill added successfully"
 
     @staticmethod

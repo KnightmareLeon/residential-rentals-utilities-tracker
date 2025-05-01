@@ -14,7 +14,13 @@ class UnitsPage(BasePageWidget):
     def handleAddButton(self):
         dialog = AddUnitForm()
         if dialog.exec():
-            response = UnitsController.addUnit(None, None, None)
-            self.table.updateTable()
+            unitData = dialog.getFormData()
+            if unitData:
+                name = unitData["Unit Name"]
+                address = unitData["Address"]
+                type = unitData["Unit Type"]
+
+                response = UnitsController.addUnit(name, address, type)
+                self.table.updateTable()
         
         

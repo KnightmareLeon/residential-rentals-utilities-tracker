@@ -1,31 +1,40 @@
-from PyQt6.QtWidgets import QComboBox, QStyledItemDelegate, QStyleOptionComboBox
-
+from PyQt6.QtWidgets import QComboBox, QStyleOptionComboBox, QListView
 from PyQt6.QtGui import QStandardItemModel, QStandardItem, QPainter
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QEvent, QModelIndex
 
-class CheckBoxDelegate(QStyledItemDelegate):
-    def editorEvent(self, event, model, option, index):
-        if (index.flags() & Qt.ItemFlag.ItemIsUserCheckable) and event.type() == event.Type.MouseButtonRelease:
-            # Check if the event is inside the item's rectangle
-            if event.button() == event.Button.LeftButton:
-                current_state = model.data(index, Qt.ItemDataRole.CheckStateRole)
-                new_state = Qt.CheckState.Unchecked if current_state == Qt.CheckState.Checked else Qt.CheckState.Checked
-                model.setData(index, new_state, Qt.ItemDataRole.CheckStateRole)
-                return True
-        return super().editorEvent(event, model, option, index)
 
 class CheckableComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setModel(QStandardItemModel(self))
+        
         self.setEditable(False)
+        self.setView(QListView())  # Ensure using QListView
+        self.view().viewport().installEventFilter(self)
 
         self.selectedItems = []
         self.staticDisplayText = "Filter:"
         self.onCheckedChangedCallback = None
 
-        self.view().setItemDelegate(CheckBoxDelegate(self))
         self.model().dataChanged.connect(self.handleCheckChange)
+
+        self.setStyleSheet("""
+            QComboBox QAbstractItemView {
+                background-color: #4e4e4e;
+                color: white;
+                font-family: "Urbanist";
+                font-size: 16px;
+                selection-background-color: #44475a;
+                selection-color: white;
+            }
+            QComboBox QAbstractItemView::item:hover {
+                background-color: #44475a;
+                color: white;
+            }
+            QListView::item:hover {
+                background-color: #44475a;
+                color: white;
+            }
+                           """)
 
     def addItem(self, text, checked=True):
         item = QStandardItem(text)
@@ -38,8 +47,8 @@ class CheckableComboBox(QComboBox):
     def paintEvent(self, event):
         painter = QPainter(self)
         opt = QStyleOptionComboBox()
-        self.initStyleOption(opt)  # Proper usage: pass the QStyleOptionComboBox instance
-        opt.currentText = self.staticDisplayText  # Override displayed text
+        self.initStyleOption(opt)
+        opt.currentText = self.staticDisplayText
         self.style().drawComplexControl(self.style().ComplexControl.CC_ComboBox, opt, painter, self)
         self.style().drawControl(self.style().ControlElement.CE_ComboBoxLabel, opt, painter, self)
 
@@ -60,3 +69,14 @@ class CheckableComboBox(QComboBox):
 
     def checkedItems(self):
         return self.selectedItems
+
+    def eventFilter(self, source, event):
+        if source == self.view().viewport() and event.type() == QEvent.Type.MouseButtonPress:
+            index: QModelIndex = self.view().indexAt(event.pos())
+            if index.isValid():
+                item = self.model().itemFromIndex(index)
+                currentState = item.checkState()
+                newState = Qt.CheckState.Unchecked if currentState == Qt.CheckState.Checked else Qt.CheckState.Checked
+                item.setCheckState(newState)
+                return True
+        return super().eventFilter(source, event)

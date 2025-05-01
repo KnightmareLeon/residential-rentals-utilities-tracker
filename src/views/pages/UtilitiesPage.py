@@ -1,3 +1,5 @@
+import re
+
 from src.views.widgets.BasePageWidget import BasePageWidget
 from src.views.components.UtilitiesTable import UtilitiesTable
 from src.views.dialogs.AddUtilityForm import AddUtilityForm
@@ -14,5 +16,13 @@ class UtilitiesPage(BasePageWidget):
     def handleAddButton(self):
         dialog = AddUtilityForm()
         if dialog.exec():
-            response = UtilitiesController.addUtility(None, None, None)
-            self.table.updateTable()
+            utilityData = dialog.getFormData()
+            if utilityData:
+                type = utilityData["Utility Type"]
+                unit = ' '.join(utilityData["Unit"].split(' ')[:-1])
+                sharedUnits = [re.sub(r'\s*\(.*?\)', '', unit).strip() for unit in utilityData["Shared with Unit(s)"]]
+                status = utilityData["Status"]
+                billing = utilityData["Billing Cycle"]
+
+                response = UtilitiesController.addUtility(type, unit, sharedUnits, status, billing)
+                self.table.updateTable()
