@@ -18,7 +18,7 @@ class AddBillForm(BaseCreateWidget):
         self.addSection("Bill Information")
         self.addSection("Bill Details")
         
-        self.unitNameInput = self.addComboBox("Unit", [name["UnitName"] for name in unitNames], "Bill Information")
+        self.unitNameInput = self.addComboBox("Unit", [f"{name['UnitName']} ({name['Type']})" for name in unitNames], "Bill Information")
 
         self.utilityInput = self.addComboBox("Utility Type", [utility["Type"] for utility in utilities], "Bill Information")
         

@@ -241,11 +241,16 @@ class BaseViewWidget(QDialog):
         valueWidget.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         valueWidget.setWordWrap(True)
         valueWidget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        valueWidget.setMinimumWidth(150)
+        valueWidget.setMinimumWidth(120)
         valueWidget.setContentsMargins(0, 0, 0, 0)
         valueWidget.setObjectName("value")
         valueWidget.setCursor(Qt.CursorShape.IBeamCursor)
         valueWidget.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+
+        if value == "Active":
+            valueWidget.setStyleSheet("color: #00FF6F;")
+        elif value == "Inactive":
+            valueWidget.setStyleSheet("color: #FA1647;")
 
         hLayout.addWidget(labelWidget)
         hLayout.addWidget(valueWidget)

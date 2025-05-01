@@ -99,10 +99,30 @@ class UtilityChartWidget(QFrame):
         headerLayout.addStretch()
 
         self.filterComboBox = CheckableComboBox()
-        self.filterComboBox.setView(QListView())
         for label in self.utilityFilters:
             self.filterComboBox.addItem(label)
         self.filterComboBox.onItemCheckedChanged(self.handleFilterUpdate)
+        self.filterComboBox.setStyleSheet("""
+            QComboBox QAbstractItemView {
+                background-color: #4e4e4e;
+                color: white;
+                font-family: "Urbanist";
+                font-size: 16px;
+                selection-background-color: #44475a;
+                selection-color: white;
+                border: none;
+                outline: 0;
+            }
+            QListView::item {
+                padding: 5px;
+            }
+            QListView::item:hover {
+                background-color: #44475a;
+            }
+            QListView::item:selected {
+                background-color: #6272a4;
+            }
+        """)
         self.filterComboBox.setCursor(Qt.CursorShape.PointingHandCursor)
         headerLayout.addWidget(self.filterComboBox)
 

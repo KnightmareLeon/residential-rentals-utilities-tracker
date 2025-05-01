@@ -11,11 +11,12 @@ class UtilitiesController:
         return ([], 5) 
     
     @staticmethod
-    def addUtility(type: str, status: str, billingCycle: str) -> str:
+    def addUtility(type: str, mainUnit: str, sharedUnits: list[str], status: str, billingCycle: str) -> str:
         """
         Adds a new utility with the given data.
         """
-        print("Adding utility:", type, status, billingCycle)    
+        # get mainUnit ID using mainUnit name and sharedUnits ID using sharedUnits name
+        print("Adding utility:", type, mainUnit, sharedUnits, status, billingCycle)    
         return "Utility added successfully"
 
     @staticmethod

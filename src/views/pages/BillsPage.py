@@ -14,5 +14,15 @@ class BillsPage(BasePageWidget):
     def handleAddButton(self):
         dialog = AddBillForm()
         if dialog.exec():
-            response = BillsController.addBill(None, None, None, None, None, None, None)
-            self.table.updateTable()
+            billData = dialog.getFormData()
+            if billData:
+                name = ' '.join(billData["Unit"].split(' ')[:-1])
+                type = billData["Utility Type"]
+                totalAmount = billData["Total Amount"]
+                billPeriodStart = billData["Billing Period Start"]
+                billPeriodEnd = billData["Billing Period End"]
+                status = billData["Status"]
+                dueDate = billData["Due Date"]
+
+                response = BillsController.addBill(name, type, totalAmount, billPeriodStart, billPeriodEnd, status, dueDate)
+                self.table.updateTable()

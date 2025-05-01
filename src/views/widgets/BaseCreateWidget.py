@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QIcon, QValidator, QDoubleValidator, QIntValidator
 from PyQt6.QtCore import Qt, QSize, QDate
+from pyqt6_multiselect_combobox import MultiSelectComboBox
 
 class BaseCreateWidget(QDialog):
     def __init__(self, mainTitle: str, iconPath: str = None, parent=None):
@@ -169,22 +170,22 @@ class BaseCreateWidget(QDialog):
                 font-size: 16px;
             }
             QComboBox:focus {
-                border: 1px solid #3b3b3b;
+                border: 1px solid #44475a;
             }
             QComboBox QAbstractItemView {
-                background-color: #1C1C1C;
+                background-color: #4e4e4e;
                 color: white;
                 font-family: "Urbanist";
                 font-size: 16px;
-                selection-background-color: #3b3b3b;
+                selection-background-color: #44475a;
                 selection-color: white;
             }
             QComboBox QAbstractItemView::item:hover {
-                background-color: #3b3b3b;
+                background-color: #44475a;
                 color: white;
             }
             QListView::item:hover {
-                background-color: #3b3b3b;
+                background-color: #44475a;
                 color: white;
             }
             QSpinBox {
@@ -211,7 +212,6 @@ class BaseCreateWidget(QDialog):
             QPushButton:hover {
                 background-color: #2b2b2b;
             }
-                           
             QDateEdit {
                 background-color: #1C1C1C;
                 color: white;
@@ -224,7 +224,6 @@ class BaseCreateWidget(QDialog):
             QDateEdit:focus {
                 border: 1px solid #3b3b3b;
             }
-
             QDateEdit QCalendarWidget {
                 background-color: #1C1C1C;
                 font-family: "Urbanist";
@@ -259,13 +258,14 @@ class BaseCreateWidget(QDialog):
         self.sections[title] = sectionLayout
         return sectionLayout
         
-    def _addField(self, label: str, widget: QWidget, sectionTitle: str | None = None):
+    def _addField(self, label: str, widget: QWidget, sectionTitle: str | None = None, isVisible: bool = True):
         container = QWidget()
         layout = QVBoxLayout(container)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.setSpacing(5)
 
         labelWidget = QLabel(label)
+        labelWidget.setVisible(isVisible)
         layout.addWidget(labelWidget)
         layout.addWidget(widget)
 
@@ -274,7 +274,8 @@ class BaseCreateWidget(QDialog):
         else:
             self.fieldsLayout.addWidget(container)
 
-        self.fields[label] = widget
+        self.fields[label] = (labelWidget, widget)
+        widget.setVisible(isVisible)
         return widget
 
     def addFloatInput(self, label: str, minValue=0, maxValue=999999999, sectionTitle: str | None = None):
@@ -296,10 +297,15 @@ class BaseCreateWidget(QDialog):
         lineEdit.setPlaceholderText(placeholder)
         return self._addField(label, lineEdit, sectionTitle)
 
-    def addComboBox(self, label: str, options: list[str], sectionTitle: str | None = None):
+    def addComboBox(self, label: str, options: list[str], sectionTitle: str | None = None, isVisible: bool = True):
         combo = QComboBox()
         combo.addItems(options)
-        return self._addField(label, combo, sectionTitle)
+        return self._addField(label, combo, sectionTitle, isVisible)
+
+    def addMultiselectComboBox(self, label: str, options: list[str], sectionTitle: str | None = None, isVisible: bool = True):
+        combo = MultiSelectComboBox()
+        combo.addItems(options)
+        return self._addField(label, combo, sectionTitle, isVisible)
 
     def addSpinBox(self, label: str, minValue=0, maxValue=100, sectionTitle: str | None = None):
         spin = QSpinBox()
@@ -314,19 +320,23 @@ class BaseCreateWidget(QDialog):
 
     def getFormData(self) -> dict:
         data = {}
-        for label, widget in self.fields.items():
+        for label, (labelWidget, widget) in self.fields.items():
             if isinstance(widget, QLineEdit):
                 data[label] = widget.text()
+            elif isinstance(widget, MultiSelectComboBox):
+                data[label] = widget.currentData()
             elif isinstance(widget, QComboBox):
                 data[label] = widget.currentText()
             elif isinstance(widget, QSpinBox):
                 data[label] = widget.value()
+            elif isinstance(widget, QDateEdit):
+                data[label] = widget.date()
         return data
 
     def onAddClicked(self):
         formData = self.getFormData()
-        print(f"Adding {self.windowTitle()}: {formData}")
         self.accept()
+        return formData
 
     def handleExitClicked(self):
         self.close()
