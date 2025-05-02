@@ -19,10 +19,10 @@ class UtilitiesPage(BasePageWidget):
             utilityData = dialog.getFormData()
             if utilityData:
                 type = utilityData["Utility Type"]
-                unit = utilityData["Unit"]
-                sharedUnits = utilityData["Shared with Unit(s)"]
+                unitID = utilityData["Unit"]
+                sharedUnitIDs = utilityData["Shared with Unit(s)"]
                 status = utilityData["Status"]
                 billing = utilityData["Billing Cycle"]
 
-                response = UtilitiesController.addUtility(type, unit, sharedUnits, status, billing)
+                response = UtilitiesController.addUtility(type, unitID, sharedUnitIDs, status, billing)
                 self.table.updateTable()

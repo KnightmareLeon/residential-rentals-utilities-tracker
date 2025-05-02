@@ -34,7 +34,7 @@ class UnitsController:
             {"UtilityID": "U1", "Type": "Electricity", "Status": "Active", "isShared": False},
             {"UtilityID": "U2", "Type": "Water", "Status": "Inactive", "isShared": False},
             {"UtilityID": "U3", "Type": "Gas", "Status": "Active", "isShared": True},
-            {"UtilityID": "U4", "Type": "Wifi", "Status": "Inactive", "isShared": True},
+            {"UtilityID": "U4", "Type": "Internet", "Status": "Inactive", "isShared": True},
             {"UtilityID": "U5", "Type": "Trash", "Status": "Active", "isShared": False},
             {"UtilityID": "U6", "Type": "Maintenance", "Status": "Inactive", "isShared": False},
             {"UtilityID": "U7", "Type": "Miscellaneous", "Status": "Active", "isShared": True},

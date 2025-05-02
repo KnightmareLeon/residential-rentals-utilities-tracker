@@ -16,13 +16,13 @@ class BillsPage(BasePageWidget):
         if dialog.exec():
             billData = dialog.getFormData()
             if billData:
-                name = billData["Unit"]
-                type = billData["Utility Type"]
+                unitID = billData["Unit"]
+                utilityID = billData["Utility Type"]
                 totalAmount = billData["Total Amount"]
                 billPeriodStart = billData["Billing Period Start"]
                 billPeriodEnd = billData["Billing Period End"]
                 status = billData["Status"]
                 dueDate = billData["Due Date"]
 
-                response = BillsController.addBill(name, type, totalAmount, billPeriodStart, billPeriodEnd, status, dueDate)
+                response = BillsController.addBill(unitID, utilityID, totalAmount, billPeriodStart, billPeriodEnd, status, dueDate)
                 self.table.updateTable()

@@ -170,22 +170,21 @@ class BaseCreateWidget(QDialog):
                 font-size: 16px;
             }
             QComboBox:focus {
-                border: 1px solid #44475a;
+                border: 1px solid #54576a;
             }
             QComboBox QAbstractItemView {
-                background-color: #4e4e4e;
-                color: white;
+                background-color: #121212;
                 font-family: "Urbanist";
                 font-size: 16px;
-                selection-background-color: #44475a;
+                selection-background-color: #54576a;
                 selection-color: white;
             }
             QComboBox QAbstractItemView::item:hover {
-                background-color: #44475a;
+                background-color: #54576a;
                 color: white;
             }
             QListView::item:hover {
-                background-color: #44475a;
+                background-color: #54576a;
                 color: white;
             }
             QSpinBox {
