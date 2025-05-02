@@ -23,7 +23,7 @@ class EditBillForm(BaseEditWidget):
 
         self.unitNameInput = self.addComboBox("Unit", unitNameList, sectionTitle="Bill Information", defaultValue=unitName)
         self.unitNameInput.currentTextChanged.connect(self.onUnitNameChanged)
-        self.typeInput = self.addComboBox("Utility Type", ['Electricity', 'Water', 'Gas', 'Wifi', 'Trash', 'Maintenance', 'Miscellaneous'], sectionTitle="Bill Information", defaultValue=utilityType)
+        self.typeInput = self.addComboBox("Utility Type", ['Electricity', 'Water', 'Gas', 'Internet', 'Trash', 'Maintenance', 'Miscellaneous'], sectionTitle="Bill Information", defaultValue=utilityType)
         
         self.statusInput = self.addComboBox("Status", ['Active', 'Inactive'], sectionTitle="Bill Details", defaultValue=status)
         self.totalAmountInput = self.addFloatInput("Total Amount", defaultValue=float(totalAmount), sectionTitle="Bill Details")

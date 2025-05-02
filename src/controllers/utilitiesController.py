@@ -73,4 +73,5 @@ class UtilitiesController:
         return [
             {"UtilityID": "E001", "Type": "Electricity"},
             {"UtilityID": "W001", "Type": "Water"},
+            {"UtilityID": "WI001", "Type": "Internet"},
         ]

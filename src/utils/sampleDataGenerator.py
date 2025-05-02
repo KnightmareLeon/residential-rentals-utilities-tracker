@@ -99,7 +99,7 @@ def generateRandomUtilityData(startDate=None, endDate=None):
         "Electricity": (1000, 10000),
         "Water": (50, 250),
         "Trash": (500, 500),
-        "Wifi": (1000, 3500),
+        "Internet": (1000, 3500),
     }
 
     random_categories = {
@@ -191,7 +191,7 @@ def generateRandomeUtilityBills(utility, startDate=None, endDate=None):
         "Electricity": (1000, 10000),
         "Water": (50, 250),
         "Trash": (500, 500),
-        "Wifi": (1000, 3500),
+        "Internet": (1000, 3500),
     }
 
     random_categories = {

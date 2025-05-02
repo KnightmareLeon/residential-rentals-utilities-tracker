@@ -26,7 +26,7 @@ categoryColors = {
             "Electricity": "#FFA500",
             "Water": "#00BFFF",
             "Gas": "#FF1493",
-            "Wifi": "#00FF7F",
+            "Internet": "#00FF7F",
             "Trash": "#A52A2A",
             "Maintenance": "#9370DB",
             "Miscellaneous": "#CCCCCC"
@@ -35,7 +35,7 @@ categoryColors = {
 
 defaultColor = "#AAAAAA"
 
-UTILITIES = ["Electricity", "Water", "Gas", "Wifi", "Trash", "Maintenance", "Miscellaneous"]    
+UTILITIES = ["Electricity", "Water", "Gas", "Internet", "Trash", "Maintenance", "Miscellaneous"]    
 
 billDataHeaders = ["Bill ID", "Unit Name", "Utility ID", "Type",  "Status", "Total Amount", "Billing Period Start", "Billing Period End", "Due Date"]
 billDataDatabaseHeaders = ["BillID", "UnitName", "UtilityID", "Type", "Status", "TotalAmount", "BillingPeriodStart", "BillingPeriodEnd", "DueDate"]
