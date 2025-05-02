@@ -180,7 +180,7 @@ class BaseViewWidget(QDialog):
     def addWidgetToGrid(self, row: int, column: int, widget: QWidget, rowSpan: int = 1, colSpan: int = 1):
         self.gridLayout.addWidget(widget, row, column, rowSpan, colSpan)
 
-    def createCard(self, title: str) -> QFrame:
+    def createCard(self, title: str = "") -> QFrame:
         card = QFrame()
         card.setObjectName("card")
 
@@ -189,16 +189,17 @@ class BaseViewWidget(QDialog):
         layout.setSpacing(5)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        header = QLabel(title)
-        header.setObjectName("heading")
-        header.setContentsMargins(0, 0, 0, 10)
-        header.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        if title != "":
+            header = QLabel(title)
+            header.setObjectName("heading")
+            header.setContentsMargins(0, 0, 0, 10)
+            header.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
 
-        layout.addWidget(header)
+            layout.addWidget(header)
 
         return card
 
-    def createScrollCard(self, title: str) -> QScrollArea:
+    def createScrollCard(self, title: str = "") -> QScrollArea:
         card = QFrame()
         card.setObjectName("card")
 
@@ -207,12 +208,13 @@ class BaseViewWidget(QDialog):
         layout.setSpacing(15)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        header = QLabel(title)
-        header.setObjectName("heading")
-        header.setContentsMargins(0, 0, 0, 10)
-        header.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        if title != "":
+            header = QLabel(title)
+            header.setObjectName("heading")
+            header.setContentsMargins(0, 0, 0, 10)
+            header.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
 
-        layout.addWidget(header)
+            layout.addWidget(header)
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
@@ -289,7 +291,7 @@ class BaseViewWidget(QDialog):
         container.setContentsMargins(0, 0, 0, 0)
 
         hLayout = QHBoxLayout(container)
-        hLayout.setContentsMargins(0, 0, 0, 0)
+        hLayout.setContentsMargins(25, 0, 0, 0)
         hLayout.setSpacing(10)
 
         label1Widget = QLabel(f"{label1}:")
