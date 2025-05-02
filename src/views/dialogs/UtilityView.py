@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QLabel, QHBoxLayout, QVBoxLayout, QSizePolicy
+from PyQt6.QtWidgets import QLabel, QHBoxLayout, QVBoxLayout, QSizePolicy, QScrollArea, QFrame
 from PyQt6.QtCore import Qt
 
 from src.views.widgets.BaseViewWidget import BaseViewWidget
@@ -23,13 +23,37 @@ class UtilityView(BaseViewWidget):
         for i in range(5):
             self.addDetail(utilityInfoLayout, headers[i], utilityData[databaseHeaders[i]])
         leftLayout.addWidget(utilityInfoCard)
+        
+        utilitiesCard = QFrame()
+        utilitiesCard.setObjectName("card")
 
-        utilityUnitsCard = self.createScrollCard("Units")
-        utilityUnitLayout = utilityUnitsCard.widget().layout()
-        self.addDetailHeader(utilityUnitLayout, "ID", "Name")
+        utilitiesCardLayout = QVBoxLayout(utilitiesCard)
+        utilitiesCardLayout.setContentsMargins(10, 10, 10, 10) 
+        utilitiesCardLayout.setSpacing(0)
+        utilitiesCardLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        header = QLabel("Units")
+        header.setObjectName("heading")
+        header.setContentsMargins(0, 0, 0, 10)
+        header.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+
+        utilitiesCardLayout.addWidget(header)
+        self.addDetailHeader(utilitiesCardLayout, "ID", "Name")
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setContentsMargins(0, 0, 0, 0)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+ 
+        utilityUnitsCard = self.createCard("")
+        utilityUnitLayout = utilityUnitsCard.layout()
+        
         for i in range(len(utilityUnits)):
             self.addDetail_bold(utilityUnitLayout, utilityUnits[i]["UnitID"], utilityUnits[i]["Name"])
-        leftLayout.addWidget(utilityUnitsCard)
+
+        scroll.setWidget(utilityUnitsCard)
+        utilitiesCardLayout.addWidget(scroll)
+        leftLayout.addWidget(utilitiesCard)
 
         contentLayout.addLayout(leftLayout)
 

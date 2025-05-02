@@ -19,8 +19,8 @@ class UtilitiesPage(BasePageWidget):
             utilityData = dialog.getFormData()
             if utilityData:
                 type = utilityData["Utility Type"]
-                unit = ' '.join(utilityData["Unit"].split(' ')[:-1])
-                sharedUnits = [re.sub(r'\s*\(.*?\)', '', unit).strip() for unit in utilityData["Shared with Unit(s)"]]
+                unit = utilityData["Unit"]
+                sharedUnits = utilityData["Shared with Unit(s)"]
                 status = utilityData["Status"]
                 billing = utilityData["Billing Cycle"]
 

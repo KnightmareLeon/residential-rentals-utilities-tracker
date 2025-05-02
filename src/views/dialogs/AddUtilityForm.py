@@ -1,3 +1,7 @@
+import re
+from PyQt6.QtWidgets import QLineEdit, QComboBox, QSpinBox, QDateEdit
+from pyqt6_multiselect_combobox import MultiSelectComboBox
+
 from src.views.widgets.BaseCreateWidget import BaseCreateWidget
 from src.controllers.unitsController import UnitsController
 
@@ -56,3 +60,36 @@ class AddUtilityForm(BaseCreateWidget):
         #     widget.addItems(['Active','Inactive'])
         #     labelWidget.setVisible(True)
         #     widget.setVisible(True)
+    
+    def getFormData(self) -> dict:
+        data = {}
+        for label, (labelWidget, widget) in self.fields.items():
+            if isinstance(widget, QLineEdit):
+                data[label] = widget.text()
+            elif isinstance(widget, QComboBox) and labelWidget.text() == "Unit":
+                unitName = ' '.join(widget.currentText().split(' ')[:-1])
+                unitID = None
+                for unit in self.unitNames:
+                    if unit["UnitName"] == unitName:
+                        unitID = unit["UnitID"]
+                data[label] = unitID
+            elif isinstance(widget, MultiSelectComboBox) and labelWidget.text() == "Shared with Unit(s)":
+                unitNames = [re.sub(r'\s*\(.*?\)', '', unit).strip() for unit in widget.currentData()]
+                unitIDs = []
+                for unit in self.unitNames:
+                    if unit["UnitName"] in unitNames:
+                        unitIDs.append(unit["UnitID"])
+                        
+                if unitID is None:
+                    print(f"Warning: Unit ID not found for '{unitName}'")
+
+                data[label] = unitIDs
+            elif isinstance(widget, MultiSelectComboBox):
+                data[label] = widget.currentData()
+            elif isinstance(widget, QComboBox):
+                data[label] = widget.currentText()
+            elif isinstance(widget, QSpinBox):
+                data[label] = widget.value()
+            elif isinstance(widget, QDateEdit):
+                data[label] = widget.date()
+        return data

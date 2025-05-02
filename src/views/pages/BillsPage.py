@@ -16,7 +16,7 @@ class BillsPage(BasePageWidget):
         if dialog.exec():
             billData = dialog.getFormData()
             if billData:
-                name = ' '.join(billData["Unit"].split(' ')[:-1])
+                name = billData["Unit"]
                 type = billData["Utility Type"]
                 totalAmount = billData["Total Amount"]
                 billPeriodStart = billData["Billing Period Start"]
