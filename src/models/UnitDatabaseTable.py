@@ -14,8 +14,8 @@ class UnitDatabaseTable(DatabaseTable):
                 "Name varchar(30) NOT NULL, " +
                 "Address varchar(255) NOT NULL, " +
                 "Type varchar(30) NOT NULL, " +
-                "PRIMARY KEY (UnitID)), " +
-                "UNIQUE KEY Name (Name)"
+                "PRIMARY KEY (UnitID), " +
+                "UNIQUE KEY Name (Name))"
             )
         except Exception as e:
             print(f"Error: {e}")
