@@ -199,8 +199,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             if not isinstance(utility, int):
                 raise ValueError("Utility must be an integer.")
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
-            sql = f"SELECT IU.UnitID, Unit.Name FROM {cls.getTableName()} IU " + \
-                  f"JOIN {UnitDatabaseTable.getTableName()} USING (UnitID) " + \
+            sql = f"SELECT UnitID, UnitType FROM {cls.getTableName()} " + \
                   f"WHERE UtilityID = {utility}"
             cursor.execute(sql)
             result = cursor.fetchall()
@@ -219,6 +218,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
                 "UnitID int NOT NULL, " +
                 "UtilityID int NOT NULL, " +
                 "InstallationDate date NOT NULL, " +
+                "UnitType enum('Shared','Individual') NOT NULL," +
                 "PRIMARY KEY (UnitID,UtilityID), " +
                 "KEY UtilityID (UtilityID), " +
                 "CONSTRAINT installedutility_ibfk_1 FOREIGN KEY (UnitID) REFERENCES unit (UnitID) ON DELETE CASCADE ON UPDATE CASCADE, " +
