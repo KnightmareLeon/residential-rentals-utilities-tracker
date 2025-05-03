@@ -13,7 +13,6 @@ class UnitDatabaseTable(DatabaseTable):
                 "UnitID int NOT NULL AUTO_INCREMENT, " +
                 "Name varchar(30) NOT NULL, " +
                 "Address varchar(255) NOT NULL, " +
-                "Type varchar(30) NOT NULL, " +
                 "PRIMARY KEY (UnitID), " +
                 "UNIQUE KEY Name (Name))"
             )
