@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import (
 QWidget, QDialog, QLabel, QVBoxLayout, QHBoxLayout, QFrame, QSizePolicy, QPushButton, QSpacerItem, QGridLayout, QLayout, QScrollArea
 )
 from PyQt6.QtGui import QIcon
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt, QSize, QDate
 
 
 class BaseViewWidget(QDialog):
@@ -238,6 +238,9 @@ class BaseViewWidget(QDialog):
         labelWidget.setContentsMargins(0, 0, 0, 0)
         labelWidget.setObjectName("label")
         labelWidget.setFixedWidth(100)
+
+        if isinstance(value, QDate):
+            value = value.toString()
 
         valueWidget = QLabel(str(value))
         valueWidget.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)

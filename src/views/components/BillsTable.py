@@ -49,18 +49,22 @@ class BillsTable(BaseTableWidget):
             return
         
         billID = item.text()
-        unit = BillsController.viewBill(billID)
+        bill = BillsController.viewBill(billID)
 
-        dialog = EditBillForm(unit["UnitName"], unit["Type"], unit["TotalAmount"], unit["BillingPeriodStart"], unit["BillingPeriodEnd"], unit["Status"], unit["DueDate"])
+        dialog = EditBillForm(bill["UnitName"], bill["Type"], bill["TotalAmount"], bill["BillingPeriodStart"], bill["BillingPeriodEnd"], bill["Status"], bill["DueDate"])
 
         if dialog.exec():
             updatedData = dialog.getFormData()
             
-            BillsController.editUnit(
+            BillsController.editBill(
                 billID,
-                updatedData["Unit Name"],
-                updatedData["Address"],
-                updatedData["Unit Type"]
+                updatedData["UnitID"],
+                updatedData["Utility Type"],
+                updatedData["Status"],
+                updatedData["Total Amount"],
+                updatedData["Due Date"],
+                updatedData["Billing Period Start"],
+                updatedData["Billing Period End"]
             )
 
         self.updateTable()

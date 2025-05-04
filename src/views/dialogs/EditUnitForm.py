@@ -10,4 +10,4 @@ class EditUnitForm(BaseEditWidget):
 
         self.nameInput = self.addTextInput("Unit Name", placeholder="Enter name...", sectionTitle="Unit Information", defaultValue=name)
         self.addressInput = self.addTextInput("Address", placeholder="Enter address...", sectionTitle="Unit Information", defaultValue=address)
-        self.unitTypeInput = self.addComboBox("Unit Type", ["Individual", "Shared", "Common"], sectionTitle="Unit Information", defaultValue=type)
+        self.unitTypeInput = self.addComboBox("Unit Type", ["Individual", "Shared"], sectionTitle="Unit Information", defaultValue=type)

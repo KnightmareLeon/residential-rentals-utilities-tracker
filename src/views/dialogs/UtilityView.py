@@ -28,7 +28,7 @@ class UtilityView(BaseViewWidget):
         utilitiesCard.setObjectName("card")
 
         utilitiesCardLayout = QVBoxLayout(utilitiesCard)
-        utilitiesCardLayout.setContentsMargins(10, 10, 10, 10) 
+        utilitiesCardLayout.setContentsMargins(0, 0, 0, 0)
         utilitiesCardLayout.setSpacing(0)
         utilitiesCardLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
@@ -47,14 +47,17 @@ class UtilityView(BaseViewWidget):
  
         utilityUnitsCard = self.createCard("")
         utilityUnitLayout = utilityUnitsCard.layout()
+        #utilityUnitLayout.setContentsMargins(0, 0, 0, 0)
+        #utilityUnitLayout.setSpacing(0)
         
         for i in range(len(utilityUnits)):
             self.addDetail_bold(utilityUnitLayout, utilityUnits[i]["UnitID"], utilityUnits[i]["Name"])
 
         scroll.setWidget(utilityUnitsCard)
         utilitiesCardLayout.addWidget(scroll)
-        leftLayout.addWidget(utilitiesCard)
+        utilitiesCardLayout.addStretch()
 
+        leftLayout.addWidget(utilitiesCard)
         contentLayout.addLayout(leftLayout)
 
         billInfoSection = self.createCard("Utility Bills")

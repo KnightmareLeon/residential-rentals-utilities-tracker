@@ -345,8 +345,6 @@ class BaseEditWidget(QDialog):
         return data
 
     def onAddClicked(self):
-        formData = self.getFormData()
-        print(f"Editing {self.windowTitle()}: {formData}")
         self.accept()
 
     def handleExitClicked(self):
