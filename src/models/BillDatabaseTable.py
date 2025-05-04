@@ -42,6 +42,67 @@ class BillDatabaseTable(DatabaseTable):
             cursor.close()
 
     @classmethod
+    def batchUpdate(cls, 
+                    keys : list[int],
+                    data : dict[str, str | float | datetime.date]):
+        """
+        Batch update the bill table with the given keys and data.
+        """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
+        try:
+            if not isinstance(keys, list):
+                raise TypeError("Keys must be a list.")
+            if not isinstance(data, dict):
+                raise TypeError("Data must be a dict.")
+            if not all(isinstance(key, int) for key in keys):
+                raise TypeError("Keys must be a list of integers.")
+            for column in data.keys():
+                if not isinstance(column, str):
+                    raise TypeError("Data keys must be strings.")
+                if not isinstance(data[column], str) and not isinstance(data[column], float) and not isinstance(data[column], datetime.date):
+                    raise TypeError("Data values must be strings, floats, or datetime.date.")
+                if column not in cls._columns:
+                    raise ValueError(f"Column {column} is not a valid column name.")
+                if column == cls._primaryKey or column == UnitDatabaseTable._primaryKey or column == UtilityDatabaseTable._primaryKey:
+                    raise ValueError(f"Cannot update primary key or foreign keys.")
+                if column == "TotalAmount":
+                    if data[column] < 0:
+                        raise ValueError(f"Invalid value for column {column}.")
+                if column == "Status":
+                    if data[column] not in ["Unpaid", "Paid", "Partially Paid", "Overdue"]:
+                        raise ValueError(f"Invalid value for column {column}.")
+                if column == "BillingPeriodStart":
+                    if not isinstance(data[column], datetime.date):
+                        raise ValueError(f"Invalid value for column {column}.")
+                if column == "BillingPeriodEnd":
+                    if not isinstance(data[column], datetime.date):
+                        raise ValueError(f"Invalid value for column {column}.")
+                    if data[column] < data["BillingPeriodStart"]:
+                        raise ValueError(f"BillingPeriodEnd must be greater than BillingPeriodStart.")
+                if column == "DueDate":
+                    if not isinstance(data[column], datetime.date):
+                        raise ValueError(f"Invalid value for column {column}.")
+                    if data[column] < data["BillingPeriodEnd"]:
+                        raise ValueError(f"DueDate must be greater than BillingPeriodEnd.")
+                if column == "Status":
+                    if data[column] not in ["Unpaid", "Paid", "Partially Paid", "Overdue"]:
+                        raise ValueError(f"Invalid value for column {column}.")
+                
+            cursor = DatabaseConnection.getConnection().cursor()
+            sql = f"UPDATE {cls._tableName} SET "
+            sql += ", ".join([f"{column} = '{value}'" for column, value in data.items()])
+            sql += " WHERE " + " AND ".join([f"{cls._primaryKey} = {key}" for key in keys])
+            cursor.execute(sql)
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return 
+    
+    @classmethod
     def getUnitBills(cls,
                   unit : int,
                   range: Range,

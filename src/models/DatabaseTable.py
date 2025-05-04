@@ -293,6 +293,13 @@ class DatabaseTable(ABC):
             cursor.close()
     
     @classmethod
+    @abstractmethod
+    def batchUpdate(cls,
+                    keys : list[int], 
+                    data : dict[str, any]):
+        pass
+
+    @classmethod
     def totalCount(cls,
                 columns : list[str] = None,
                 referred : dict['DatabaseTable', list[str]] = None,
