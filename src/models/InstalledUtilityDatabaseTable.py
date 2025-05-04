@@ -144,6 +144,47 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         return result
 
     @classmethod
+    def create(cls, data : dict[str, str]):
+        """
+        Inserts data into the table. The data must be a dictionary where the keys
+        are the column names and the values are the corresponding values to be inserted.
+        The primary key must be included in the data dictionary. The method will
+        raise an error if the primary key is not included or if the data is not a
+        dictionary.
+        """
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
+        try:
+            if not isinstance(data, dict):
+                raise ValueError("Data must be a dictionary.")
+            for key in data.keys():
+                if key not in cls.columns:
+                    raise ValueError(f"Column '{key}' does not exist in the table.")
+            if sorted(list(data.keys())) != sorted(cls.columns):
+                raise ValueError(f"Data keys {data.keys()} do not match table columns {cls.columns}.")
+        
+            cursor = DatabaseConnection.getConnection().cursor()
+            columnsClause = ', '.join(data.keys())
+            values = []
+            for data in data.values():
+                if isinstance(data, str):
+                    data = f"'{data}'"
+                elif isinstance(data, int):
+                    data = str(data)
+                else:
+                    raise ValueError(f"Unsupported data type: {type(data)}")
+                values.append(data)
+            values = ', '.join(values)
+            sql = f"INSERT INTO {cls._tableName} ({columnsClause}) VALUES ({values})"
+            cursor.execute(sql)
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+
+    @classmethod
     def batchUpdate(cls, 
                     keys : list[tuple[int, int]],
                     data : dict[str, str]):
