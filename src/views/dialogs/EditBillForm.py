@@ -13,39 +13,49 @@ class EditBillForm(BaseEditWidget):
         self.setWindowTitle("UtiliTrack - Edit Bill")
         self.setMinimumWidth(400)
 
-        self.unitNames = UnitsController.getUnitNames()
-        self.unitID = None
+        self.allUnits = UnitsController.getUnitNames()
+        self.unitDisplayNames = [f"{unit['UnitName']} ({unit['Type']})" for unit in self.allUnits]
+        self.unitDisplayToID = {f"{unit['UnitName']} ({unit['Type']})": unit["UnitID"] for unit in self.allUnits}
+        self.unitIDToDisplay = {unit["UnitID"]: f"{unit['UnitName']} ({unit['Type']})" for unit in self.allUnits}
 
-        unitNameList = [unit["UnitName"] for unit in self.unitNames]
+        unitDisplayDefault = self.unitIDToDisplay.get(
+            next((unit["UnitID"] for unit in self.allUnits if unit["UnitName"] == unitName), None),
+            self.unitDisplayNames[0]
+        )
 
         self.addSection("Bill Information")
         self.addSection("Bill Details") 
 
-        self.unitNameInput = self.addComboBox("Unit", unitNameList, sectionTitle="Bill Information", defaultValue=unitName)
+        self.unitNameInput = self.addComboBox("Unit", self.unitDisplayNames, sectionTitle="Bill Information", defaultValue=unitDisplayDefault)
         self.unitNameInput.currentTextChanged.connect(self.onUnitNameChanged)
+
         self.typeInput = self.addComboBox("Utility Type", ['Electricity', 'Water', 'Gas', 'Internet', 'Trash', 'Maintenance', 'Miscellaneous'], sectionTitle="Bill Information", defaultValue=utilityType)
         
-        self.statusInput = self.addComboBox("Status", ['Active', 'Inactive'], sectionTitle="Bill Details", defaultValue=status)
+        self.statusInput = self.addComboBox("Status", ['Unpaid', 'Paid', 'Partially Paid', 'Overdue'], sectionTitle="Bill Details", defaultValue=status)
         self.totalAmountInput = self.addFloatInput("Total Amount", defaultValue=float(totalAmount), sectionTitle="Bill Details")
         self.dueDateInput = self.addDateInput("Due Date", defaultDate=dueDate, sectionTitle="Bill Details")
-        self.billingStartInput = self.addDateInput("Billing Start", defaultDate=billingPeriodStart, sectionTitle="Bill Details")
-        self.billingEndInput = self.addDateInput("Billing End", defaultDate=billingPeriodEnd, sectionTitle="Bill Details")
+        self.billingStartInput = self.addDateInput("Billing Period Start", defaultDate=billingPeriodStart, sectionTitle="Bill Details")
+        self.billingEndInput = self.addDateInput("Billing Period End", defaultDate=billingPeriodEnd, sectionTitle="Bill Details")
     
-    def onUnitNameChanged(self, unitName: str):
-        for unit in unitName in self.unitNames:
-            if unit["UnitName"] == unitName:
-                self.unitID = unit["UnitID"]
-                break
+    def onUnitNameChanged(self, displayName: str):
+        unitID = self.unitDisplayToID.get(displayName)
+        if not unitID:
+            return
 
-        utilityTypes = UtilitiesController.getUtilitiesByUnitID(self.unitID)
+        self.unitID = unitID
+        utilityTypes = UtilitiesController.getUtilitiesByUnitID(unitID)
+
         self.typeInput.clear()
         self.typeInput.addItems([utility["Type"] for utility in utilityTypes])
+        self.typeInput.setCurrentIndex(0)
 
     def getFormData(self) -> dict:
         data = {}
-        for label, widget in self.fields.items():
+        for label, (labelWidget, widget) in self.fields.items():
             if isinstance(widget, QLineEdit):
                 data[label] = widget.text()
+            elif isinstance(widget, QComboBox) and label == "Unit":
+                data["UnitID"] = self.unitDisplayToID.get(self.unitNameInput.currentText())
             elif isinstance(widget, QComboBox):
                 data[label] = widget.currentText()
             elif isinstance(widget, QSpinBox):

@@ -1,6 +1,8 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
+from PyQt6.QtCore import QDate
+
 class DashboardController:
     
     @staticmethod
@@ -30,77 +32,77 @@ class DashboardController:
                 "BillID": 1,
                 "Type": "Electricity",
                 "TotalAmount": "6021.90",
-                "DueDate": "Mar 30",
+                "DueDate": QDate.currentDate(),
                 "Status": "Overdue"
             },
             {
                 "BillID": 2,
                 "Type": "Water",
                 "TotalAmount": "1245.75",
-                "DueDate": "Apr 05",
+                "DueDate": QDate.currentDate(),
                 "Status": "Unpaid"
             },
             {
                 "BillID": 3,
                 "Type": "Internet",
                 "TotalAmount": "1899.00",
-                "DueDate": "Apr 02",
+                "DueDate": QDate.currentDate(),
                 "Status": "Paid"
             },
             {
                 "BillID": 4,
                 "Type": "Electricity",
                 "TotalAmount": "5487.30",
-                "DueDate": "Mar 28",
+                "DueDate": QDate.currentDate(),
                 "Status": "Overdue"
             },
             {
                 "BillID": 5,
                 "Type": "Water",
                 "TotalAmount": "1320.50",
-                "DueDate": "Apr 10",
+                "DueDate": QDate.currentDate(),
                 "Status": "Unpaid"
             },
             {
                 "BillID": 6,
                 "Type": "Internet",
                 "TotalAmount": "1799.00",
-                "DueDate": "Apr 01",
+                "DueDate": QDate.currentDate(),
                 "Status": "Paid"
             },
             {
                 "BillID": 7,
                 "Type": "Electricity",
                 "TotalAmount": "6100.00",
-                "DueDate": "Apr 06",
+                "DueDate": QDate.currentDate(),
                 "Status": "Unpaid"
             },
             {
                 "BillID": 8,
                 "Type": "Water",
                 "TotalAmount": "1100.80",
-                "DueDate": "Apr 09",
+                "DueDate": QDate.currentDate(),
                 "Status": "Unpaid"
             },
             {
                 "BillID": 9,
                 "Type": "Internet",
                 "TotalAmount": "1999.00",
-                "DueDate": "Apr 03",
+                "DueDate": QDate.currentDate(),
                 "Status": "Overdue"
             },
             {
                 "BillID": 10,
                 "Type": "Electricity",
                 "TotalAmount": "5890.45",
-                "DueDate": "Apr 08",
+                "DueDate": QDate.currentDate(),
                 "Status": "Unpaid"
             },
             {
                 "BillID": 11,
                 "Type": "Water",
                 "TotalAmount": "1185.60",
-                "DueDate": "Apr 07",
+                "DueDate": QDate.currentDate(),
                 "Status": "Paid"
             }
         ]

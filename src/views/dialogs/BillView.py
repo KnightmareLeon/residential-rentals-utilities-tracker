@@ -4,7 +4,7 @@ class BillView(BaseViewWidget):
     def __init__(self, id: str, unitData: dict, headers: list, databaseHeaders: list, parent=None):
         super().__init__("Bill Details", parent=parent, iconPath="assets/icons/bills.png")
         self.setMinimumSize(600, 400)
-        self.setMaximumSize(600, 700)
+        self.setMaximumSize(800, 700)
 
         # Create "Bill Information" card and add details
         billInfoCard = self.createCard("Bill Information")

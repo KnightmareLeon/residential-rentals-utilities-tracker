@@ -1,3 +1,5 @@
+from PyQt6.QtCore import QDate
+
 from src.utils.sampleDataGenerator import generateRandomUtilityData, generateRandomeUtilityBills
 
 class UtilitiesController:
@@ -29,7 +31,7 @@ class UtilitiesController:
             "Type": "Electricity",
             "Status": "Active",
             "BillingCycle": "Monthly",
-            "InstallationDate": "2023-10-01",
+            "InstallationDate": QDate.currentDate(),
         }, 
         [ # UTILITY UNITS
             {"UnitID": "U001", "Name": "B01 (Main)"}, # butngan ug Main ang main unit niya pero controller na bahala haha
@@ -57,11 +59,11 @@ class UtilitiesController:
         return "Utility deleted successfully"
     
     @staticmethod
-    def getUtilitiesByUnitID(unitName: str) -> list[dict[str, str]]:
+    def getUtilitiesByUnitID(unitID: str) -> list[dict[str, str]]:
         """
         Fetches all utilities with unit ID.
         """
-        print("Fetching utilities by unit name:", unitName)
+        print("Fetching utilities by unit ID:", unitID)
         return [
             {"UtilityID": "E001", "Type": "Electricity"},
             {"UtilityID": "W001", "Type": "Water"},

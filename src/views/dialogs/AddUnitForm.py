@@ -10,4 +10,4 @@ class AddUnitForm(BaseCreateWidget):
 
         self.nameInput = self.addTextInput("Unit Name", placeholder="Enter name...", sectionTitle="Unit Information")
         self.addressInput = self.addTextInput("Address", placeholder="Enter address...", sectionTitle="Unit Information")
-        self.unitTypeInput = self.addComboBox("Unit Type", ["Individual", "Shared", "Common"], sectionTitle="Unit Information")
+        self.unitTypeInput = self.addComboBox("Unit Type", ["Individual", "Shared"], sectionTitle="Unit Information")

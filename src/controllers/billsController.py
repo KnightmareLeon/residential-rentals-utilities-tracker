@@ -22,7 +22,7 @@ class BillsController:
     @staticmethod
     def viewBill(id: str) -> dict[str, str]:
         """
-        Fetches all information about a single unit by ID.
+        Fetches all information about a single bill by ID.
         """
         return {
             "BillID": id,
@@ -30,10 +30,10 @@ class BillsController:
             "UtilityID": "E001",
             "Type": "Electricity",
             "TotalAmount": "100.00",
-            "BillingPeriodStart": QDate.currentDate().addMonths(-1).toString(),
-            "BillingPeriodEnd": QDate.currentDate().toString(),
+            "BillingPeriodStart": QDate.currentDate().addMonths(-1),
+            "BillingPeriodEnd": QDate.currentDate(),
             "Status": "Paid",
-            "DueDate": QDate.currentDate().toString()
+            "DueDate": QDate.currentDate()
         }
 
     @staticmethod
@@ -41,7 +41,7 @@ class BillsController:
         """
         Edits a unit with the given data.
         """
-        print("Editing utility:", originalID, unitID, utilityID, totalAmount, billingPeriodStart, billingPeriodEnd, status, dueDate)
+        print("Editing bill:", originalID, unitID, utilityID, totalAmount, billingPeriodStart, billingPeriodEnd, status, dueDate)
         return "Bill edited successfully"
     
     @staticmethod
