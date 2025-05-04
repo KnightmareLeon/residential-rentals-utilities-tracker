@@ -1,3 +1,5 @@
+from PyQt6.QtWidgets import QMessageBox
+
 from src.views.widgets.BasePageWidget import BasePageWidget
 from src.views.components.UnitsTable import UnitsTable
 from src.views.dialogs.AddUnitForm import AddUnitForm
@@ -22,6 +24,11 @@ class UnitsPage(BasePageWidget):
                 type = unitData["Unit Type"]
 
                 response = UnitsController.addUnit(name, address, type)
-                self.table.updateTable()
+                if response:
+                    self.table.updateTable()
+                    self.showSuccessNotification()
+    
+    def showSuccessNotification(self):
+        QMessageBox.information(self, "Success", f"Utility was successfully added")
         
         

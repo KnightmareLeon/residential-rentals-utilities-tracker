@@ -1,4 +1,4 @@
-import re
+from PyQt6.QtWidgets import QMessageBox
 
 from src.views.widgets.BasePageWidget import BasePageWidget
 from src.views.components.UtilitiesTable import UtilitiesTable
@@ -25,4 +25,9 @@ class UtilitiesPage(BasePageWidget):
                 billing = utilityData["Billing Cycle"]
 
                 response = UtilitiesController.addUtility(type, unitID, sharedUnitIDs, status, billing)
-                self.table.updateTable()
+                if response:
+                    self.table.updateTable()
+                    self.showSuccessNotification()
+    
+    def showSuccessNotification(self):
+        QMessageBox.information(self, "Success", f"Utility was successfully added")

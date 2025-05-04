@@ -1,3 +1,6 @@
+from PyQt6.QtWidgets import QMessageBox
+from PyQt6.QtCore import Qt
+
 from src.views.widgets.BaseTableWidget import BaseTableWidget
 from src.views.dialogs.BillView import BillView
 from src.utils.constants import SortOrder, billDataDatabaseHeaders, billDataHeaders
@@ -74,8 +77,48 @@ class BillsTable(BaseTableWidget):
         if not item:
             return
         
-        id = item.text()
-        #open unit delete dialog
-        response = BillsController.deleteBill(id)
+        billID = item.text()
 
-        self.updateTable()
+        msgBox = QMessageBox(self)
+        msgBox.setIcon(QMessageBox.Icon.Warning)
+        msgBox.setWindowTitle("Confirm Delete")
+        msgBox.setText(f"Are you sure you want to delete Bill '{billID}'?")
+        yesButton = msgBox.addButton(QMessageBox.StandardButton.Yes)
+        noButton = msgBox.addButton(QMessageBox.StandardButton.No)
+
+        yesButton.setCursor(Qt.CursorShape.PointingHandCursor)
+        noButton.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        yesButton.setStyleSheet("""
+QPushButton {
+    background-color: #541111;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+QPushButton:hover {
+    background-color: #743131;
+}
+""")
+        noButton.setStyleSheet("""
+QPushButton {
+    background-color: #444444;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+QPushButton:hover {
+    background-color: #666666;
+}
+""")
+        
+        msgBox.exec()
+
+        if msgBox.clickedButton() == yesButton:
+            success = BillsController.deleteBill(billID)
+            if success:
+                QMessageBox.information(self, "Success", f"Bill '{billID}' was deleted.")
+            else:
+                QMessageBox.warning(self, "Error", f"Failed to delete Bill '{billID}'.")
+
+            self.updateTable()

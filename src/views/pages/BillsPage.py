@@ -1,3 +1,5 @@
+from PyQt6.QtWidgets import QMessageBox
+
 from src.views.widgets.BasePageWidget import BasePageWidget
 from src.views.components.BillsTable import BillsTable
 from src.views.dialogs.AddBillForm import AddBillForm
@@ -25,4 +27,10 @@ class BillsPage(BasePageWidget):
                 dueDate = billData["Due Date"]
 
                 response = BillsController.addBill(unitID, utilityID, totalAmount, billPeriodStart, billPeriodEnd, status, dueDate)
-                self.table.updateTable()
+                
+                if response:
+                    self.table.updateTable()
+                    self.showSuccessNotification()
+    
+    def showSuccessNotification(self):
+        QMessageBox.information(self, "Success", f"Bill was successfully added")

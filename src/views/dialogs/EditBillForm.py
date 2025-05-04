@@ -1,7 +1,9 @@
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QComboBox, QSpinBox,
-    QPushButton, QWidget, QSizePolicy, QFrame, QDateEdit
+    QPushButton, QWidget, QSizePolicy, QFrame, QDateEdit, QMessageBox
 )
+from PyQt6.QtWidgets import QMessageBox
+from PyQt6.QtCore import Qt
 
 from src.views.widgets.BaseEditWidget import BaseEditWidget
 from src.controllers.unitsController import UnitsController
@@ -65,3 +67,49 @@ class EditBillForm(BaseEditWidget):
             else:
                 data[label] = None
         return data
+
+    def accept(self):
+        msgBox = QMessageBox(self)
+        msgBox.setIcon(QMessageBox.Icon.Warning)
+        msgBox.setWindowTitle("Confirm Update")
+        msgBox.setText("Are you sure you want to update this bill?")
+        
+        yesButton = msgBox.addButton(QMessageBox.StandardButton.Yes)
+        noButton = msgBox.addButton(QMessageBox.StandardButton.No)
+
+        # Set cursors
+        yesButton.setCursor(Qt.CursorShape.PointingHandCursor)
+        noButton.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        # Style buttons
+        yesButton.setStyleSheet("""
+        QPushButton {
+            background-color: #541111;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: none;
+        }
+        QPushButton:hover {
+            background-color: #743131;
+        }
+        """)
+        noButton.setStyleSheet("""
+        QPushButton {
+            background-color: #444444;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: none;
+        }
+        QPushButton:hover {
+            background-color: #666666;
+        }
+        """)
+
+        msgBox.exec()
+
+        if msgBox.clickedButton() == yesButton:
+            super().accept()
+        else:
+            return

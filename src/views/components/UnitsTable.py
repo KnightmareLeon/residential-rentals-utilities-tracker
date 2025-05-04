@@ -1,3 +1,6 @@
+from PyQt6.QtWidgets import QMessageBox
+from PyQt6.QtCore import Qt
+
 from src.views.widgets.BaseTableWidget import BaseTableWidget
 from src.views.dialogs.UnitView import UnitView
 from src.views.dialogs.EditUnitForm import EditUnitForm
@@ -68,9 +71,49 @@ class UnitsTable(BaseTableWidget):
         item = self.item(row_idx, 0)
         if not item:
             return
-        
-        id = item.text()
-        #open unit delete dialog
-        response = UnitsController.deleteUnit(id)
 
-        self.updateTable()
+        unitID = item.text()
+
+        msgBox = QMessageBox(self)
+        msgBox.setIcon(QMessageBox.Icon.Warning)
+        msgBox.setWindowTitle("Confirm Delete")
+        msgBox.setText(f"Are you sure you want to delete Unit '{unitID}'?")
+        yesButton = msgBox.addButton(QMessageBox.StandardButton.Yes)
+        noButton = msgBox.addButton(QMessageBox.StandardButton.No)
+
+        yesButton.setCursor(Qt.CursorShape.PointingHandCursor)
+        noButton.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        yesButton.setStyleSheet("""
+QPushButton {
+    background-color: #541111;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+QPushButton:hover {
+    background-color: #743131;
+}
+""")
+        noButton.setStyleSheet("""
+QPushButton {
+    background-color: #444444;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+QPushButton:hover {
+    background-color: #666666;
+}
+""")
+        
+        msgBox.exec()
+
+        if msgBox.clickedButton() == yesButton:
+            success = UnitsController.deleteUnit(unitID)
+            if success:
+                QMessageBox.information(self, "Success", f"Unit '{unitID}' was deleted.")
+            else:
+                QMessageBox.warning(self, "Error", f"Failed to delete Unit '{unitID}'.")
+
+            self.updateTable()

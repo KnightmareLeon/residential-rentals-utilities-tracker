@@ -1,3 +1,6 @@
+from PyQt6.QtWidgets import QMessageBox
+from PyQt6.QtCore import Qt
+
 from src.views.widgets.BaseEditWidget import BaseEditWidget
 
 class EditUnitForm(BaseEditWidget):
@@ -11,3 +14,48 @@ class EditUnitForm(BaseEditWidget):
         self.nameInput = self.addTextInput("Unit Name", placeholder="Enter name...", sectionTitle="Unit Information", defaultValue=name)
         self.addressInput = self.addTextInput("Address", placeholder="Enter address...", sectionTitle="Unit Information", defaultValue=address)
         self.unitTypeInput = self.addComboBox("Unit Type", ["Individual", "Shared"], sectionTitle="Unit Information", defaultValue=type)
+    
+    def accept(self):
+        msgBox = QMessageBox(self)
+        msgBox.setIcon(QMessageBox.Icon.Warning)
+        msgBox.setWindowTitle("Confirm Update")
+        msgBox.setText("Are you sure you want to update this unit?")
+        
+        yesButton = msgBox.addButton(QMessageBox.StandardButton.Yes)
+        noButton = msgBox.addButton(QMessageBox.StandardButton.No)
+
+        # Set cursors
+        yesButton.setCursor(Qt.CursorShape.PointingHandCursor)
+        noButton.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        # Style buttons
+        yesButton.setStyleSheet("""
+        QPushButton {
+            background-color: #541111;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: none;
+        }
+        QPushButton:hover {
+            background-color: #743131;
+        }
+        """)
+        noButton.setStyleSheet("""
+        QPushButton {
+            background-color: #444444;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: none;
+        }
+        QPushButton:hover {
+            background-color: #666666;
+        }
+        """)
+        msgBox.exec()
+
+        if msgBox.clickedButton() == yesButton:
+            super().accept()
+        else:
+            return
