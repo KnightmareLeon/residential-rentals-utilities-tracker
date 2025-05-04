@@ -65,10 +65,10 @@ class UnitsController:
         """
         print("Fetching unit names")
         return [
-            {"UnitID": "U001", "UnitName": "Bldg. 1 Room 1", "Type": "Individual"},
-            {"UnitID": "U002", "UnitName": "Bldg. 1 Room 2", "Type": "Individual"},
-            {"UnitID": "U003", "UnitName": "Bldg. 2 Room 1", "Type": "Individual"},
-            {"UnitID": "U004", "UnitName": "Bldg. 2", "Type": "Shared"},
-            {"UnitID": "U005", "UnitName": "Bldg. 3", "Type": "Shared"},
-            {"UnitID": "U006", "UnitName": "Bldg. 3 Room 2", "Type": "Individual"},
+            {"UnitID": "U002", "UnitName": "B01R02", "Type": "Individual"},
+            {"UnitID": "U004", "UnitName": "B01R01", "Type": "Individual"},
+            {"UnitID": "U003", "UnitName": "B01R03", "Type": "Individual"},
+            {"UnitID": "U001", "UnitName": "B01", "Type": "Shared"},
+            {"UnitID": "U005", "UnitName": "B02", "Type": "Shared"},
+            {"UnitID": "U006", "UnitName": "B301", "Type": "Individual"},
         ]

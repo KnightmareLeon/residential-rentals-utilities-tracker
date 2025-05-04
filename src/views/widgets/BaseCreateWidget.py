@@ -9,6 +9,9 @@ from pyqt6_multiselect_combobox import MultiSelectComboBox
 class BaseCreateWidget(QDialog):
     def __init__(self, mainTitle: str, iconPath: str = None, parent=None):
         super().__init__(parent)
+
+        #self.setMinimumSize(500, 400)
+
         self.setWindowIcon(QIcon("assets/logos/logoIcon.png"))
         self.setWindowTitle("UtiliTrack - Create Item")
         self.setModal(True)

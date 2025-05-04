@@ -42,7 +42,7 @@ class DashboardController:
             },
             {
                 "BillID": 3,
-                "Type": "Wifi",
+                "Type": "Internet",
                 "TotalAmount": "1899.00",
                 "DueDate": "Apr 02",
                 "Status": "Paid"
@@ -63,7 +63,7 @@ class DashboardController:
             },
             {
                 "BillID": 6,
-                "Type": "Wifi",
+                "Type": "Internet",
                 "TotalAmount": "1799.00",
                 "DueDate": "Apr 01",
                 "Status": "Paid"
@@ -84,7 +84,7 @@ class DashboardController:
             },
             {
                 "BillID": 9,
-                "Type": "Wifi",
+                "Type": "Internet",
                 "TotalAmount": "1999.00",
                 "DueDate": "Apr 03",
                 "Status": "Overdue"
