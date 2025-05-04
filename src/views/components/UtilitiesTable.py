@@ -1,4 +1,5 @@
-import re
+from PyQt6.QtWidgets import QMessageBox
+from PyQt6.QtCore import Qt
 
 from src.views.widgets.BaseTableWidget import BaseTableWidget
 from src.views.dialogs.UtilityView import UtilityView
@@ -76,9 +77,49 @@ class UtilitiesTable(BaseTableWidget):
         item = self.item(row_idx, 0)
         if not item:
             return
-        
-        id = item.text()
-        #open unit delete dialog
-        response = UtilitiesController.deleteUtility(id)
 
-        self.updateTable()
+        utilityID = item.text()
+
+        msgBox = QMessageBox(self)
+        msgBox.setIcon(QMessageBox.Icon.Warning)
+        msgBox.setWindowTitle("Confirm Delete")
+        msgBox.setText(f"Are you sure you want to delete Utility '{utilityID}'?")
+        yesButton = msgBox.addButton(QMessageBox.StandardButton.Yes)
+        noButton = msgBox.addButton(QMessageBox.StandardButton.No)
+
+        yesButton.setCursor(Qt.CursorShape.PointingHandCursor)
+        noButton.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        yesButton.setStyleSheet("""
+QPushButton {
+    background-color: #541111;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+QPushButton:hover {
+    background-color: #743131;
+}
+""")
+        noButton.setStyleSheet("""
+QPushButton {
+    background-color: #444444;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+QPushButton:hover {
+    background-color: #666666;
+}
+""")
+        
+        msgBox.exec()
+
+        if msgBox.clickedButton() == yesButton:
+            success = UtilitiesController.deleteUtility(utilityID)
+            if success:
+                QMessageBox.information(self, "Success", f"Utility '{utilityID}' was deleted.")
+            else:
+                QMessageBox.warning(self, "Error", f"Failed to delete Utility '{utilityID}'.")
+
+            self.updateTable()

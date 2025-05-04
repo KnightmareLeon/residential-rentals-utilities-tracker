@@ -60,7 +60,6 @@ class AddUtilityForm(BaseCreateWidget):
 
             existingUtilities = UtilitiesController.getUtilitiesByUnitID(unitID)
             existingTypes = {util['Type'] for util in existingUtilities}
-            print(existingTypes)
 
             allTypes = ['Electricity','Water','Gas','Internet','Trash','Maintenance','Miscellaneous']
 

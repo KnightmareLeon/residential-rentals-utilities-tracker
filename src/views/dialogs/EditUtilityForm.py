@@ -1,6 +1,8 @@
 import re
-from PyQt6.QtWidgets import QLineEdit, QComboBox, QSpinBox, QDateEdit
+
+from PyQt6.QtWidgets import QLineEdit, QComboBox, QSpinBox, QDateEdit, QMessageBox
 from PyQt6.QtGui import QStandardItem, QStandardItemModel, QBrush, QColor, QFont
+from PyQt6.QtCore import Qt
 from pyqt6_multiselect_combobox import MultiSelectComboBox
 
 from src.views.widgets.BaseEditWidget import BaseEditWidget
@@ -36,7 +38,7 @@ class EditUtilityForm(BaseEditWidget):
         self.typeInput = self.addComboBox("Utility", UTILITIES, sectionTitle="Utility Information", defaultValue=type)
         self.unitNameInput = self.addComboBox("Unit", unitDisplay, sectionTitle="Utility Information")
         self.sharedWithInput = self.addMultiselectComboBox("Shared with Unit(s)", [], sectionTitle="Utility Information", isVisible=False)
-        self.installationDateInput = self.addDateInput("Installation Date", sectionTitle="Utility Information")
+        self.installationDateInput = self.addDateInput("Installation Date", sectionTitle="Utility Information", defaultDate=installationDate)
         self.statusInput = self.addComboBox("Status", ['Active','Inactive', 'N/A'], sectionTitle="Utility Information", defaultValue=status)
         self.billingInput = self.addComboBox("Billing Cycle", ['Monthly','Quarterly','Annually','Irregular'], sectionTitle="Utility Information", defaultValue=billingCycle)
 
@@ -172,3 +174,48 @@ class EditUtilityForm(BaseEditWidget):
             elif isinstance(widget, QDateEdit):
                 data[label] = widget.date()
         return data
+    
+    def accept(self):
+        msgBox = QMessageBox(self)
+        msgBox.setIcon(QMessageBox.Icon.Warning)
+        msgBox.setWindowTitle("Confirm Update")
+        msgBox.setText("Are you sure you want to update this utility?")
+        
+        yesButton = msgBox.addButton(QMessageBox.StandardButton.Yes)
+        noButton = msgBox.addButton(QMessageBox.StandardButton.No)
+
+        # Set cursors
+        yesButton.setCursor(Qt.CursorShape.PointingHandCursor)
+        noButton.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        # Style buttons
+        yesButton.setStyleSheet("""
+        QPushButton {
+            background-color: #541111;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: none;
+        }
+        QPushButton:hover {
+            background-color: #743131;
+        }
+        """)
+        noButton.setStyleSheet("""
+        QPushButton {
+            background-color: #444444;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: none;
+        }
+        QPushButton:hover {
+            background-color: #666666;
+        }
+        """)
+        msgBox.exec()
+
+        if msgBox.clickedButton() == yesButton:
+            super().accept()
+        else:
+            return
