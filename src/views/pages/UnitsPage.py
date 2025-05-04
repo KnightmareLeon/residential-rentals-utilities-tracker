@@ -13,6 +13,7 @@ class UnitsPage(BasePageWidget):
 
     def handleAddButton(self):
         dialog = AddUnitForm()
+        
         if dialog.exec():
             unitData = dialog.getFormData()
             if unitData:

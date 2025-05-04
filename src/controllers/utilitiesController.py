@@ -32,28 +32,20 @@ class UtilitiesController:
             "InstallationDate": "2023-10-01",
         }, 
         [ # UTILITY UNITS
-            {"UnitID": "U001", "Name": "B01R01 (Main)"}, # butngan ug Main ang main unit niya pero controller na bahala
+            {"UnitID": "U001", "Name": "B01 (Main)"}, # butngan ug Main ang main unit niya pero controller na bahala haha
             {"UnitID": "U002", "Name": "B01R02"},
             {"UnitID": "U003", "Name": "B01R03"},
-            {"UnitID": "U001", "Name": "B01R01"},
-            {"UnitID": "U002", "Name": "B01R02"},
-            {"UnitID": "U003", "Name": "B01R03"},
-            {"UnitID": "U001", "Name": "B01R01"},
-            {"UnitID": "U002", "Name": "B01R02"},
-            {"UnitID": "U003", "Name": "B01R03"},
-            {"UnitID": "U001", "Name": "B01R01"},
-            {"UnitID": "U002", "Name": "B01R02"},
-            {"UnitID": "U003", "Name": "B01R03"},
+
         ],
         # UTILITY BILLS
         generateRandomeUtilityBills("Electricity"))
 
     @staticmethod
-    def editUtility(originalID: str, type: str, unitName: str, status: str, billingCycle: str, installationDate) -> str:
+    def editUtility(originalID: str, type: str, unitID: str, sharedUnitIDs: list[str], status: str, billingCycle: str, installationDate) -> str:
         """
         Edits a utility with the given data.
         """
-        print("Editing utility:", originalID, type, unitName, status, billingCycle, installationDate)
+        print("Editing utility:", originalID, type, unitID, sharedUnitIDs, status, billingCycle, installationDate)
         return "Utility edited successfully"
     
     @staticmethod

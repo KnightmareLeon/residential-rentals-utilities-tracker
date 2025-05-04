@@ -1,3 +1,5 @@
+import re
+
 from src.views.widgets.BaseTableWidget import BaseTableWidget
 from src.views.dialogs.UtilityView import UtilityView
 from src.views.dialogs.EditUtilityForm import EditUtilityForm
@@ -51,17 +53,18 @@ class UtilitiesTable(BaseTableWidget):
             return
         
         utilityID = item.text()
-        utility, _, _ = UtilitiesController.viewUtility(utilityID)
+        utility, units, _ = UtilitiesController.viewUtility(utilityID)
 
-        dialog = EditUtilityForm(utility["Type"], utility["UnitName"], utility["Status"], utility["BillingCycle"], utility["InstallationDate"])
+        dialog = EditUtilityForm(utility["Type"], units, utility["Status"], utility["BillingCycle"], utility["InstallationDate"])
         
         if dialog.exec():
             updatedData = dialog.getFormData()
             
             UtilitiesController.editUtility(
                 utilityID,
-                updatedData["Utility Type"],
+                updatedData["Utility"],
                 updatedData["Unit"],
+                updatedData["Shared with Unit(s)"],
                 updatedData["Status"],
                 updatedData["Billing Cycle"],
                 updatedData["Installation Date"]

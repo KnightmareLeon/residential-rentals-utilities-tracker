@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QIcon, QDoubleValidator, QIntValidator
 from PyQt6.QtCore import Qt, QSize, QDate
+from pyqt6_multiselect_combobox import MultiSelectComboBox
 
 class BaseEditWidget(QDialog):
     def __init__(self, mainTitle: str, iconPath: str = None, parent=None):
@@ -259,13 +260,14 @@ class BaseEditWidget(QDialog):
         self.sections[title] = sectionLayout
         return sectionLayout
         
-    def _addField(self, label: str, widget: QWidget, sectionTitle: str | None = None):
+    def _addField(self, label: str, widget: QWidget, sectionTitle: str | None = None, isVisible: bool = True):
         container = QWidget()
         layout = QVBoxLayout(container)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.setSpacing(5)
 
         labelWidget = QLabel(label)
+        labelWidget.setVisible(isVisible)
         layout.addWidget(labelWidget)
         layout.addWidget(widget)
 
@@ -274,9 +276,10 @@ class BaseEditWidget(QDialog):
         else:
             self.fieldsLayout.addWidget(container)
 
-        self.fields[label] = widget
+        self.fields[label] = (labelWidget, widget)
+        widget.setVisible(isVisible)
         return widget
-
+    
     def addFloatInput(self, label: str, minValue=0, maxValue=999999999, sectionTitle: str | None = None, defaultValue: float = 0.0):
         lineEdit = QLineEdit()
         lineEdit.setValidator(QDoubleValidator(float(minValue), float(maxValue), 2))
@@ -302,8 +305,17 @@ class BaseEditWidget(QDialog):
     def addComboBox(self, label: str, options: list[str], sectionTitle: str | None = None, defaultValue: str = ""):
         combo = QComboBox()
         combo.addItems(options)
+
+        if defaultValue:
+            combo.setCurrentText(defaultValue)
+        
         combo.setPlaceholderText(label)
         return self._addField(label, combo, sectionTitle)
+
+    def addMultiselectComboBox(self, label: str, options: list[str], sectionTitle: str | None = None, isVisible: bool = True):
+        combo = MultiSelectComboBox()
+        combo.addItems(options)
+        return self._addField(label, combo, sectionTitle, isVisible)
 
     def addSpinBox(self, label: str, minValue=0, maxValue=100, sectionTitle: str | None = None, defaultValue: int = 0):
         spin = QSpinBox()
