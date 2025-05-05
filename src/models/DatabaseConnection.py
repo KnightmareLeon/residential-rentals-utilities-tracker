@@ -3,7 +3,12 @@ from dotenv import load_dotenv
 import os
 
 class DatabaseConnection:
-
+    """
+    A singleton class to manage the database connection.
+    It uses the mysql.connector library to connect to a MySQL database.
+    The connection parameters are loaded from a .env file.
+    """
+    
     __db = None
 
     @staticmethod
@@ -26,7 +31,7 @@ class DatabaseConnection:
         DatabaseConnection.__db.autocommit = True
 
     @staticmethod
-    def getConnection():
+    def getConnection() -> mysql.connector.MySQLConnection:
         """
         Returns the database connection object. If the connection is not established,
         it initializes the connection first.

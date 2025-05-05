@@ -4,7 +4,22 @@ from models.UnitDatabaseTable import UnitDatabaseTable
 from models.UtilityDatabaseTable import UtilityDatabaseTable
 
 class InstalledUtilityDatabaseTable(DatabaseTable):
-
+    """
+    This class represents the installedutility table in the database.
+    It inherits from the DatabaseTable class and provides methods to interact with the table.
+    The table stores information about the utilities installed in each unit.
+    The table has the following columns:
+    - UnitID: The ID of the unit (foreign key).
+    - UtilityID: The ID of the utility (foreign key).
+    - InstallationDate: The date when the utility was installed.
+    - UnitType: The type of unit (shared or individual).
+    The table has the following constraints:
+    - PRIMARY KEY (UnitID, UtilityID): The combination of UnitID and UtilityID is unique.
+    - FOREIGN KEY (UnitID) REFERENCES unit (UnitID): The UnitID must exist in the unit table.
+    - FOREIGN KEY (UtilityID) REFERENCES
+    utility (UtilityID): The UtilityID must exist in the utility table.
+    """
+    
     _tableName = "installedutility"
     referredTables = [UnitDatabaseTable, UtilityDatabaseTable]
 
@@ -23,7 +38,27 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             raise e
         finally:
             cursor.close()
-    
+        
+    @classmethod
+    def _createTable(cls):
+        try:
+            cursor = DatabaseConnection.getConnection().cursor()
+            cursor.execute("CREATE TABLE IF NOT EXISTS installedutility ( " +
+                "UnitID int NOT NULL, " +
+                "UtilityID int NOT NULL, " +
+                "InstallationDate date NOT NULL, " +
+                "UnitType enum('Shared','Individual') NOT NULL," +
+                "PRIMARY KEY (UnitID,UtilityID), " +
+                "KEY UtilityID (UtilityID), " +
+                "CONSTRAINT installedutility_ibfk_1 FOREIGN KEY (UnitID) REFERENCES unit (UnitID) ON DELETE CASCADE ON UPDATE CASCADE, " +
+                "CONSTRAINT installedutility_ibfk_2 FOREIGN KEY (UtilityID) REFERENCES utility (UtilityID) ON DELETE CASCADE ON UPDATE CASCADE)"
+            )
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+
     @classmethod
     def getPrimaryKey(cls) -> list[str]:
         """
@@ -56,35 +91,37 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         - limit: An integer indicating the number of records per page.
         The method returns a list of dictionaries where each dictionary represents a row
         """
+        referred = {} if referred is None else referred
+        columns = [] if columns is None else columns
+
         if not cls._initialized:
             cls._initialize()
             cls._initialized = True
-        result = []
-        referred = {} if referred is None else referred
-        columns = [] if columns is None else columns
-        try:
-            if page < 1 or limit < 1:
+
+        if page < 1 or limit < 1:
                 raise ValueError("Page and limit must be positive integers.")
-            if sortBy is not None and not isinstance(sortBy, str):
-                raise ValueError("sortBy must be a string.")
-            if not isinstance(order, str):
-                raise ValueError("order must be a string.")
-            if searchValue is not None and not isinstance(searchValue, str):
-                raise ValueError("searchValue must be a string.")
-            if columns is not None and not isinstance(columns, list):
-                raise ValueError("columns must be a list.")
-            if referred is not None and not isinstance(referred, dict):
-                raise ValueError("referred must be a dictionary.")
-            for table in referred.keys():
-                if table not in cls.referredTables:
-                    raise ValueError(f"Table '{table}' is not a referred table.")
-                for column in referred[table]:
-                    if column not in table.columns:
-                        raise ValueError(f"Column '{column}' does not exist in the table '{table}'.")
-                if len(referred[table]) == 0:
-                    raise ValueError(f"referredColumns for table '{table}' must not be empty.")
-                
-            
+        if sortBy is not None and not isinstance(sortBy, str):
+            raise ValueError("sortBy must be a string.")
+        if not isinstance(order, str):
+            raise ValueError("order must be a string.")
+        if searchValue is not None and not isinstance(searchValue, str):
+            raise ValueError("searchValue must be a string.")
+        if columns is not None and not isinstance(columns, list):
+            raise ValueError("columns must be a list.")
+        if referred is not None and not isinstance(referred, dict):
+            raise ValueError("referred must be a dictionary.")
+        for table in referred.keys():
+            if table not in cls.referredTables:
+                raise ValueError(f"Table '{table}' is not a referred table.")
+            for column in referred[table]:
+                if column not in table.columns:
+                    raise ValueError(f"Column '{column}' does not exist in the table '{table}'.")
+            if len(referred[table]) == 0:
+                raise ValueError(f"referredColumns for table '{table}' must not be empty.")
+
+        result = []
+        
+        try:
             # Check if columns is empty, if so, use all columns
             if len(columns) == 0:
                 columns += cls.columns
@@ -151,19 +188,19 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         The primary key must be included in the data dictionary. The method will
         raise an error if the primary key is not included or if the data is not a
         dictionary.
+        - data: A dictionary containing the data to be inserted into the table.
         """
         if not cls._initialized:
             cls._initialize()
             cls._initialized = True
-        try:
-            if not isinstance(data, dict):
+        if not isinstance(data, dict):
                 raise ValueError("Data must be a dictionary.")
-            for key in data.keys():
-                if key not in cls.columns:
-                    raise ValueError(f"Column '{key}' does not exist in the table.")
-            if sorted(list(data.keys())) != sorted(cls.columns):
+        for key in data.keys():
+            if key not in cls.columns:
+                raise ValueError(f"Column '{key}' does not exist in the table.")
+        if sorted(list(data.keys())) != sorted(cls.columns):
                 raise ValueError(f"Data keys {data.keys()} do not match table columns {cls.columns}.")
-        
+        try:
             cursor = DatabaseConnection.getConnection().cursor()
             columnsClause = ', '.join(data.keys())
             values = []
@@ -185,34 +222,45 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             cursor.close()
 
     @classmethod
+    def delete(cls, keys : list[int]):
+        """
+        Disabled the delete method for this class, to delete data from the table,
+        use the delete method of either the Unit or Utility table."""
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
+        pass
+
+    @classmethod
     def batchUpdate(cls, 
                     keys : list[tuple[int, int]],
                     data : dict[str, str]):
         """
         Batch update the installedutility table with the given keys and data.
+        - keys: A list of tuples containing the primary keys (UnitID, UtilityID).
+        - data: A dictionary containing the data to be updated in the table.
         """
         if not cls._initialized:
             cls._initialize()
             cls._initialized = True
-        try:
-            if not isinstance(keys, list):
+        if not isinstance(keys, list):
                 raise TypeError("Keys must be a list.")
-            if not isinstance(data, dict):
-                raise TypeError("Data must be a dict.")
-            if not all(isinstance(key, tuple) and len(key) == 2 for key in keys):
-                raise TypeError("Keys must be a list of tuples with two integers.")
-            for column in data.keys():
-                if not isinstance(column, str):
-                    raise TypeError("Data keys must be strings.")
-                if not isinstance(data[column], str):
-                    raise TypeError("Data values must be strings.")
-                if column not in cls._columns:
-                    raise ValueError(f"Column {column} is not a valid column name.")
-                if column == cls._primary[0]:
-                    raise ValueError(f"Cannot update primary key {cls._primary[0]}.")
-                if column == cls._primary[1]:
-                    raise ValueError(f"Cannot update primary key {cls._primary[1]}.")
-            
+        if not isinstance(data, dict):
+            raise TypeError("Data must be a dict.")
+        if not all(isinstance(key, tuple) and len(key) == 2 for key in keys):
+            raise TypeError("Keys must be a list of tuples with two integers.")
+        for column in data.keys():
+            if not isinstance(column, str):
+                raise TypeError("Data keys must be strings.")
+            if not isinstance(data[column], str):
+                raise TypeError("Data values must be strings.")
+            if column not in cls._columns:
+                raise ValueError(f"Column {column} is not a valid column name.")
+            if column == cls._primary[0]:
+                raise ValueError(f"Cannot update primary key {cls._primary[0]}.")
+            if column == cls._primary[1]:
+                raise ValueError(f"Cannot update primary key {cls._primary[1]}.")
+        try:
             cursor = DatabaseConnection.getConnection().cursor()
             sql = f"UPDATE {cls._tableName} SET "
             sql += ", ".join([f"{column} = '{value}'" for column, value in data.items()])
@@ -231,6 +279,9 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         Method disabled
         """
         pass
+    
+    #Unique methods for InstalledUtilityDatabaseTable
+    #<----------------------------------------->
 
     @classmethod
     def getUnitUtilities(cls,
@@ -242,10 +293,13 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         if not cls._initialized:
             cls._initialize()
             cls._initialized = True
+
+        if not isinstance(unit, int):
+            raise ValueError("Unit must be an integer.")
+        
         result = None
+
         try:
-            if not isinstance(unit, int):
-                raise ValueError("Unit must be an integer.")
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             ifTypeText = f"SELECT UtilityID, Utility.Type FROM {cls.getTableName()} " + \
                          f"JOIN {UtilityDatabaseTable.getTableName()} USING (UtilityID)"
@@ -276,10 +330,13 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         if not cls._initialized:
             cls._initialize()
             cls._initialized = True
+
+        if not isinstance(utility, int):
+            raise ValueError("Utility must be an integer.")
+        
         result = None
+
         try:
-            if not isinstance(utility, int):
-                raise ValueError("Utility must be an integer.")
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             sql = f"SELECT UnitID, UnitType FROM {cls.getTableName()} " + \
                   f"WHERE UtilityID = {utility}"
@@ -291,33 +348,3 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         finally:
             cursor.close()
         return result
-    
-    @classmethod
-    def _createTable(cls):
-        try:
-            cursor = DatabaseConnection.getConnection().cursor()
-            cursor.execute("CREATE TABLE IF NOT EXISTS installedutility ( " +
-                "UnitID int NOT NULL, " +
-                "UtilityID int NOT NULL, " +
-                "InstallationDate date NOT NULL, " +
-                "UnitType enum('Shared','Individual') NOT NULL," +
-                "PRIMARY KEY (UnitID,UtilityID), " +
-                "KEY UtilityID (UtilityID), " +
-                "CONSTRAINT installedutility_ibfk_1 FOREIGN KEY (UnitID) REFERENCES unit (UnitID) ON DELETE CASCADE ON UPDATE CASCADE, " +
-                "CONSTRAINT installedutility_ibfk_2 FOREIGN KEY (UtilityID) REFERENCES utility (UtilityID) ON DELETE CASCADE ON UPDATE CASCADE)"
-            )
-        except Exception as e:
-            print(f"Error: {e}")
-            raise e
-        finally:
-            cursor.close()
-
-    @classmethod
-    def delete(cls, keys : list[int]):
-        """
-        Disabled the delete method for this class, to delete data from the table,
-        use the delete method of either the Unit or Utility table."""
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
-        pass

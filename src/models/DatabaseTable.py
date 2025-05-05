@@ -4,7 +4,12 @@ import datetime
 from models.DatabaseConnection import DatabaseConnection
 
 class DatabaseTable(ABC):
-    
+    """
+    Abstract base class for all database tables. This class provides methods to
+    interact with the database, including creating tables, reading data, inserting,
+    updating, and deleting records. It also provides methods to get the table name,
+    primary key, and total count of records in the table.
+    """
     _tableName = None
     _primary = None
     _initialized = False
