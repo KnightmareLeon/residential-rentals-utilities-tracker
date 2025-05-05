@@ -73,6 +73,21 @@ class EditBillForm(BaseEditWidget):
         msgBox.setIcon(QMessageBox.Icon.Warning)
         msgBox.setWindowTitle("Confirm Update")
         msgBox.setText("Are you sure you want to update this bill?")
+        msgBox.setStyleSheet("""
+QDialog {
+    background-color: #202020;
+    font-family: "Urbanist";
+    font-size: 16px;
+    color: white;
+}
+
+QLabel {
+    color: white;
+    font-family: "Urbanist";
+    font-size: 16px;
+}
+
+""")
         
         yesButton = msgBox.addButton(QMessageBox.StandardButton.Yes)
         noButton = msgBox.addButton(QMessageBox.StandardButton.No)
@@ -89,6 +104,7 @@ class EditBillForm(BaseEditWidget):
             padding: 6px 12px;
             border-radius: 4px;
             border: none;
+            font-weight: bold;
         }
         QPushButton:hover {
             background-color: #743131;
@@ -101,12 +117,13 @@ class EditBillForm(BaseEditWidget):
             padding: 6px 12px;
             border-radius: 4px;
             border: none;
+            font-weight: bold;
         }
         QPushButton:hover {
             background-color: #666666;
         }
         """)
-
+        
         msgBox.exec()
 
         if msgBox.clickedButton() == yesButton:

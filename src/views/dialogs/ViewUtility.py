@@ -4,7 +4,7 @@ from PyQt6.QtCore import Qt
 from src.views.widgets.BaseViewWidget import BaseViewWidget
 from src.views.widgets.UtilityChartWidget import UtilityChartWidget
 
-class UtilityView(BaseViewWidget):
+class ViewUtility(BaseViewWidget):
     def __init__(self, id: str, utilityData: dict, utilityUnits: list, utilityBillsData: list, headers: list, databaseHeaders: list, parent=None):
         super().__init__("Utility Details", parent=parent, iconPath="assets/icons/utilities.png")
         self.setMinimumSize(1075, 600)
