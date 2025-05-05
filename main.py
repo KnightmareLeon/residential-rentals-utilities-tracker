@@ -1,6 +1,6 @@
 import sys
 from PyQt6.QtWidgets import QApplication
-from PyQt6.QtGui import QFontDatabase
+from PyQt6.QtGui import QFontDatabase, QIcon
 
 from src.views.MainWindow import MainWindow
 
