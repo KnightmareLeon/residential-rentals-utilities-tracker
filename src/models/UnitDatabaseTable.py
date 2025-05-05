@@ -2,6 +2,17 @@ from models.DatabaseTable import DatabaseTable
 from models.DatabaseConnection import DatabaseConnection
 
 class UnitDatabaseTable(DatabaseTable):
+    """
+    This class represents the unit table in the database.
+    It inherits from the DatabaseTable class and provides methods to interact with the table.
+    The table stores information about units of the boarding house.
+    The table has the following columns:
+    - UnitID: int, primary key, auto-incremented
+    - Name: varchar(30), unique, not null
+    - Address: varchar(255), not null
+    - PRIMARY KEY (UnitID)
+    - UNIQUE KEY Name (Name)
+    """
 
     _tableName = "unit"
 
@@ -32,22 +43,23 @@ class UnitDatabaseTable(DatabaseTable):
         if not cls._initialized:
             cls._initialize()
             cls._initialized = True
-        try:
-            if not isinstance(keys, list):
+        
+        if not isinstance(keys, list):
                 raise TypeError("Keys must be a list.")
-            if not isinstance(data, dict):
-                raise TypeError("Data must be a dict.")
-            if not all(isinstance(key, int) for key in keys):
-                raise TypeError("Keys must be a list of integers.")
-            for column in data.keys():
-                if not isinstance(column, str):
-                    raise TypeError("Data keys must be strings.")
-                if not isinstance(data[column], str):
-                    raise TypeError("Data values must be strings.")
-                if column not in cls._columns:
-                    raise ValueError(f"Column {column} is not a valid column name.")
-                if column == cls._primaryKey:
-                    raise ValueError(f"Cannot update primary key {cls._primaryKey}.")
+        if not isinstance(data, dict):
+            raise TypeError("Data must be a dict.")
+        if not all(isinstance(key, int) for key in keys):
+            raise TypeError("Keys must be a list of integers.")
+        for column in data.keys():
+            if not isinstance(column, str):
+                raise TypeError("Data keys must be strings.")
+            if not isinstance(data[column], str):
+                raise TypeError("Data values must be strings.")
+            if column not in cls._columns:
+                raise ValueError(f"Column {column} is not a valid column name.")
+            if column == cls._primaryKey:
+                raise ValueError(f"Cannot update primary key {cls._primaryKey}.")
+        try:
             
             cursor = DatabaseConnection.getConnection().cursor()
             sql = f"UPDATE {cls._tableName} SET "
