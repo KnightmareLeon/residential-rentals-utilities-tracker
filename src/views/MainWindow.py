@@ -428,15 +428,10 @@ class MainWindow(QMainWindow):
         self.stackedWidget.addWidget(self.unitsPage)
         self.stackedWidget.addWidget(self.utilitiesPage)
         self.stackedWidget.addWidget(self.billsPage)
-        
-        # FIXME:
-        sampleData1 = generateUnitData()
-        sampleData2 = generateUtilityData()
-        sampleData3 = generateBillData()
 
-        self.unitsPage.table.populateTable(sampleData1)
-        self.utilitiesPage.table.populateTable(sampleData2)
-        self.billsPage.table.populateTable(sampleData3)
+        self.unitsPage.table.updateTable()
+        self.utilitiesPage.table.updateTable()
+        self.billsPage.table.updateTable()
 
         self.homeButton.clicked.connect(lambda: self.updatePage(self.homePage, self.homeButton, "Welcome back"))
         self.unitsButton.clicked.connect(lambda: self.updatePage(self.unitsPage, self.unitsButton, "Units"))

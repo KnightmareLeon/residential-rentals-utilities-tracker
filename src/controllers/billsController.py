@@ -1,5 +1,7 @@
 from PyQt6.QtCore import QDate
 
+from src.utils.sampleDataGenerator import generateBillData
+
 class BillsController:
     
     @staticmethod
@@ -8,7 +10,7 @@ class BillsController:
         Fetches all units with pagination, sorting, and searching.
         """
         print(f"Fetching data for page {currentPage} with sorting {sortingField} {sortingOrder} and search '{searchValue}'")
-        return ([], 5) 
+        return (generateBillData(), 5) 
     
     @staticmethod
     def addBill(unitID: str, utilityID: str, totalAmount: str, billingPeriodStart: QDate, billingPeriodEnd: QDate, status: str, dueDate: QDate) -> str:

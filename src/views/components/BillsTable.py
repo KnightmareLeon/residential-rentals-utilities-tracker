@@ -27,7 +27,7 @@ class BillsTable(BaseTableWidget):
             sortingOrderStr = "ASC"
 
         data, count = BillsController.fetchBills(currentPage, sortingOrderStr, sortingField, searchValue)
-        #self.populateTable(data)
+        self.populateTable(data)
         self.parentWidget().totalPages = count
         self.parentWidget().pageLabel.setText(f"Page {currentPage} of {count}")
 
@@ -43,8 +43,6 @@ class BillsTable(BaseTableWidget):
         if billData:
             self.viewWindow = BillView(id, billData, billDataHeaders, billDataDatabaseHeaders)
             self.viewWindow.show()
-
-        self.updateTable()
 
     def handleEditButton(self, row_idx):
         item = self.item(row_idx, 0)
@@ -70,7 +68,7 @@ class BillsTable(BaseTableWidget):
                 updatedData["Billing Period End"]
             )
 
-        self.updateTable()
+            self.updateTable()
 
     def handleDeleteButton(self, row_idx):
         item = self.item(row_idx, 0)

@@ -29,7 +29,7 @@ class UtilitiesTable(BaseTableWidget):
             sortingOrderStr = "ASC"
 
         data, count = UtilitiesController.fetchUtilities(currentPage, sortingOrderStr, sortingField, searchValue)
-        #self.populateTable(data)
+        self.populateTable(data)
         self.parentWidget().totalPages = count
         self.parentWidget().pageLabel.setText(f"Page {currentPage} of {count}")
 
@@ -45,8 +45,6 @@ class UtilitiesTable(BaseTableWidget):
         if utilityData:
             self.viewWindow = UtilityView(id, utilityData, utilityUnits, utilityBillsData, utilityDataHeaders, utilityDataDatabaseHeaders)
             self.viewWindow.show()
-
-        self.updateTable()
 
     def handleEditButton(self, row_idx):
         item = self.item(row_idx, 0)
@@ -71,7 +69,7 @@ class UtilitiesTable(BaseTableWidget):
                 updatedData["Installation Date"]
             )
 
-        self.updateTable()
+            self.updateTable()
 
     def handleDeleteButton(self, row_idx):
         item = self.item(row_idx, 0)
