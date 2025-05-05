@@ -20,26 +20,6 @@ class HomePage(QWidget):
         mainLayout.setSpacing(15)
         self.setLayout(mainLayout)
 
-        self.setStyleSheet("""
-QMessageBox {
-    font-family: "Urbanist";
-    font-size: 16px;
-}
-QMessageBox QPushButton {
-    font-family: "Urbanist";
-    font-size: 16px;
-    font-weight: bold;
-    background-color: #202020;
-    border: none;
-    outline: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-}
-QMessageBox QPushButton::hover {
-    background-color: #333333;   
-}
-""")
-
         centerLayout = QVBoxLayout()
         centerLayout.setContentsMargins(0, 0, 0, 0)
         centerLayout.setSpacing(15)
@@ -118,5 +98,36 @@ QMessageBox QPushButton::hover {
                     self.mainWindow.billsPage.table.updateTable()
                     self.showSuccessNotification()
     
-    def showSuccessNotification(self):
-        QMessageBox.information(self, "Success", f"Bill was successfully added")
+    def showSuccessNotification(self, message="Utility was successfully added"):
+        msgBox = QMessageBox(self)
+        msgBox.setIcon(QMessageBox.Icon.Information)
+        msgBox.setWindowTitle("Success")
+        msgBox.setText(message)
+
+        msgBox.setOption(QMessageBox.Option.DontUseNativeDialog, True)
+
+        msgBox.setStyleSheet("""
+        QDialog {
+            background-color: #202020;
+            font-family: "Urbanist";
+            font-size: 16px;
+            color: white;
+        }
+        QLabel {
+            color: white;
+        }
+        QPushButton {
+            background-color: #444444;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-family: "Urbanist";
+            font-size: 16px;
+            font-weight: bold;
+        }
+        QPushButton:hover {
+            background-color: #666666;
+        }
+        """)
+
+        msgBox.exec()

@@ -24,7 +24,7 @@ from matplotlib.figure import Figure
 from src.utils.formatMoney import formatMoneyNoDecimal, formatMoney
 from src.utils.constants import categoryColors, billDataHeaders, billDataDatabaseHeaders
 from src.views.widgets.CheckableComboBox import CheckableComboBox
-from src.views.dialogs.BillView import BillView
+from src.views.dialogs.ViewBill import ViewBill
 from src.controllers.dashboardController import DashboardController
 from src.controllers.billsController import BillsController
 
@@ -325,7 +325,7 @@ class UtilityChartWidget(QFrame):
 
             billData = BillsController.viewBill(billID)
             if billData:
-                self.viewWindow = BillView(billID, billData, billDataHeaders, billDataDatabaseHeaders)
+                self.viewWindow = ViewBill(billID, billData, billDataHeaders, billDataDatabaseHeaders)
                 self.viewWindow.show()
 
     def generateEvenDateTicks(self, startDate: datetime, endDate: datetime, divisions: int):

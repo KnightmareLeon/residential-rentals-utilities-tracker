@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QMessageBox
 from PyQt6.QtCore import Qt
 
 from src.views.widgets.BaseTableWidget import BaseTableWidget
-from src.views.dialogs.UtilityView import UtilityView
+from src.views.dialogs.ViewUtility import ViewUtility
 from src.views.dialogs.EditUtilityForm import EditUtilityForm
 from src.utils.constants import SortOrder
 from src.controllers.utilitiesController import UtilitiesController
@@ -43,7 +43,7 @@ class UtilitiesTable(BaseTableWidget):
         utilityData, utilityUnits, utilityBillsData = UtilitiesController.viewUtility(id)
 
         if utilityData:
-            self.viewWindow = UtilityView(id, utilityData, utilityUnits, utilityBillsData, utilityDataHeaders, utilityDataDatabaseHeaders)
+            self.viewWindow = ViewUtility(id, utilityData, utilityUnits, utilityBillsData, utilityDataHeaders, utilityDataDatabaseHeaders)
             self.viewWindow.show()
 
     def handleEditButton(self, row_idx):
@@ -82,6 +82,22 @@ class UtilitiesTable(BaseTableWidget):
         msgBox.setIcon(QMessageBox.Icon.Warning)
         msgBox.setWindowTitle("Confirm Delete")
         msgBox.setText(f"Are you sure you want to delete Utility '{utilityID}'?")
+        msgBox.setStyleSheet("""
+QDialog {
+    background-color: #202020;
+    font-family: "Urbanist";
+    font-size: 16px;
+    color: white;
+}
+
+QLabel {
+    color: white;
+    font-family: "Urbanist";
+    font-size: 16px;
+}
+
+""")
+        
         yesButton = msgBox.addButton(QMessageBox.StandardButton.Yes)
         noButton = msgBox.addButton(QMessageBox.StandardButton.No)
 
@@ -116,8 +132,71 @@ QPushButton:hover {
         if msgBox.clickedButton() == yesButton:
             success = UtilitiesController.deleteUtility(utilityID)
             if success:
-                QMessageBox.information(self, "Success", f"Utility '{utilityID}' was deleted.")
+                self.showSuccessNotification(f"Unit '{utilityID}' was deleted.")
             else:
-                QMessageBox.warning(self, "Error", f"Failed to delete Utility '{utilityID}'.")
+                self.showErrorNotification(f"Failed to delete Unit '{utilityID}'.")
 
             self.updateTable()
+    
+    def showSuccessNotification(self, message="Utility was successfully added"):
+        msgBox = QMessageBox(self)
+        msgBox.setIcon(QMessageBox.Icon.Information)
+        msgBox.setWindowTitle("Success")
+        msgBox.setText(message)
+
+        msgBox.setOption(QMessageBox.Option.DontUseNativeDialog, True)
+
+        msgBox.setStyleSheet("""
+        QDialog {
+            background-color: #202020;
+            font-family: "Urbanist";
+            font-size: 16px;
+            color: white;
+        }
+        QLabel {
+            color: white;
+        }
+        QPushButton {
+            background-color: #444444;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+        QPushButton:hover {
+            background-color: #666666;
+        }
+        """)
+
+        msgBox.exec()
+    
+    def showErrorNotification(self, message="An error occurred"):
+        msgBox = QMessageBox(self)
+        msgBox.setIcon(QMessageBox.Icon.Warning)
+        msgBox.setWindowTitle("Error")
+        msgBox.setText(message)
+
+        msgBox.setOption(QMessageBox.Option.DontUseNativeDialog, True)
+
+        msgBox.setStyleSheet("""
+        QDialog {
+            background-color: #202020;
+            font-family: "Urbanist";
+            font-size: 16px;
+            color: white;
+        }
+        QLabel {
+            color: white;
+        }
+        QPushButton {
+            background-color: #541111;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+        QPushButton:hover {
+            background-color: #743131;
+        }
+        """)
+
+        msgBox.exec()
+    

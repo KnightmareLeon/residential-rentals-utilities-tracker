@@ -4,7 +4,7 @@ from PyQt6.QtCore import Qt, pyqtSignal
 
 from src.utils.constants import categoryColors, defaultColor, billDataDatabaseHeaders, billDataHeaders
 from src.views.widgets.BillEntry import BillEntry
-from src.views.dialogs.BillView import BillView
+from src.views.dialogs.ViewBill import ViewBill
 from src.controllers.billsController import BillsController
 from src.controllers.dashboardController import DashboardController
 
@@ -125,7 +125,7 @@ class BillsDashboard(QWidget):
         billData = BillsController.viewBill(billID)
 
         if billData:
-            self.viewWindow = BillView(billID, billData, billDataHeaders, billDataDatabaseHeaders)
+            self.viewWindow = ViewBill(billID, billData, billDataHeaders, billDataDatabaseHeaders)
             self.viewWindow.show()
 
     def updateDashboard(self):
