@@ -1,9 +1,12 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QSizePolicy
-from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QSizePolicy, QPushButton, QMessageBox
+from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import Qt, QSize
 
 from src.utils.sampleDataGenerator import generateBillsDataFromUtility
 from src.views.components.UtilityDashboard import UtilityDashboard
 from src.views.components.BillsDashboard import BillsDashboard
+from src.views.dialogs.AddBillForm import AddBillForm
+from src.controllers.billsController import BillsController
 
 class HomePage(QWidget):
     def __init__(self, parent=None, mainWindow=None):
@@ -16,6 +19,26 @@ class HomePage(QWidget):
         mainLayout.setContentsMargins(15, 20, 15, 20)
         mainLayout.setSpacing(15)
         self.setLayout(mainLayout)
+
+        self.setStyleSheet("""
+QMessageBox {
+    font-family: "Urbanist";
+    font-size: 16px;
+}
+QMessageBox QPushButton {
+    font-family: "Urbanist";
+    font-size: 16px;
+    font-weight: bold;
+    background-color: #202020;
+    border: none;
+    outline: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+}
+QMessageBox QPushButton::hover {
+    background-color: #333333;   
+}
+""")
 
         centerLayout = QVBoxLayout()
         centerLayout.setContentsMargins(0, 0, 0, 0)
@@ -34,14 +57,66 @@ class HomePage(QWidget):
         billsDashboard = BillsDashboard(billsData)
         billsDashboard.viewBills.connect(self.openBillsPage)
 
-        # bottomRightWidget = QFrame()
-        # bottomRightWidget.setStyleSheet("background-color: #1c1c1c; border-radius: 15px")
-        # bottomRightWidget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        # bottomRightWidget.setMinimumHeight(200)
+        bottomRightWidget = QFrame()
+        bottomRightWidget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        bottomRightWidget.setFixedHeight(60)
 
+        bottomRightLayout = QVBoxLayout(bottomRightWidget)
+        bottomRightLayout.setContentsMargins(0, 0, 0, 0)
+        bottomRightLayout.setSpacing(0)
+
+        buttonLayout = QHBoxLayout() 
+
+        addBillButton = QPushButton("Add Bill")
+        addBillButton.setIcon(QIcon("assets/icons/bills.png"))
+        addBillButton.setIconSize(QSize(24, 24))
+        addBillButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        addBillButton.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        addBillButton.clicked.connect(self.handleAddBillButton)
+        addBillButton.setStyleSheet("""
+        QPushButton {
+            background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #3500B0, stop:1 #9900A7);
+            color: white;
+            font-family: "Urbanist";
+            font-size: 18px;
+            font-weight: bold;
+            padding: 6px 12px;
+            border-radius: 12px;
+        }
+        QPushButton:hover {
+            background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #4600E9, stop:1 #E200F7);
+        }
+        """)
+
+        buttonLayout.addWidget(addBillButton)
+        bottomRightLayout.addLayout(buttonLayout)
+
+        rightLayout.addWidget(bottomRightWidget)
+        rightLayout.addSpacing(5)
         rightLayout.addWidget(billsDashboard)
-        # rightLayout.addSpacing(15)
-        # rightLayout.addWidget(bottomRightWidget)
     
     def openBillsPage(self):
         self.mainWindow.updatePage(self.mainWindow.billsPage, self.mainWindow.billsButton, "Bills")
+    
+    def handleAddBillButton(self):
+        dialog = AddBillForm()
+        if dialog.exec():
+            billData = dialog.getFormData()
+            if billData:
+                unitID = billData["Unit"]
+                utilityID = billData["Utility Type"]
+                totalAmount = billData["Total Amount"]
+                billPeriodStart = billData["Billing Period Start"]
+                billPeriodEnd = billData["Billing Period End"]
+                status = billData["Status"]
+                dueDate = billData["Due Date"]
+
+                response = BillsController.addBill(unitID, utilityID, totalAmount, billPeriodStart, billPeriodEnd, status, dueDate)
+                
+                if response:
+                    self.mainWindow.billsPage.table.updateTable()
+                    self.showSuccessNotification()
+    
+    def showSuccessNotification(self):
+        QMessageBox.information(self, "Success", f"Bill was successfully added")

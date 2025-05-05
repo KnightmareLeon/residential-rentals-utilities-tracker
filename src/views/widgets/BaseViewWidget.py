@@ -256,6 +256,14 @@ class BaseViewWidget(QDialog):
             valueWidget.setStyleSheet("color: #00FF6F;")
         elif value == "Inactive":
             valueWidget.setStyleSheet("color: #FA1647;")
+        elif value == "Paid":
+            valueWidget.setStyleSheet("color: #00FF6F;")
+        elif value == "Unpaid":
+            valueWidget.setStyleSheet("color: #FFE921;")
+        elif value == "Overdue":
+            valueWidget.setStyleSheet("color: #FA1647;")
+        elif value == "Partially Paid":
+            valueWidget.setStyleSheet("color: #FF8400;")
 
         hLayout.addWidget(labelWidget)
         hLayout.addWidget(valueWidget)
