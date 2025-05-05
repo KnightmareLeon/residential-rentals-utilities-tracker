@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QDate
 
-from src.utils.sampleDataGenerator import generateRandomUtilityData, generateRandomeUtilityBills
+from src.utils.sampleDataGenerator import generateUtilityData, generateRandomeUtilityBills
 
 class UtilitiesController:
     
@@ -10,7 +10,7 @@ class UtilitiesController:
         Fetches all utilitys with pagination, sorting, and searching.
         """
         print(f"Fetching data for page {currentPage} with sorting {sortingField} {sortingOrder} and search '{searchValue}'")
-        return ([], 5) 
+        return (generateUtilityData(), 5) 
     
     @staticmethod
     def addUtility(type: str, mainUnitID: str, sharedUnitIDs: list[str], status: str, billingCycle: str) -> str:

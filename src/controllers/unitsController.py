@@ -1,4 +1,4 @@
-from src.utils.sampleDataGenerator import generateRandomUtilityData
+from src.utils.sampleDataGenerator import generateRandomUtilityData, generateUnitData
 
 class UnitsController:
     
@@ -8,7 +8,7 @@ class UnitsController:
         Fetches all units with pagination, sorting, and searching.
         """
         print(f"Fetching data for page {currentPage} with sorting {sortingField} {sortingOrder} and search '{searchValue}'")
-        return ([], 5) 
+        return (generateUnitData(), 5) 
     
     @staticmethod
     def addUnit(name: str, address: str, type: str) -> str:
