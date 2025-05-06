@@ -1,11 +1,11 @@
 import datetime
 import math
 
-from models.DatabaseTable import DatabaseTable
-from models.DatabaseConnection import DatabaseConnection
-from models.UnitDatabaseTable import UnitDatabaseTable
-from models.UtilityDatabaseTable import UtilityDatabaseTable
-from models.InstalledUtilityDatabaseTable import InstalledUtilityDatabaseTable
+from .DatabaseTable import DatabaseTable
+from .DatabaseConnection import DatabaseConnection
+from .UnitDatabaseTable import UnitDatabaseTable
+from .UtilityDatabaseTable import UtilityDatabaseTable
+from .InstalledUtilityDatabaseTable import InstalledUtilityDatabaseTable
 
 from utils.constants import Range
 
@@ -33,7 +33,8 @@ class BillDatabaseTable(DatabaseTable):
     """
     
     _tableName = "bill"
-    referredTables = [UnitDatabaseTable, UtilityDatabaseTable]
+    referredTables = {UnitDatabaseTable.getTableName() : UnitDatabaseTable, 
+                      UtilityDatabaseTable.getTableName() : UtilityDatabaseTable}
 
     @classmethod  
     def _createTable(cls):
