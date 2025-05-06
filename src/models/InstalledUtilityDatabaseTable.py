@@ -1,7 +1,7 @@
-from models.DatabaseTable import DatabaseTable
-from models.DatabaseConnection import DatabaseConnection
-from models.UnitDatabaseTable import UnitDatabaseTable
-from models.UtilityDatabaseTable import UtilityDatabaseTable
+from .DatabaseTable import DatabaseTable
+from .DatabaseConnection import DatabaseConnection
+from .UnitDatabaseTable import UnitDatabaseTable
+from .UtilityDatabaseTable import UtilityDatabaseTable
 
 class InstalledUtilityDatabaseTable(DatabaseTable):
     """
@@ -21,7 +21,8 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
     """
     
     _tableName = "installedutility"
-    referredTables = [UnitDatabaseTable, UtilityDatabaseTable]
+    referredTables = {UnitDatabaseTable.getTableName() : UnitDatabaseTable, 
+                      UtilityDatabaseTable.getTableName() : UtilityDatabaseTable}
 
     @classmethod
     def _initialize(cls):
@@ -32,7 +33,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
                            f"WHERE TABLE_NAME = '{cls._tableName}' AND CONSTRAINT_NAME = " +
                            "'PRIMARY'")
             cls._primary = [row['COLUMN_NAME'] for row in cursor.fetchall()]
-            cls.columns = cls._readColumns(cls)
+            cls._columns = cls._readColumns(cls)
         except Exception as e:
             print(f"Error: {e}")
             raise e
@@ -91,12 +92,13 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         - limit: An integer indicating the number of records per page.
         The method returns a list of dictionaries where each dictionary represents a row
         """
-        referred = {} if referred is None else referred
-        columns = [] if columns is None else columns
 
         if not cls._initialized:
             cls._initialize()
             cls._initialized = True
+
+        referred = {} if referred is None else referred
+        columns = [] if columns is None else columns
 
         if page < 1 or limit < 1:
                 raise ValueError("Page and limit must be positive integers.")
@@ -110,35 +112,44 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             raise ValueError("columns must be a list.")
         if referred is not None and not isinstance(referred, dict):
             raise ValueError("referred must be a dictionary.")
-        for table in cls.referredTables:
-            if table not in cls.referredTables:
+        for table in referred.keys():
+            if not isinstance(table, str):
+                raise ValueError("Table names must be strings.")
+            if not isinstance(referred[table], list):
+                raise ValueError("Referred columns must be a list.")
+            if table not in cls.referredTables.keys():
                 raise ValueError(f"Table '{table}' is not a referred table.")
             for column in referred[table]:
-                if column not in table.getColumns():
+                if not isinstance(column, str):
+                    raise ValueError("Column names must be strings.")
+                if column not in cls.referredTables[table].getColumns():
                     raise ValueError(f"Column '{column}' does not exist in the table '{table}'.")
             if len(referred[table]) == 0:
                 raise ValueError(f"referredColumns for table '{table}' must not be empty.")
 
+         # Check if columns is empty, if so, use all columns
+        if len(columns) == 0:
+            columns += cls._columns
+        else: # Check if columns are valid
+            for column in columns:
+                if column not in cls._columns:
+                    raise ValueError(f"Column '{column}' does not exist in the table.")
+        columns = [f"{cls._tableName}.{column}" for column in columns]
+        
         result = []
         
         try:
-            # Check if columns is empty, if so, use all columns
-            if len(columns) == 0:
-                columns += cls.columns
-            else: # Check if columns are valid
-                for column in columns:
-                    if column not in cls.columns:
-                        raise ValueError(f"Column '{column}' does not exist in the table.")
-            columns = [f"{cls._tableName}.{column}" for column in columns]
 
             searchClause = ""
 
             if referred: # Check if referred is not empty
                 for table, tableColumns in referred.items():
-                    columns += [f"{table.getTableName()}.{column}" for column in tableColumns]
+                    columns += [f"{cls.referredTables[table].getTableName()}.{column}" for column in tableColumns]
                 if searchClause == "":
                     searchClause = "WHERE "
-                searchClause += " AND ".join([f"{cls._tableName}.{table._primary} = {table.getTableName()}.{table._primary}" for table in referred.keys()])
+                searchClause += " AND ".join([f"{cls._tableName}.{cls.referredTables[table].getPrimaryKey()} " + \
+                                              f"= {cls.referredTables[table].getTableName()}.{cls.referredTables[table].getPrimaryKey()}" 
+                                              for table in referred.keys()])
 
             if searchValue is not None: # Check if searchValue is not empty
                 allcolumns = "(" + " OR ".join([column + " REGEXP \'" + searchValue + "\'" for column in columns]) + ")"
@@ -150,11 +161,11 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             
             if sortBy is None: # Check if sortBy is not empty
                 sortBy = cls._primary[0]
-            if sortBy not in cls.columns: # Check if sortBy is valid
+            if sortBy not in cls._columns: # Check if sortBy is valid
                 columnExists = False
                 for table in referred.keys():
-                    if sortBy in table.columns:
-                        sortBy = f"{table.getTableName()}.{sortBy}"
+                    if sortBy in cls.referredTables[table].getTableName().getColumns():
+                        sortBy = f"{cls.referredTables[table].getTableName()}.{sortBy}"
                         columnExists = True
                         break
                 if not columnExists:
@@ -166,11 +177,12 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
                 raise ValueError("order must be 'ASC' or 'DESC'.")
             
             selectClause = ', '.join(columns)
-            tableNames = ", ".join([table.getTableName() for table in referred.keys()] + [cls._tableName])
+            tableNames = ", ".join([cls.referredTables[table].getTableName() for table in referred.keys()] + [cls._tableName])
             
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             offset = (page - 1) * limit
             sql = f"SELECT {selectClause} FROM {tableNames} {searchClause} ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset}; "
+            print(sql)
             cursor.execute(sql)
             result = cursor.fetchall()
         except Exception as e:
@@ -196,10 +208,10 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         if not isinstance(data, dict):
                 raise ValueError("Data must be a dictionary.")
         for key in data.keys():
-            if key not in cls.columns:
+            if key not in cls._columns:
                 raise ValueError(f"Column '{key}' does not exist in the table.")
-        if sorted(list(data.keys())) != sorted(cls.columns):
-                raise ValueError(f"Data keys {data.keys()} do not match table columns {cls.columns}.")
+        if sorted(list(data.keys())) != sorted(cls._columns):
+                raise ValueError(f"Data keys {data.keys()} do not match table columns {cls._columns}.")
         try:
             cursor = DatabaseConnection.getConnection().cursor()
             columnsClause = ', '.join(data.keys())

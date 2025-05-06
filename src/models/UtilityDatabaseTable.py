@@ -1,5 +1,5 @@
-from models.DatabaseTable import DatabaseTable
-from models.DatabaseConnection import DatabaseConnection
+from .DatabaseTable import DatabaseTable
+from .DatabaseConnection import DatabaseConnection
 
 class UtilityDatabaseTable(DatabaseTable):
     """

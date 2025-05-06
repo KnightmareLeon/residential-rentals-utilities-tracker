@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import datetime
 
-from models.DatabaseConnection import DatabaseConnection
+from .DatabaseConnection import DatabaseConnection
 
 class DatabaseTable(ABC):
     """
@@ -10,11 +10,11 @@ class DatabaseTable(ABC):
     updating, and deleting records. It also provides methods to get the table name,
     primary key, and total count of records in the table.
     """
-    _tableName = None
-    _primary = None
-    _initialized = False
-    _columns = []
-    referredTables = []
+    _tableName : str = None
+    _primary : str = None
+    _initialized : str = False
+    _columns : list[str] = []
+    referredTables : dict[str : 'DatabaseTable'] = {}
 
     @classmethod
     def _initialize(cls):
@@ -67,7 +67,7 @@ class DatabaseTable(ABC):
     @classmethod
     def read(cls, 
              columns : list[str] = None,
-             referred : dict['DatabaseTable', list[str]] = None,
+             referred : dict[str, list[str]] = None,
              searchValue : str = None,
              sortBy : str = None, 
              order : str = "ASC",
@@ -102,14 +102,20 @@ class DatabaseTable(ABC):
         if searchValue is not None and not isinstance(searchValue, str):
             raise ValueError("searchValue must be a string.")
         if columns is not None and not isinstance(columns, list):
-                raise ValueError("columns must be a list.")
+            raise ValueError("columns must be a list.")
         if referred is not None and not isinstance(referred, dict):
             raise ValueError("referred must be a dictionary.")
         for table in referred.keys():
-            if table not in cls.referredTables:
+            if not isinstance(table, str):
+                raise ValueError("Table names must be strings.")
+            if not isinstance(referred[table], list):
+                raise ValueError("Referred columns must be a list.")
+            if table not in cls.referredTables.keys():
                 raise ValueError(f"Table '{table}' is not a referred table.")
             for column in referred[table]:
-                if column not in table.getColumns():
+                if not isinstance(column, str):
+                    raise ValueError("Column names must be strings.")
+                if column not in cls.referredTables[table].getColumns():
                     raise ValueError(f"Column '{column}' does not exist in the table '{table}'.")
             if len(referred[table]) == 0:
                 raise ValueError(f"referredColumns for table '{table}' must not be empty.")   
@@ -131,10 +137,12 @@ class DatabaseTable(ABC):
 
             if referred: # Check if referred is not empty
                 for table, tableColumns in referred.items():
-                    columns += [f"{table.getTableName()}.{column}" for column in tableColumns]
+                    columns += [f"{cls.referredTables[table].getTableName()}.{column}" for column in tableColumns]
                 if searchClause == "":
                     searchClause = "WHERE "
-                searchClause += " AND ".join([f"{cls._tableName}.{table.getPrimaryKey()} = {table.getTableName()}.{table.getPrimaryKey()}" for table in referred.keys()])
+                searchClause += " AND ".join([f"{cls._tableName}.{cls.referredTables[table].getPrimaryKey()} " + \
+                                              f"= {cls.referredTables[table].getTableName()}.{cls.referredTables[table].getPrimaryKey()}" 
+                                              for table in referred.keys()])
 
             if searchValue is not None: # Check if searchValue is not empty
                 allcolumns = "(" + " OR ".join([column + " REGEXP \'" + searchValue + "\'" for column in columns]) + ")"
@@ -149,8 +157,8 @@ class DatabaseTable(ABC):
             if sortBy not in cls._columns: # Check if sortBy is valid
                 columnExists = False
                 for table in referred.keys():
-                    if sortBy in table.getColumns():
-                        sortBy = f"{table.getTableName()}.{sortBy}"
+                    if sortBy in cls.referredTables[table].getTableName().getColumns():
+                        sortBy = f"{cls.referredTables[table].getTableName()}.{sortBy}"
                         columnExists = True
                         break
                 if not columnExists:
@@ -162,7 +170,7 @@ class DatabaseTable(ABC):
                 raise ValueError("order must be 'ASC' or 'DESC'.")
             
             selectClause = ', '.join(columns)
-            tableNames = ", ".join([table.getTableName() for table in referred.keys()] + [cls._tableName])
+            tableNames = ", ".join([cls.referredTables[table].getTableName() for table in referred.keys()] + [cls._tableName])
             
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             offset = (page - 1) * limit
@@ -344,10 +352,14 @@ class DatabaseTable(ABC):
         if referred is not None and not isinstance(referred, dict):
             raise ValueError("referred must be a dictionary.")
         for table in referred.keys():
-            if table not in cls.referredTables:
+            if not isinstance(table, str):
+                raise ValueError("Table names must be strings.")
+            if not isinstance(referred[table], list):
+                raise ValueError("Referred columns must be a list.")
+            if table not in cls.referredTables.keys():
                 raise ValueError(f"Table '{table}' is not a referred table.")
             for column in referred[table]:
-                if column not in table.getColumns():
+                if column not in cls.referredTables[table].getColumns():
                     raise ValueError(f"Column '{column}' does not exist in the table '{table}'.")
             if len(referred[table]) == 0:
                 raise ValueError(f"referredColumns for table '{table}' must not be empty.")   
@@ -366,13 +378,15 @@ class DatabaseTable(ABC):
         try:
             searchClause = ""
             
-            if referred:
+            if referred: # Check if referred is not empty
                 for table, tableColumns in referred.items():
-                    columns += [f"{table.getTableName()}.{column}" for column in tableColumns]
+                    columns += [f"{cls.referredTables[table].getTableName()}.{column}" for column in tableColumns]
                 if searchClause == "":
                     searchClause = "WHERE "
-                searchClause += " AND ".join([f"{cls._tableName}.{table._primary} = {table.getTableName()}.{table._primary}" for table in referred.keys()])
-
+                searchClause += " AND ".join([f"{cls._tableName}.{cls.referredTables[table].getPrimaryKey()} " + \
+                                              f"= {cls.referredTables[table].getTableName()}.{cls.referredTables[table].getPrimaryKey()}" 
+                                              for table in referred.keys()])
+                
             if searchValue is not None:
                 allcolumns = "(" + " OR ".join([column + " REGEXP \'" + searchValue + "\'" for column in columns]) + ")"
                 if searchClause == "":
@@ -381,7 +395,7 @@ class DatabaseTable(ABC):
                     searchClause += " AND "
                 searchClause += allcolumns
             
-            tableNames = ", ".join([table.getTableName() for table in referred.keys()] + [cls._tableName])
+            tableNames = ", ".join([cls.referredTables[table].getTableName() for table in referred.keys()] + [cls._tableName])
 
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             sql = f"SELECT COUNT(*) AS total FROM {tableNames} {searchClause};"
