@@ -2,6 +2,10 @@ from PyQt6.QtCore import QDate
 
 from src.utils.sampleDataGenerator import generateBillData
 
+from models.BillDatabaseTable import BillDatabaseTable as Bill
+from models.UnitDatabaseTable import UnitDatabaseTable as Unit
+from models.UtilityDatabaseTable import UtilityDatabaseTable as Utility
+
 class BillsController:
     
     @staticmethod
@@ -10,7 +14,15 @@ class BillsController:
         Fetches all units with pagination, sorting, and searching.
         """
         print(f"Fetching data for page {currentPage} with sorting {sortingField} {sortingOrder} and search '{searchValue}'")
-        return (generateBillData(), 5) 
+        Unit._initialize()
+        Utility._initialize()
+
+        
+        if searchValue == "":
+            totalPages =  Bill.totalCount() // 50 + 1
+            return Bill.read(referred={Unit:["Name"],Utility:["Type"]}, page=currentPage, sortBy=sortingField, order=sortingOrder), totalPages
+        totalPages =  Bill.totalCount(searchValue=searchValue) // 50 + 1
+        return Bill.read(referred={Unit:["Name"],Utility:["Type"]}, page=currentPage, sortBy=sortingField, order=sortingOrder, searchValue=searchValue), totalPages 
     
     @staticmethod
     def addBill(unitID: str, utilityID: str, totalAmount: str, billingPeriodStart: QDate, billingPeriodEnd: QDate, status: str, dueDate: QDate) -> str:

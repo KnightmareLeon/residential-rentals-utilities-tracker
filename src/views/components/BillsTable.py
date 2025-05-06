@@ -9,7 +9,7 @@ from src.controllers.billsController import BillsController
 
 class BillsTable(BaseTableWidget):
     def __init__(self, parent=None, mainWindow=None):
-        self.databaseHeaders = ["BillID", "UnitName", "Type", "TotalAmount", "DueDate", "Status"]
+        self.databaseHeaders = ["BillID", "Name", "Type", "TotalAmount", "DueDate", "Status"]
         self.headers = ["Bill ID", "Unit Name", "Type", "Total Amount", "Due Date", "Status", "Actions"]
         super().__init__(self.headers, self.databaseHeaders, parent=parent, mainWindow=mainWindow)
 
