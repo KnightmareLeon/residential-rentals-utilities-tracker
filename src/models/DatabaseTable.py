@@ -13,7 +13,7 @@ class DatabaseTable(ABC):
     _tableName = None
     _primary = None
     _initialized = False
-    columns = []
+    _columns = []
     referredTables = []
 
     @classmethod
@@ -25,7 +25,7 @@ class DatabaseTable(ABC):
                            f"WHERE TABLE_NAME = '{cls._tableName}' AND CONSTRAINT_NAME = " +
                            "'PRIMARY'")
             cls._primary = cursor.fetchone()['COLUMN_NAME']
-            cls.columns = cls._readColumns(cls)
+            cls._columns = cls._readColumns(cls)
         except Exception as e:
             print(f"Error: {e}")
             raise e
@@ -46,6 +46,13 @@ class DatabaseTable(ABC):
             cls._initialize()
             cls._initialized = True
         return cls._tableName
+    
+    @classmethod
+    def getColumns(cls) -> list[str]:
+        if not cls._initialized:
+            cls._initialize()
+            cls._initialized = True
+        return cls._columns
     
     @classmethod
     def getPrimaryKey(cls) -> str:
@@ -83,40 +90,42 @@ class DatabaseTable(ABC):
             cls._initialize()
             cls._initialized = True
 
-        result = []
         referred = {} if referred is None else referred
         columns = [] if columns is None else columns
-        try:
-            if page < 1 or limit < 1:
+
+        if page < 1 or limit < 1:
                 raise ValueError("Page and limit must be positive integers.")
-            if sortBy is not None and not isinstance(sortBy, str):
-                raise ValueError("sortBy must be a string.")
-            if not isinstance(order, str):
-                raise ValueError("order must be a string.")
-            if searchValue is not None and not isinstance(searchValue, str):
-                raise ValueError("searchValue must be a string.")
-            if columns is not None and not isinstance(columns, list):
+        if sortBy is not None and not isinstance(sortBy, str):
+            raise ValueError("sortBy must be a string.")
+        if not isinstance(order, str):
+            raise ValueError("order must be a string.")
+        if searchValue is not None and not isinstance(searchValue, str):
+            raise ValueError("searchValue must be a string.")
+        if columns is not None and not isinstance(columns, list):
                 raise ValueError("columns must be a list.")
-            if referred is not None and not isinstance(referred, dict):
-                raise ValueError("referred must be a dictionary.")
-            for table in referred.keys():
-                if table not in cls.referredTables:
-                    raise ValueError(f"Table '{table}' is not a referred table.")
-                for column in referred[table]:
-                    if column not in table.columns:
-                        raise ValueError(f"Column '{column}' does not exist in the table '{table}'.")
-                if len(referred[table]) == 0:
-                    raise ValueError(f"referredColumns for table '{table}' must not be empty.")
-                
+        if referred is not None and not isinstance(referred, dict):
+            raise ValueError("referred must be a dictionary.")
+        for table in referred.keys():
+            if table not in cls.referredTables:
+                raise ValueError(f"Table '{table}' is not a referred table.")
+            for column in referred[table]:
+                if column not in table.getColumns():
+                    raise ValueError(f"Column '{column}' does not exist in the table '{table}'.")
+            if len(referred[table]) == 0:
+                raise ValueError(f"referredColumns for table '{table}' must not be empty.")   
             
-            # Check if columns is empty, if so, use all columns
-            if len(columns) == 0:
-                columns += cls.columns
-            else: # Check if columns are valid
-                for column in columns:
-                    if column not in cls.columns:
-                        raise ValueError(f"Column '{column}' does not exist in the table.")
-            columns = [f"{cls._tableName}.{column}" for column in columns]
+        # Check if columns is empty, if so, use all columns
+        if len(columns) == 0:
+            columns += cls._columns
+        else: # Check if columns are valid
+            for column in columns:
+                if column not in cls._columns:
+                    raise ValueError(f"Column '{column}' does not exist in the table.")
+        columns = [f"{cls._tableName}.{column}" for column in columns]
+        
+        result = []
+
+        try:    
 
             searchClause = ""
 
@@ -137,10 +146,10 @@ class DatabaseTable(ABC):
             
             if sortBy is None: # Check if sortBy is not empty
                 sortBy = cls._primary
-            if sortBy not in cls.columns: # Check if sortBy is valid
+            if sortBy not in cls._columns: # Check if sortBy is valid
                 columnExists = False
                 for table in referred.keys():
-                    if sortBy in table.columns:
+                    if sortBy in table.getColumns():
                         sortBy = f"{table.getTableName()}.{sortBy}"
                         columnExists = True
                         break
@@ -202,19 +211,20 @@ class DatabaseTable(ABC):
         if not cls._initialized:
             cls._initialize()
             cls._initialized = True
+
+        if not isinstance(data, dict):
+            raise ValueError("Data must be a dictionary.")
+        if cls._primary in data:
+            raise ValueError(f"Primary key '{cls._primary}' must not be in the data.")
+        for key in data.keys():
+            if key not in cls._columns:
+                raise ValueError(f"Column '{key}' does not exist in the table.")
         try:
-            if not isinstance(data, dict):
-                raise ValueError("Data must be a dictionary.")
-            if cls._primary in data:
-                raise ValueError(f"Primary key '{cls._primary}' must not be in the data.")
-            for key in data.keys():
-                if key not in cls.columns:
-                    raise ValueError(f"Column '{key}' does not exist in the table.")
-            
-            columns = cls.columns.copy()
+
+            columns = cls._columns.copy()
             columns.remove(cls._primary)
             if sorted(list(data.keys())) != sorted(columns):
-                raise ValueError(f"Data keys {data.keys()} do not match table columns {cls.columns}.")
+                raise ValueError(f"Data keys {data.keys()} do not match table columns {cls._columns}.")
         
             cursor = DatabaseConnection.getConnection().cursor()
             columnsClause = ', '.join(data.keys())
@@ -246,13 +256,14 @@ class DatabaseTable(ABC):
         if not cls._initialized:
             cls._initialize()
             cls._initialized = True
-        try:
-            if not isinstance(keys, list):
+        
+        if not isinstance(keys, list):
                 raise ValueError("Keys must be a list of integers.")
-            for key in keys:
-                if not isinstance(key, int):
-                    raise ValueError("Keys must be a list of integers.")
-
+        for key in keys:
+            if not isinstance(key, int):
+                raise ValueError("Keys must be a list of integers.")
+        
+        try:
             cursor = DatabaseConnection.getConnection().cursor()
             keysClause = ', '.join([str(key) for key in keys])
             sql = f"DELETE FROM {cls._tableName} WHERE {cls._primary} IN ({keysClause})"
@@ -275,17 +286,19 @@ class DatabaseTable(ABC):
         if not cls._initialized:
             cls._initialize()
             cls._initialized = True
-        try:
-            if not isinstance(key, int):
+        
+        if not isinstance(key, int):
                 raise ValueError("Key must be an integer.")
-            if not isinstance(data, dict):
-                raise ValueError("Data must be a dictionary.")
-            for k in data.keys():
-                if k not in cls.columns:
-                    raise ValueError(f"Column '{k}' does not exist in the table.")
-                if k == cls._primary:
-                    raise ValueError(f"Primary key {k} cannot be updated.")    
-
+        
+        if not isinstance(data, dict):
+            raise ValueError("Data must be a dictionary.")
+        for k in data.keys():
+            if k not in cls._columns:
+                raise ValueError(f"Column '{k}' does not exist in the table.")
+            if k == cls._primary:
+                raise ValueError(f"Primary key {k} cannot be updated.") 
+        
+        try:
             cursor = DatabaseConnection.getConnection().cursor()
             set_clause = ', '.join([f"{k} = '{v}'" for k, v in data.items()])
             sql = f"UPDATE {cls._tableName} SET {set_clause} WHERE {cls._primary} = {key}"
@@ -320,18 +333,39 @@ class DatabaseTable(ABC):
         if not cls._initialized:
             cls._initialize()
             cls._initialized = True
-        total = 0
+        
         referred = {} if referred is None else referred
         columns = [] if columns is None else columns
+
+        if searchValue is not None and not isinstance(searchValue, str):
+            raise ValueError("searchValue must be a string.")
+        if columns is not None and not isinstance(columns, list):
+                raise ValueError("columns must be a list.")
+        if referred is not None and not isinstance(referred, dict):
+            raise ValueError("referred must be a dictionary.")
+        for table in referred.keys():
+            if table not in cls.referredTables:
+                raise ValueError(f"Table '{table}' is not a referred table.")
+            for column in referred[table]:
+                if column not in table.getColumns():
+                    raise ValueError(f"Column '{column}' does not exist in the table '{table}'.")
+            if len(referred[table]) == 0:
+                raise ValueError(f"referredColumns for table '{table}' must not be empty.")   
+            
+        # Check if columns is empty, if so, use all columns
+        if len(columns) == 0:
+            columns += cls._columns
+        else: # Check if columns are valid
+            for column in columns:
+                if column not in cls._columns:
+                    raise ValueError(f"Column '{column}' does not exist in the table.")
+        columns = [f"{cls._tableName}.{column}" for column in columns]
+
+        total = 0
+        
         try:
             searchClause = ""
-            if len(columns) == 0:
-                columns += cls.columns
-            else:
-                for column in columns:
-                    if column not in cls.columns:
-                        raise ValueError(f"Column '{column}' does not exist in the table.")
-            columns = [f"{cls._tableName}.{column}" for column in columns]
+            
             if referred:
                 for table, tableColumns in referred.items():
                     columns += [f"{table.getTableName()}.{column}" for column in tableColumns]

@@ -110,11 +110,11 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             raise ValueError("columns must be a list.")
         if referred is not None and not isinstance(referred, dict):
             raise ValueError("referred must be a dictionary.")
-        for table in referred.keys():
+        for table in cls.referredTables:
             if table not in cls.referredTables:
                 raise ValueError(f"Table '{table}' is not a referred table.")
             for column in referred[table]:
-                if column not in table.columns:
+                if column not in table.getColumns():
                     raise ValueError(f"Column '{column}' does not exist in the table '{table}'.")
             if len(referred[table]) == 0:
                 raise ValueError(f"referredColumns for table '{table}' must not be empty.")
