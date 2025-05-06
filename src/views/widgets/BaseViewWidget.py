@@ -4,9 +4,10 @@ QWidget, QDialog, QLabel, QVBoxLayout, QHBoxLayout, QFrame, QSizePolicy, QPushBu
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import Qt, QSize, QDate
 
+from abc import ABC, abstractmethod
 
 class BaseViewWidget(QDialog):
-    def __init__(self, mainTitle: str, iconPath: str = None, parent=None,):
+    def __init__(self, mainTitle: str, iconPath: str = None, parent=None, hasEdit: bool = False):
         super().__init__(parent)
         self.setWindowIcon(QIcon("assets/logos/logoIcon.png"))
         self.setObjectName("BaseViewWidget")
@@ -23,7 +24,7 @@ class BaseViewWidget(QDialog):
         self.mainLayout.setContentsMargins(20, 20, 20, 20)
         self.mainLayout.setSpacing(15)
 
-        self.setupTitleBar()
+        self.setupTitleBar(hasEdit=hasEdit)
 
         self.gridLayout = QGridLayout()
         self.gridLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -32,7 +33,7 @@ class BaseViewWidget(QDialog):
 
         self.setupBaseStyle()
 
-    def setupTitleBar(self):
+    def setupTitleBar(self, hasEdit: bool = False):
         titleLayout = QHBoxLayout()
         titleLayout.setAlignment(Qt.AlignmentFlag.AlignLeft)
         titleLayout.setSpacing(10)
@@ -54,6 +55,16 @@ class BaseViewWidget(QDialog):
         titleLabel.setObjectName("mainTitle")
         titleLabel.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
+        if hasEdit:
+            icon = QIcon("assets/icons/edit.png")
+            editButton = QPushButton()
+            editButton.setIcon(icon)
+            editButton.setIconSize(QSize(30, 30))
+            editButton.setFixedSize(45, 45)
+            editButton.setObjectName("editButton")
+            editButton.setCursor(Qt.CursorShape.PointingHandCursor)
+            editButton.clicked.connect(self.handleEditClicked)
+
         exitButton = QPushButton(icon=QIcon("assets/icons/exit.png"))
         exitButton.setFixedSize(45, 45)
         exitButton.setObjectName("exitButton")
@@ -64,6 +75,8 @@ class BaseViewWidget(QDialog):
         titleLayout.addWidget(iconButton)
         titleLayout.addWidget(titleLabel)
         titleLayout.addStretch()
+        if hasEdit:
+            titleLayout.addWidget(editButton)
         titleLayout.addWidget(exitButton)
 
         self.mainLayout.addLayout(titleLayout)
@@ -131,6 +144,18 @@ class BaseViewWidget(QDialog):
                 padding: 5px;
             }
             QPushButton#exitButton:hover {
+                background-color: #3b3b3b;
+            }
+            QPushButton#editButton {
+                background-color: #2b2b2b;
+                border: none;
+                color: white;
+                font-size: 30px;
+                font-weight: bold;
+                border-radius: 6px;
+                padding: 5px;
+            }
+            QPushButton#editButton:hover {
                 background-color: #3b3b3b;
             }
             QLabel#detailHeader {
@@ -397,3 +422,7 @@ class BaseViewWidget(QDialog):
 
     def handleExitClicked(self):
         self.close()
+    
+    @abstractmethod
+    def handleEditClicked(self):
+        pass
