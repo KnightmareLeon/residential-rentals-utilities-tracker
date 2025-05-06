@@ -481,3 +481,8 @@ class MainWindow(QMainWindow):
             self.utilitiesPage.resetPage()
         elif currentPage == self.billsPage:
             self.billsPage.resetPage()
+
+    def updatePages(self):
+        self.unitsPage.updatePage()
+        self.utilitiesPage.updatePage()
+        self.billsPage.updatePage()
