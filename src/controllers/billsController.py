@@ -14,9 +14,6 @@ class BillsController:
         Fetches all units with pagination, sorting, and searching.
         """
         print(f"Fetching data for page {currentPage} with sorting {sortingField} {sortingOrder} and search '{searchValue}'")
-        Unit._initialize()
-        Utility._initialize()
-
         
         if searchValue == "":
             totalPages =  Bill.totalCount() // 50 + 1
