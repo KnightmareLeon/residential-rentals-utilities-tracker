@@ -7,7 +7,7 @@ from .UnitDatabaseTable import UnitDatabaseTable
 from .UtilityDatabaseTable import UtilityDatabaseTable
 from .InstalledUtilityDatabaseTable import InstalledUtilityDatabaseTable
 
-from utils.constants import Range
+from src.utils.constants import Range
 
 class BillDatabaseTable(DatabaseTable):
     """
