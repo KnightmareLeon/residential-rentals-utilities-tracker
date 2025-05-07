@@ -36,6 +36,21 @@ class BillDatabaseTable(DatabaseTable):
     referredTables = {UnitDatabaseTable.getTableName() : UnitDatabaseTable, 
                       UtilityDatabaseTable.getTableName() : UtilityDatabaseTable}
 
+    @classmethod
+    def initialize(cls):
+        """
+        Initializes the table by creating it if it does not exist and reading the columns.
+        This method can be called to ensure that the table is ready for use but it is not
+        necessarily required to be called before using the class methods. The class methods
+        will automatically call this method if the table is not initialized.
+
+        This class will also initialize the UnitDatabaseTable and UtilityDatabaseTable classes
+        to ensure that the foreign key references are valid.
+        """
+        UnitDatabaseTable.initialize()
+        UtilityDatabaseTable.initialize()
+        super().initialize()
+
     @classmethod  
     def _createTable(cls):
         try:
@@ -69,10 +84,10 @@ class BillDatabaseTable(DatabaseTable):
                     data : dict[str, str | float | datetime.date]):
         """
         Batch update the bill table with the given keys and data.
+        - keys: list of integers representing the primary keys of the rows to be updated.
+        - data: dictionary where the keys are the column names and the values are the new values to be set.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
         
         if not isinstance(keys, list):
                 raise TypeError("Keys must be a list.")
@@ -139,9 +154,7 @@ class BillDatabaseTable(DatabaseTable):
         
         The range can be one of the following: 3m, 6m, 1y, 2y.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
         
         if not isinstance(unit, int):
             raise ValueError("Unit must be an integer.")
@@ -174,9 +187,7 @@ class BillDatabaseTable(DatabaseTable):
         The dictionary keys are the utility types, and the values are lists of bills.
         Each bill is represented as a dictionary with keys: BillID, TotalAmount, BillingPeriodEnd.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
 
         result = {}
 
@@ -204,14 +215,12 @@ class BillDatabaseTable(DatabaseTable):
     def getUtilityBills(cls,
                      utility : int,
                      range: Range,
-                     offset: int = 1) -> list[dict[str, any]]:
+                     offset: int = 1) -> list[dict[str, int | float | datetime.date]]:
         """
         Returns a list of bills for the given utility ID and range.
         Each bill is represented as a dictionary with keys: BillID, UnitID, TotalAmount, BillingPeriodEnd.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
         
         result = []
 
@@ -240,9 +249,7 @@ class BillDatabaseTable(DatabaseTable):
         Returns the total sum of all bills for the given range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
 
         result = 0.0
 
@@ -272,9 +279,7 @@ class BillDatabaseTable(DatabaseTable):
         Returns the total count of unpaid bills for the given range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
 
         result = 0
 
@@ -296,15 +301,13 @@ class BillDatabaseTable(DatabaseTable):
 
     @classmethod
     def urgentBills(cls,
-                    limit: int = 15) -> list[dict[str, any]]:
+                    limit: int = 15) -> list[dict[str, int | str | float | datetime.date]]:
         """
         Returns a list of urgent bills.
         An urgent bill is defined as a bill that is not yet paid.
         The list is limited to the specified number of bills.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
 
         result = []
 
@@ -338,9 +341,7 @@ class BillDatabaseTable(DatabaseTable):
         Returns the maximum offset for the given unit ID and range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
         result = {}
         try:
             if not isinstance(unit, int):
@@ -365,10 +366,9 @@ class BillDatabaseTable(DatabaseTable):
         Returns the maximum offset for the given utility ID and range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
-        result = {}
+        cls.initialize()
+
+        result = 0
         try:
             if not isinstance(utility, int):
                 raise ValueError("Utility must be an integer.")
@@ -387,9 +387,8 @@ class BillDatabaseTable(DatabaseTable):
         Returns the maximum offset for the given range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
+
         result = 0
         try:
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
@@ -409,9 +408,8 @@ class BillDatabaseTable(DatabaseTable):
         Returns the earliest billing period end dates for the given unit ID
         per utility installed in the unit.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
+
         result = {}
         try:
             if not isinstance(unit, int):
@@ -439,10 +437,10 @@ class BillDatabaseTable(DatabaseTable):
         """
         Returns the earliest billing period end dates for the given utility ID.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
+
         result = {}
+
         try:
             if not isinstance(utility, int):
                 raise ValueError("Utility must be an integer.")
@@ -471,6 +469,8 @@ class BillDatabaseTable(DatabaseTable):
         Helper method that returns the range clause for the given range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
         """
+        cls.initialize()
+
         if not isinstance(range, Range):
             raise ValueError("Range must be an instance of Range enum.")
         if not range in [Range.THREE_MONTHS, Range.SIX_MONTHS, Range.ONE_YEAR, Range.TWO_YEARS]:
@@ -492,9 +492,8 @@ class BillDatabaseTable(DatabaseTable):
         Helper method that returns the maximum offset for the given date and range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
+
         if not isinstance(date, datetime.date):
             raise ValueError("Date must be a datetime.date object.")
         if not isinstance(range, Range):
