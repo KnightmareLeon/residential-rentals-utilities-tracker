@@ -153,6 +153,12 @@ class BillDatabaseTable(DatabaseTable):
         Each bill is represented as a dictionary with keys: BillID, TotalAmount, BillingPeriodEnd.
         
         The range can be one of the following: 3m, 6m, 1y, 2y.
+        The offset is the number of months to go back from the current date.
+        For example, if the range is 3m and the offset is 2, it will return bills from 6 months ago to 3 months ago.
+        
+        - unit: int, the ID of the unit to get bills for.
+        - range: Range, the range of months to get bills for.
+        - offset: int, the number of months to go back from the current date.
         """
         cls.initialize()
         
@@ -186,6 +192,9 @@ class BillDatabaseTable(DatabaseTable):
         The range can be one of the following: 3m, 6m, 1y, 2y.
         The dictionary keys are the utility types, and the values are lists of bills.
         Each bill is represented as a dictionary with keys: BillID, TotalAmount, BillingPeriodEnd.
+
+        = range: Range, the range of months to get bills for.
+        - offset: int, the number of months to go back from the current date.
         """
         cls.initialize()
 
@@ -219,6 +228,10 @@ class BillDatabaseTable(DatabaseTable):
         """
         Returns a list of bills for the given utility ID and range.
         Each bill is represented as a dictionary with keys: BillID, UnitID, TotalAmount, BillingPeriodEnd.
+
+        - utility: int, the ID of the utility to get bills for.
+        - range: Range, the range of months to get bills for.
+        - offset: int, the number of months to go back from the current date.
         """
         cls.initialize()
         
@@ -248,6 +261,10 @@ class BillDatabaseTable(DatabaseTable):
         """
         Returns the total sum of all bills for the given range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
+
+        - range: Range, the range of months to get bills for.
+        - offset: int, the number of months to go back from the current date.
+        - paidOnly: bool, if True, only paid bills will be included in the sum.
         """
         cls.initialize()
 
@@ -278,6 +295,9 @@ class BillDatabaseTable(DatabaseTable):
         """
         Returns the total count of unpaid bills for the given range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
+
+        - range: Range, the range of months to get bills for.
+        - offset: int, the number of months to go back from the current date.
         """
         cls.initialize()
 
@@ -306,6 +326,8 @@ class BillDatabaseTable(DatabaseTable):
         Returns a list of urgent bills.
         An urgent bill is defined as a bill that is not yet paid.
         The list is limited to the specified number of bills.
+
+        - limit: int, the maximum number of bills to return.
         """
         cls.initialize()
 
@@ -340,6 +362,9 @@ class BillDatabaseTable(DatabaseTable):
         """
         Returns the maximum offset for the given unit ID and range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
+
+        - unit: int, the ID of the unit to get bills for.
+        - range: Range, the range of months to get bills for.
         """
         cls.initialize()
         result = {}
@@ -365,6 +390,9 @@ class BillDatabaseTable(DatabaseTable):
         """
         Returns the maximum offset for the given utility ID and range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
+
+        - utility: int, the ID of the utility to get bills for.
+        - range: Range, the range of months to get bills for.
         """
         cls.initialize()
 
@@ -386,6 +414,8 @@ class BillDatabaseTable(DatabaseTable):
         """
         Returns the maximum offset for the given range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
+
+        - range: Range, the range of months to get bills for.
         """
         cls.initialize()
 
@@ -402,11 +432,12 @@ class BillDatabaseTable(DatabaseTable):
     
     @classmethod
     def getEarliestUnitBillDates(cls,
-                                    unit: int
-                                    ) -> dict[int, 'datetime.date']:
+                                unit: int) -> dict[int, 'datetime.date']:
         """
         Returns the earliest billing period end dates for the given unit ID
         per utility installed in the unit.
+
+        - unit: int, the ID of the unit to get bills for.
         """
         cls.initialize()
 
@@ -432,10 +463,11 @@ class BillDatabaseTable(DatabaseTable):
 
     @classmethod
     def getEarliestUtilityBillDates(cls,
-                                       utility: int
-                                       ) -> 'datetime.date':
+                                    utility: int) -> datetime.date:
         """
         Returns the earliest billing period end dates for the given utility ID.
+
+        - utility: int, the ID of the utility to get bills for.
         """
         cls.initialize()
 
@@ -468,6 +500,9 @@ class BillDatabaseTable(DatabaseTable):
         """
         Helper method that returns the range clause for the given range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
+
+        - range: Range, the range of months to get bills for.
+        - offset: int, the number of months to go back from the current date.
         """
         cls.initialize()
 
@@ -486,11 +521,14 @@ class BillDatabaseTable(DatabaseTable):
 
     @classmethod
     def __getMaxOffset(cls,
-                       date: 'datetime.date',
+                       date: datetime.date,
                        range: Range) -> int:
         """
         Helper method that returns the maximum offset for the given date and range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
+
+        - date: datetime.date, the date to get the maximum offset for.
+        - range: Range, the range of months to get the maximum offset for.
         """
         cls.initialize()
 
