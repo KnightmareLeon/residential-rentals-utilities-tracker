@@ -25,7 +25,7 @@ class UnitsPage(BasePageWidget):
 
                 response = UnitsController.addUnit(name, address, type)
                 if response:
-                    self.table.updateTable()
+                    self.mainWindow.updatePages()
                     self.showSuccessNotification()
     
     def showSuccessNotification(self):

@@ -16,9 +16,6 @@ class BasePageWidget(QWidget):
         self.addButton.clicked.connect(self.handleAddButton)
         self.prevButton.clicked.connect(self.prevPage)
         self.nextButton.clicked.connect(self.nextPage)
-        
-        # Initialize
-        self.table.updateTable()
 
     def setupUI(self, buttonText):
         self.layout = QVBoxLayout(self)

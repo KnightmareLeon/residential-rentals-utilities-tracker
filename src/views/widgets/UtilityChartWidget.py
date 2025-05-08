@@ -30,8 +30,10 @@ from src.controllers.billsController import BillsController
 
 class UtilityChartWidget(QFrame):
 
-    def __init__(self, data, title, parent=None):
+    def __init__(self, data, title, parent=None, mainWindow=None):
         super().__init__(parent)
+        self.mainWindow = mainWindow
+
         self.currDateOffset = datetime.now()
         self.lastDateOffset = datetime.now() - relativedelta(months=48)
         self.dateRange = "1M"
@@ -325,7 +327,7 @@ class UtilityChartWidget(QFrame):
 
             billData = BillsController.viewBill(billID)
             if billData:
-                self.viewWindow = ViewBill(billID, billData, billDataHeaders, billDataDatabaseHeaders)
+                self.viewWindow = ViewBill(billID, billData, billDataHeaders, billDataDatabaseHeaders, mainWindow=self.mainWindow)
                 self.viewWindow.show()
 
     def generateEvenDateTicks(self, startDate: datetime, endDate: datetime, divisions: int):
@@ -380,7 +382,7 @@ class UtilityChartWidget(QFrame):
                 """)
         self.currDateOffset = datetime.now()
         self.updatePageLabel()
-        self.updateWidget()
+        self.updateChart(self.data)
 
     def handlePrevPage(self):
         curr = self.currDateOffset.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -390,7 +392,6 @@ class UtilityChartWidget(QFrame):
             self.currDateOffset -= relativedelta(months=self.parseDateRangeToMonths(self.dateRange))
             self.updatePageLabel()
             self.updateWidget()
-
 
     def handleNextPage(self):
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -407,8 +408,8 @@ class UtilityChartWidget(QFrame):
     # Controllers
     def updateWidget(self) -> None:
         data, lastDateOffset = DashboardController.fetchUtilityDashboard(self.dateRange, self.currDateOffset)
+        self.data = data
         self.lastDateOffset = lastDateOffset
         self.updatePageLabel()
         
-        data = self.data
         self.updateChart(data)
