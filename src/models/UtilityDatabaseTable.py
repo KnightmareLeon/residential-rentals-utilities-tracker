@@ -38,10 +38,10 @@ class UtilityDatabaseTable(DatabaseTable):
                     data : dict[str, str]):
         """
         Batch update the utility table with the given keys and data.
+        - keys: list of integers representing the primary keys of the rows to be updated.
+        - data: dictionary where the keys are the column names and the values are the new values to be set.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
         
         if not isinstance(keys, list):
                 raise TypeError("Keys must be a list.")

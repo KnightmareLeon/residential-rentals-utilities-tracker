@@ -25,15 +25,28 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
                       UtilityDatabaseTable.getTableName() : UtilityDatabaseTable}
 
     @classmethod
-    def _initialize(cls):
+    def initialize(cls):
+        """
+        Initializes the table by creating it if it does not exist and reading the columns.
+        This method can be called to ensure that the table is ready for use but it is not
+        necessarily required to be called before using the class methods. The class methods
+        will automatically call this method if the table is not initialized.
+
+        This class will also initialize the UnitDatabaseTable and UtilityDatabaseTable classes
+        to ensure that the foreign key references are valid.
+        """
+        UnitDatabaseTable.initialize()
+        UtilityDatabaseTable.initialize()
         try:
-            cls._createTable()
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
-            cursor.execute("SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE " +
-                           f"WHERE TABLE_NAME = '{cls._tableName}' AND CONSTRAINT_NAME = " +
-                           "'PRIMARY'")
-            cls._primary = [row['COLUMN_NAME'] for row in cursor.fetchall()]
-            cls._columns = cls._readColumns(cls)
+            if not cls._initialized:
+                cls._initialized = True
+                cls._createTable()
+                cursor.execute("SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE " +
+                            f"WHERE TABLE_NAME = '{cls._tableName}' AND CONSTRAINT_NAME = " +
+                            "'PRIMARY'")
+                cls._primary = [row['COLUMN_NAME'] for row in cursor.fetchall()]
+                cls._columns = cls._readColumns(cls)
         except Exception as e:
             print(f"Error: {e}")
             raise e
@@ -65,9 +78,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         """
         Returns the primary keys of the table.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
         return cls._primary
     
     @classmethod
@@ -93,9 +104,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         The method returns a list of dictionaries where each dictionary represents a row
         """
 
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
 
         referred = {} if referred is None else referred
         columns = [] if columns is None else columns
@@ -202,9 +211,8 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         dictionary.
         - data: A dictionary containing the data to be inserted into the table.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
+
         if not isinstance(data, dict):
                 raise ValueError("Data must be a dictionary.")
         for key in data.keys():
@@ -238,9 +246,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         """
         Disabled the delete method for this class, to delete data from the table,
         use the delete method of either the Unit or Utility table."""
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
         pass
 
     @classmethod
@@ -252,9 +258,8 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         - keys: A list of tuples containing the primary keys (UnitID, UtilityID).
         - data: A dictionary containing the data to be updated in the table.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
+
         if not isinstance(keys, list):
                 raise TypeError("Keys must be a list.")
         if not isinstance(data, dict):
@@ -301,10 +306,12 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
                    type: bool = False) -> list[int] | dict[int, str]:
         """
         Returns a list of utility IDs for the given unit ID.
+        If type is True, returns a dictionary where the keys are utility IDs and the values are the utility types.
+        If type is False, returns a list of utility IDs.
+        - unit: The ID of the unit.
+        - type: A boolean indicating whether to return the utility types or not.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
 
         if not isinstance(unit, int):
             raise ValueError("Unit must be an integer.")
@@ -338,10 +345,9 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
                         utility : int) -> list[dict[str, str]]:
         """
         Returns a list of the unit IDs and names for the given utility ID.
+        - utility: The ID of the utility.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
 
         if not isinstance(utility, int):
             raise ValueError("Utility must be an integer.")

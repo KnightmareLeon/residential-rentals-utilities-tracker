@@ -17,15 +17,23 @@ class DatabaseTable(ABC):
     referredTables : dict[str : 'DatabaseTable'] = {}
 
     @classmethod
-    def _initialize(cls):
+    def initialize(cls):
+        """
+        Initializes the table by creating it if it does not exist and reading the columns.
+        This method can be called to ensure that the table is ready for use but it is not
+        necessarily required to be called before using the class methods. The class methods
+        will automatically call this method if the table is not initialized.
+        """
         try:
-            cls._createTable()
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
-            cursor.execute("SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE " +
-                           f"WHERE TABLE_NAME = '{cls._tableName}' AND CONSTRAINT_NAME = " +
-                           "'PRIMARY'")
-            cls._primary = cursor.fetchone()['COLUMN_NAME']
-            cls._columns = cls._readColumns(cls)
+            if not cls._initialized:
+                cls._initialized = True
+                cls._createTable()
+                cursor.execute("SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE " +
+                            f"WHERE TABLE_NAME = '{cls._tableName}' AND CONSTRAINT_NAME = " +
+                            "'PRIMARY'")
+                cls._primary = cursor.fetchone()['COLUMN_NAME']
+                cls._columns = cls._readColumns(cls)
         except Exception as e:
             print(f"Error: {e}")
             raise e
@@ -35,6 +43,12 @@ class DatabaseTable(ABC):
     @classmethod  
     @abstractmethod
     def _createTable(cls):
+        """
+        Creates the table in the database. This method should be implemented by
+        subclasses to create the specific table. The method should also handle
+        any exceptions that may occur during the table creation process.
+        Should only be called once when the table is initialized.
+        """
         pass
     
     @classmethod
@@ -42,16 +56,15 @@ class DatabaseTable(ABC):
         """
         Returns the name of the table.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
         return cls._tableName
     
     @classmethod
     def getColumns(cls) -> list[str]:
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        """
+        Returns the column names of the table.
+        """
+        cls.initialize()
         return cls._columns
     
     @classmethod
@@ -59,9 +72,7 @@ class DatabaseTable(ABC):
         """
         Returns the primary key of the table.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
         return cls._primary
 
     @classmethod
@@ -73,7 +84,7 @@ class DatabaseTable(ABC):
              order : str = "ASC",
              page : int = 1, 
              limit : int = 50
-             ) -> list[dict[str, int | str | datetime.date]]:
+             ) -> list[dict[str, str]]:
         """
         Reads data from the table. The method accepts various parameters to filter,
         sort, and paginate the results. The parameters include:
@@ -86,9 +97,7 @@ class DatabaseTable(ABC):
         - limit: An integer indicating the number of records per page.
         The method returns a list of dictionaries where each dictionary represents a row
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
 
         referred = {} if referred is None else referred
         columns = [] if columns is None else columns
@@ -189,10 +198,10 @@ class DatabaseTable(ABC):
         """
         Read one data from the table. The method returns a dictionary as the result.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
+
         result = {}
+
         try:
             cursor = DatabaseConnection.getConnection().cursor()
             sql = f"SELECT * FROM {cls.getTableName()} WHERE {cls.getPrimaryKey()} = {id}"
@@ -216,9 +225,7 @@ class DatabaseTable(ABC):
         raise an error if the primary key is not included or if the data is not a
         dictionary.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
 
         if not isinstance(data, dict):
             raise ValueError("Data must be a dictionary.")
@@ -261,9 +268,7 @@ class DatabaseTable(ABC):
         and must exist in the table. The method will raise an error if the key is not
         an integer or if the key does not exist in the table.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
         
         if not isinstance(keys, list):
                 raise ValueError("Keys must be a list of integers.")
@@ -291,9 +296,7 @@ class DatabaseTable(ABC):
         The method will raise an error if the key is not an integer or if the key does
         not exist in the table.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
         
         if not isinstance(key, int):
                 raise ValueError("Key must be an integer.")
@@ -322,7 +325,7 @@ class DatabaseTable(ABC):
     @abstractmethod
     def batchUpdate(cls,
                     keys : list[int], 
-                    data : dict[str, any]):
+                    data : dict[str, str]):
         pass
 
     @classmethod
@@ -338,9 +341,7 @@ class DatabaseTable(ABC):
         - referred: A dictionary of referred tables and their columns.
         - searchValue: A string to search for in the columns.
         """
-        if not cls._initialized:
-            cls._initialize()
-            cls._initialized = True
+        cls.initialize()
         
         referred = {} if referred is None else referred
         columns = [] if columns is None else columns
@@ -412,7 +413,10 @@ class DatabaseTable(ABC):
     
     def _readColumns(cls) -> list[str]:
         """
-        Returns a list of column names in the table.
+        A protected method that returns a list of column names in the table.
+        It uses the information_schema.COLUMNS table to get the column names.
+        This method should only be called when the table is initialized. Use
+        getColumns() method to get the column names of the table.
         """
         columns = []
         try:
