@@ -11,9 +11,10 @@ from src.controllers.dashboardController import DashboardController
 class BillsDashboard(QWidget):
     viewBills = pyqtSignal()
 
-    def __init__(self, bills):
+    def __init__(self, bills, mainWindow = None):
         super().__init__()
 
+        self.mainWindow = mainWindow
         self.bills = bills
 
         self.setupUI(self.bills)
@@ -125,7 +126,7 @@ class BillsDashboard(QWidget):
         billData = BillsController.viewBill(billID)
 
         if billData:
-            self.viewWindow = ViewBill(billID, billData, billDataHeaders, billDataDatabaseHeaders)
+            self.viewWindow = ViewBill(billID, billData, billDataHeaders, billDataDatabaseHeaders, mainWindow=self.mainWindow)
             self.viewWindow.show()
 
     def updateDashboard(self):

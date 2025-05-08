@@ -63,7 +63,7 @@ class UnitsTable(BaseTableWidget):
                 updatedData["Unit Type"]
             )
 
-            self.updateTable()
+            self.mainWindow.updatePages()
 
     def handleDeleteButton(self, row_idx):
         item = self.item(row_idx, 0)
@@ -129,7 +129,7 @@ QPushButton:hover {
             else:
                 self.showErrorNotification(f"Failed to delete Unit '{unitID}'.")
 
-            self.updateTable()
+            self.mainWindow.updatePages()
     
     def showSuccessNotification(self, message="Utility was successfully added"):
         msgBox = QMessageBox(self)

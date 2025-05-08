@@ -31,7 +31,6 @@ class BillsTable(BaseTableWidget):
         self.parentWidget().totalPages = count
         self.parentWidget().pageLabel.setText(f"Page {currentPage} of {count}")
 
-
     def handleViewButton(self, row_idx):
         item = self.item(row_idx, 0)
         if not item:
@@ -41,7 +40,7 @@ class BillsTable(BaseTableWidget):
         billData = BillsController.viewBill(id)
 
         if billData:
-            self.viewWindow = ViewBill(id, billData, billDataHeaders, billDataDatabaseHeaders)
+            self.viewWindow = ViewBill(id, billData, billDataHeaders, billDataDatabaseHeaders, mainWindow=self.mainWindow)
             self.viewWindow.show()
 
     def handleEditButton(self, row_idx):
@@ -68,7 +67,7 @@ class BillsTable(BaseTableWidget):
                 updatedData["Billing Period End"]
             )
 
-            self.updateTable()
+            self.mainWindow.updatePages()
 
     def handleDeleteButton(self, row_idx):
         item = self.item(row_idx, 0)
@@ -135,7 +134,7 @@ QPushButton:hover {
             else:
                 self.showErrorNotification(f"Failed to delete Unit '{billID}'.")
 
-            self.updateTable()
+            self.mainWindow.updatePages()
     
     def showSuccessNotification(self, message="Utility was successfully added"):
         msgBox = QMessageBox(self)

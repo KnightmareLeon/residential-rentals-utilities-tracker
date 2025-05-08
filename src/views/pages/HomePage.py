@@ -28,13 +28,13 @@ class HomePage(QWidget):
         mainLayout.addLayout(rightLayout, 2)
 
         # === Center Column ===
-        utilityDashboard = UtilityDashboard()
-        centerLayout.addWidget(utilityDashboard)
+        self.utilityDashboard = UtilityDashboard(mainWindow=self.mainWindow)
+        centerLayout.addWidget(self.utilityDashboard)
 
         # === Right Column ===
         billsData = generateBillsDataFromUtility()
 
-        billsDashboard = BillsDashboard(billsData)
+        billsDashboard = BillsDashboard(billsData, self.mainWindow)
         billsDashboard.viewBills.connect(self.openBillsPage)
 
         bottomRightWidget = QFrame()
@@ -79,6 +79,9 @@ class HomePage(QWidget):
     def openBillsPage(self):
         self.mainWindow.updatePage(self.mainWindow.billsPage, self.mainWindow.billsButton, "Bills")
     
+    def updateDashboards(self):
+        self.utilityDashboard.updateWidgets()
+
     def handleAddBillButton(self):
         dialog = AddBillForm()
         if dialog.exec():
@@ -95,7 +98,7 @@ class HomePage(QWidget):
                 response = BillsController.addBill(unitID, utilityID, totalAmount, billPeriodStart, billPeriodEnd, status, dueDate)
                 
                 if response:
-                    self.mainWindow.billsPage.table.updateTable()
+                    self.mainWindow.updatePages()
                     self.showSuccessNotification()
     
     def showSuccessNotification(self, message="Utility was successfully added"):

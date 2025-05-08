@@ -429,9 +429,7 @@ class MainWindow(QMainWindow):
         self.stackedWidget.addWidget(self.utilitiesPage)
         self.stackedWidget.addWidget(self.billsPage)
 
-        self.unitsPage.table.updateTable()
-        self.utilitiesPage.table.updateTable()
-        self.billsPage.table.updateTable()
+        self.updatePages()
 
         self.homeButton.clicked.connect(lambda: self.updatePage(self.homePage, self.homeButton, "Welcome back"))
         self.unitsButton.clicked.connect(lambda: self.updatePage(self.unitsPage, self.unitsButton, "Units"))
@@ -486,3 +484,4 @@ class MainWindow(QMainWindow):
         self.unitsPage.updatePage()
         self.utilitiesPage.updatePage()
         self.billsPage.updatePage()
+        self.homePage.updateDashboards()

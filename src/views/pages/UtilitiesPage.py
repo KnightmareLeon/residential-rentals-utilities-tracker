@@ -26,7 +26,7 @@ class UtilitiesPage(BasePageWidget):
 
                 response = UtilitiesController.addUtility(type, unitID, sharedUnitIDs, status, billing)
                 if response:
-                    self.table.updateTable()
+                    self.mainWindow.updatePages()
                     self.showSuccessNotification()
     
     def showSuccessNotification(self):

@@ -29,7 +29,7 @@ class BillsPage(BasePageWidget):
                 response = BillsController.addBill(unitID, utilityID, totalAmount, billPeriodStart, billPeriodEnd, status, dueDate)
                 
                 if response:
-                    self.table.updateTable()
+                    self.mainWindow.updatePages()
                     self.showSuccessNotification()
     
     def showSuccessNotification(self):
