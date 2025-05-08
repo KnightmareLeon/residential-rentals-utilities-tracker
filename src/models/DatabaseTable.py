@@ -61,6 +61,9 @@ class DatabaseTable(ABC):
     
     @classmethod
     def getColumns(cls) -> list[str]:
+        """
+        Returns the column names of the table.
+        """
         cls.initialize()
         return cls._columns
     
@@ -322,7 +325,7 @@ class DatabaseTable(ABC):
     @abstractmethod
     def batchUpdate(cls,
                     keys : list[int], 
-                    data : dict[str, any]):
+                    data : dict[str, str]):
         pass
 
     @classmethod

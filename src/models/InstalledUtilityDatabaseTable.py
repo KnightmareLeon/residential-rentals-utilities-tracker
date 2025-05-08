@@ -306,6 +306,10 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
                    type: bool = False) -> list[int] | dict[int, str]:
         """
         Returns a list of utility IDs for the given unit ID.
+        If type is True, returns a dictionary where the keys are utility IDs and the values are the utility types.
+        If type is False, returns a list of utility IDs.
+        - unit: The ID of the unit.
+        - type: A boolean indicating whether to return the utility types or not.
         """
         cls.initialize()
 
@@ -341,6 +345,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
                         utility : int) -> list[dict[str, str]]:
         """
         Returns a list of the unit IDs and names for the given utility ID.
+        - utility: The ID of the utility.
         """
         cls.initialize()
 
