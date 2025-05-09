@@ -5,13 +5,14 @@ from src.views.dialogs.EditBillForm import EditBillForm
 from src.controllers.billsController import BillsController
 
 class ViewBill(BaseViewWidget):
-    def __init__(self, id: str, billData: dict, headers: list, databaseHeaders: list, parent=None, hasEdit = True):
-        super().__init__("Bill Details", parent=parent, iconPath="assets/icons/bills.png", hasEdit=hasEdit)
+    def __init__(self, id: str, billData: dict, headers: list, databaseHeaders: list, parent=None, hasEdit = True, mainWindow = None):
+        super().__init__("Bill Details", parent=parent, iconPath="assets/icons/bills.png", hasEdit=hasEdit, mainWindow=mainWindow)
         self.setMinimumSize(600, 400)
         self.setMaximumSize(800, 700)
 
+        self.mainWindow = mainWindow
         self.billID = id
-
+        
         # Create "Bill Information" card and add details
         billInfoCard = self.createCard("Bill Information")
         billInfoLayout = billInfoCard.layout()
@@ -80,5 +81,7 @@ class ViewBill(BaseViewWidget):
             )
 
             self.close()
+
+            self.mainWindow.updatePages()
             
 

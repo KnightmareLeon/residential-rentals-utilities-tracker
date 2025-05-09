@@ -4,11 +4,12 @@ from PyQt6.QtCore import Qt, QSize
 
 from src.utils.sampleDataGenerator import generateRandomUtilityData
 from src.views.widgets.UtilityChartWidget import UtilityChartWidget
+from src.controllers.dashboardController import DashboardController
 
 class UtilityDashboard(QFrame):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, mainWindow=None):
         super().__init__(parent)
-        self.data = generateRandomUtilityData()
+        self.mainWindow = mainWindow
 
         self.setupUI()
 
@@ -55,9 +56,8 @@ class UtilityDashboard(QFrame):
         mainLayout.addLayout(summaryLayout)
 
         # === Utility Chart ===
-        data = self.data
-
-        self.chartWidget = UtilityChartWidget(self.data, "Total Utilities Cost of All Units")
+        data, _ = DashboardController.fetchUtilityDashboard(3, 1)
+        self.chartWidget = UtilityChartWidget(data, "Total Utilities Cost of All Units", mainWindow=self.mainWindow)
         mainLayout.addWidget(self.chartWidget)
 
         self.chartWidget.handleRangeUpdate()
@@ -135,6 +135,8 @@ class UtilityDashboard(QFrame):
     def updateWidgets(self) -> None:
         self.chartWidget.updateWidget()
 
-        # balance, paid, unpaid = DashboardController.fetchBillsSummary(dataRange, currPage)
-        balance, paid, unpaid = ("₱ 40,034.12", "₱ 33,342.00", "6")
+        monthRange = self.chartWidget.parseDateRangeToMonths(self.chartWidget.dateRange)
+        offset = self.chartWidget.currDateOffset
+
+        balance, paid, unpaid = DashboardController.fetchBillsSummary(monthRange, offset)
         self.updateSummaryCards(balance, paid, unpaid)

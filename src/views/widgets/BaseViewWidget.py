@@ -7,7 +7,7 @@ from PyQt6.QtCore import Qt, QSize, QDate
 from abc import ABC, abstractmethod
 
 class BaseViewWidget(QDialog):
-    def __init__(self, mainTitle: str, iconPath: str = None, parent=None, hasEdit: bool = False):
+    def __init__(self, mainTitle: str, iconPath: str = None, parent=None, hasEdit: bool = False, mainWindow = None):
         super().__init__(parent)
         self.setWindowIcon(QIcon("assets/logos/logoIcon.png"))
         self.setObjectName("BaseViewWidget")
@@ -15,6 +15,7 @@ class BaseViewWidget(QDialog):
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         self.setModal(True)
 
+        self.mainWindow = mainWindow
         self.mainTitle = mainTitle
         self.iconPath = iconPath
         self.sections = []

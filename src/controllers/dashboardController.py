@@ -3,6 +3,9 @@ from dateutil.relativedelta import relativedelta
 
 from PyQt6.QtCore import QDate
 
+from src.utils.formatMoney import formatMoney
+from src.utils.sampleDataGenerator import generateRandomUtilityData
+
 class DashboardController:
     
     @staticmethod
@@ -11,15 +14,15 @@ class DashboardController:
         Fetches all bills per utility within a given range of months as well as the total number of pages needed for the monthRange.
         """
         print(f"Fetching utility cost data for {monthRange} months and page {currPage}")
-        return ({}, datetime.now() - relativedelta(months=48))
+        return (generateRandomUtilityData(), datetime.now() - relativedelta(months=48))
     
     @staticmethod
-    def fetchBillsSummary(monthRange: int, currPage: int) -> tuple[float, float, int]:
+    def fetchBillsSummary(monthRange: int, currPage: QDate) -> tuple[str, str, int]:
         """
         Fetches the Total Balance of Period, Total Cost of Period , and Unpaid Bills.
         """
-        print(f"Fetching bills summary for {monthRange} months and page {currPage}")
-        return (None, None, None)
+        balance, paid, unpaid = (formatMoney(40034.12), formatMoney(33342.0), str(6))
+        return (balance, paid, unpaid)
     
     @staticmethod
     def fetchUpcomingBills() -> list[dict[str, str]]:
