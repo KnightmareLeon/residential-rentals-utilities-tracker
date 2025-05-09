@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QButtonGroup, QComboBox
 from PyQt6.QtGui import QFont, QIcon
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt, QSize, QDate
+from datetime import datetime
 
 from src.utils.sampleDataGenerator import generateRandomUtilityData
 from src.views.widgets.UtilityChartWidget import UtilityChartWidget
@@ -56,7 +57,7 @@ class UtilityDashboard(QFrame):
         mainLayout.addLayout(summaryLayout)
 
         # === Utility Chart ===
-        data, _ = DashboardController.fetchUtilityDashboard(3, 1)
+        data, _ = DashboardController.fetchUtilityDashboard(3, datetime.now())
         self.chartWidget = UtilityChartWidget(data, "Total Utilities Cost of All Units", mainWindow=self.mainWindow)
         mainLayout.addWidget(self.chartWidget)
 
