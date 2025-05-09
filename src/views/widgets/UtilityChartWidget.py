@@ -382,7 +382,7 @@ class UtilityChartWidget(QFrame):
                 """)
         self.currDateOffset = datetime.now()
         self.updatePageLabel()
-        self.updateChart(self.data)
+        self.updateWidget()
 
     def handlePrevPage(self):
         curr = self.currDateOffset.replace(hour=0, minute=0, second=0, microsecond=0)
