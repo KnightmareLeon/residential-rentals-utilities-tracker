@@ -166,7 +166,7 @@ class DatabaseTable(ABC):
             if sortBy not in cls._columns: # Check if sortBy is valid
                 columnExists = False
                 for table in referred.keys():
-                    if sortBy in cls.referredTables[table].getTableName().getColumns():
+                    if sortBy in cls.referredTables[table].getColumns():
                         sortBy = f"{cls.referredTables[table].getTableName()}.{sortBy}"
                         columnExists = True
                         break
