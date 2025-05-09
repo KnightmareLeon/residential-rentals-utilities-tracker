@@ -398,7 +398,8 @@ class UtilityChartWidget(QFrame):
         current = self.currDateOffset.replace(hour=0, minute=0, second=0, microsecond=0)
 
         if current < today:
-            self.currDateOffset += relativedelta(months=self.parseDateRangeToMonths(self.dateRange))
+            months = self.parseDateRangeToMonths(self.dateRange)
+            self.currDateOffset += relativedelta(months=months)
             self.updatePageLabel()
             self.updateWidget()
 
@@ -407,7 +408,8 @@ class UtilityChartWidget(QFrame):
     
     # Controllers
     def updateWidget(self) -> None:
-        data, lastDateOffset = DashboardController.fetchUtilityDashboard(self.dateRange, self.currDateOffset)
+        months = self.parseDateRangeToMonths(self.dateRange)
+        data, lastDateOffset = DashboardController.fetchUtilityDashboard(months, self.currDateOffset)
         self.data = data
         self.lastDateOffset = lastDateOffset
         self.updatePageLabel()

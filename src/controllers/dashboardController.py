@@ -9,11 +9,11 @@ from src.utils.sampleDataGenerator import generateRandomUtilityData
 class DashboardController:
     
     @staticmethod
-    def fetchUtilityDashboard(monthRange: int, currPage: int) -> tuple[dict[str, list[dict[str, str]]], int]:
+    def fetchUtilityDashboard(monthRange: int, offset: datetime) -> tuple[dict[str, list[dict[str, str]]], int]:
         """
         Fetches all bills per utility within a given range of months as well as the total number of pages needed for the monthRange.
         """
-        print(f"Fetching utility cost data for {monthRange} months and page {currPage}")
+        print(f"Fetching utility cost data for {monthRange} months and page {offset}")
         return (generateRandomUtilityData(), datetime.now() - relativedelta(months=48))
     
     @staticmethod
