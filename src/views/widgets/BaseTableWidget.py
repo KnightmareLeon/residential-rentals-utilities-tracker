@@ -188,6 +188,7 @@ class BaseTableWidget(QTableWidget):
         self.columnSortStates[index] = newState
 
         self.updateHeaderLabels()
+        self.updateTable()
 
     def updateHeaderLabels(self):
         new_labels = []
