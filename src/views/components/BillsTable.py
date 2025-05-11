@@ -68,7 +68,7 @@ class BillsTable(BaseTableWidget):
 
         if dialog.exec():
             self.mainWindow.updatePages()
-            self.showSuccessNotification()
+            self.showSuccessNotification("Bill was updated successfully.")
 
     def handleDeleteButton(self, row_idx):
         item = self.item(row_idx, 0)
@@ -131,13 +131,13 @@ QPushButton:hover {
         if msgBox.clickedButton() == yesButton:
             success = BillsController.deleteBill(billID)
             if success:
-                self.showSuccessNotification(f"Unit '{billID}' was deleted.")
+                self.showSuccessNotification(f"Bill '{billID}' was deleted.")
             else:
                 self.showErrorNotification(f"Failed to delete Unit '{billID}'.")
 
             self.mainWindow.updatePages()
     
-    def showSuccessNotification(self, message="Utility was successfully added"):
+    def showSuccessNotification(self, message="Bill was successfully added"):
         msgBox = QMessageBox(self)
         msgBox.setIcon(QMessageBox.Icon.Information)
         msgBox.setWindowTitle("Success")
