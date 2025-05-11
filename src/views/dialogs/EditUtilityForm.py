@@ -237,3 +237,25 @@ QLabel {
             super().accept()
         else:
             return
+    
+    def onEditClicked(self, utilityID):
+        updatedData = self.getFormData()
+
+        if updatedData:
+            type = updatedData["Utility"]
+            unitID = updatedData["Unit"]
+            sharedUnitIDs = updatedData["Shared with Unit(s)"]
+            status = updatedData["Status"]
+            billing = updatedData["Billing Cycle"]
+            installDate = updatedData["Installation Date"]
+
+            response = UtilitiesController.editUtility(
+                utilityID, type, unitID, sharedUnitIDs, status, billing, installDate
+            )
+
+            if response == "Utility edited successfully":
+                self.accept()
+            else:
+                self.setErrorMessage(response)
+        else:
+            self.setErrorMessage("Please fill out all required fields.")

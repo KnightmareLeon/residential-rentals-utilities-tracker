@@ -48,9 +48,15 @@ class BaseEditWidget(QDialog):
                 background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0.4 #5A30D6, stop:1 #FF5FB2);
             }
         """)
-        self.addButton.clicked.connect(self.onAddClicked)
+        self.addButton.clicked.connect(self.onEditClicked)
         self.addButton.setCursor(Qt.CursorShape.PointingHandCursor)
         self.mainLayout.addWidget(self.addButton)
+
+        self.messageLabel = QLabel("")
+        self.messageLabel.setStyleSheet("color: red; font-size: 14px; font-family: 'Urbanist';")
+        self.messageLabel.setWordWrap(True)
+        self.messageLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.mainLayout.addWidget(self.messageLabel)
 
     def setupTitleBar(self, mainTitle, iconPath):
         titleLayout = QHBoxLayout()
@@ -344,8 +350,14 @@ class BaseEditWidget(QDialog):
                 data[label] = None
         return data
 
-    def onAddClicked(self):
+    def onEditClicked(self):
         self.accept()
 
     def handleExitClicked(self):
         self.close()
+    
+    def setErrorMessage(self, message: str):
+        self.messageLabel.setText(message)
+
+    def clearMessage(self):
+        self.messageLabel.setText("")

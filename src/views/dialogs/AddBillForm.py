@@ -5,6 +5,7 @@ from pyqt6_multiselect_combobox import MultiSelectComboBox
 from src.views.widgets.BaseCreateWidget import BaseCreateWidget
 from src.controllers.unitsController import UnitsController
 from src.controllers.utilitiesController import UtilitiesController
+from src.controllers.billsController import BillsController
 
 class AddBillForm(BaseCreateWidget):
     def __init__(self):
@@ -96,3 +97,23 @@ class AddBillForm(BaseCreateWidget):
 
         self.utilityInput.clear()
         self.utilityInput.addItems([utility["Type"] for utility in self.utilities])
+    
+    def onAddClicked(self):
+        billData = self.getFormData()
+        if billData:
+            unitID = billData["Unit"]
+            utilityID = billData["Utility Type"]
+            totalAmount = billData["Total Amount"]
+            billPeriodStart = billData["Billing Period Start"]
+            billPeriodEnd = billData["Billing Period End"]
+            status = billData["Status"]
+            dueDate = billData["Due Date"]
+
+            response = BillsController.addBill(unitID, utilityID, totalAmount, billPeriodStart, billPeriodEnd, status, dueDate)
+
+            if response == "Bill added successfully":
+                self.accept()
+            else:
+                self.setErrorMessage(response)
+        else:
+            self.setErrorMessage("Please fill out all required fields.")

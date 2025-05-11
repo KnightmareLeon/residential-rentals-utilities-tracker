@@ -5,8 +5,8 @@ from src.views.widgets.BaseViewWidget import BaseViewWidget
 from src.views.widgets.UtilityChartWidget import UtilityChartWidget
 
 class ViewUtility(BaseViewWidget):
-    def __init__(self, id: str, utilityData: dict, utilityUnits: list, utilityBillsData: list, headers: list, databaseHeaders: list, parent=None):
-        super().__init__("Utility Details", parent=parent, iconPath="assets/icons/utilities.png")
+    def __init__(self, id: str, utilityData: dict, utilityUnits: list, utilityBillsData: list, headers: list, databaseHeaders: list, parent=None, mainWindow=None):
+        super().__init__("Utility Details", parent=parent, iconPath="assets/icons/utilities.png", mainWindow=mainWindow)
         self.setMinimumSize(1075, 600)
         self.setMaximumSize(1300, 850)
 
@@ -62,9 +62,10 @@ class ViewUtility(BaseViewWidget):
 
         billInfoSection = self.createCard("Utility Bills")
         billInfoLayout = billInfoSection.layout()
-        chartWidget = UtilityChartWidget(utilityBillsData, f"Total Cost of Utility {id}")
+        chartWidget = UtilityChartWidget(utilityBillsData, f"Total Cost of Utility {id}", mainWindow=mainWindow)
         billInfoLayout.addWidget(chartWidget)
 
         contentLayout.addWidget(billInfoSection)
 
         self.mainLayout.addLayout(contentLayout)
+        

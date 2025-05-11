@@ -5,6 +5,7 @@ from src.views.widgets.BaseTableWidget import BaseTableWidget
 from src.views.dialogs.ViewBill import ViewBill
 from src.utils.constants import SortOrder, billDataDatabaseHeaders, billDataHeaders
 from src.views.dialogs.EditBillForm import EditBillForm
+
 from src.controllers.billsController import BillsController
 
 class BillsTable(BaseTableWidget):
@@ -47,27 +48,27 @@ class BillsTable(BaseTableWidget):
         item = self.item(row_idx, 0)
         if not item:
             return
-        
+
         billID = item.text()
         bill = BillsController.viewBill(billID)
 
-        dialog = EditBillForm(bill["UnitName"], bill["Type"], bill["TotalAmount"], bill["BillingPeriodStart"], bill["BillingPeriodEnd"], bill["Status"], bill["DueDate"])
+        dialog = EditBillForm(
+            bill["UnitName"],
+            bill["Type"],
+            bill["TotalAmount"],
+            bill["BillingPeriodStart"],
+            bill["BillingPeriodEnd"],
+            bill["Status"],
+            bill["DueDate"]
+        )
+
+        dialog.addButton.setText("Update Bill")
+        dialog.addButton.clicked.disconnect()
+        dialog.addButton.clicked.connect(lambda: dialog.onEditClicked(billID))
 
         if dialog.exec():
-            updatedData = dialog.getFormData()
-            
-            BillsController.editBill(
-                billID,
-                updatedData["UnitID"],
-                updatedData["Utility Type"],
-                updatedData["Status"],
-                updatedData["Total Amount"],
-                updatedData["Due Date"],
-                updatedData["Billing Period Start"],
-                updatedData["Billing Period End"]
-            )
-
             self.mainWindow.updatePages()
+            self.showSuccessNotification()
 
     def handleDeleteButton(self, row_idx):
         item = self.item(row_idx, 0)
