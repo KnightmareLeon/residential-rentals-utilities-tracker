@@ -55,6 +55,12 @@ class BaseCreateWidget(QDialog):
         self.addButton.setCursor(Qt.CursorShape.PointingHandCursor)
         self.mainLayout.addWidget(self.addButton)
 
+        self.messageLabel = QLabel("")
+        self.messageLabel.setStyleSheet("color: red; font-size: 14px; font-family: 'Urbanist';")
+        self.messageLabel.setWordWrap(True)
+        self.messageLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.mainLayout.addWidget(self.messageLabel)
+
     def setupTitleBar(self, mainTitle, iconPath):
         titleLayout = QHBoxLayout()
         titleLayout.setAlignment(Qt.AlignmentFlag.AlignLeft)
@@ -342,3 +348,9 @@ class BaseCreateWidget(QDialog):
 
     def handleExitClicked(self):
         self.close()
+    
+    def setErrorMessage(self, message: str):
+        self.messageLabel.setText(message)
+
+    def clearMessage(self):
+        self.messageLabel.setText("")

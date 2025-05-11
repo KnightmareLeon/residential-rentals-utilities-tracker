@@ -9,6 +9,8 @@ from src.views.widgets.BaseEditWidget import BaseEditWidget
 from src.controllers.unitsController import UnitsController
 from src.controllers.utilitiesController import UtilitiesController
 
+from src.controllers.billsController import BillsController
+
 class EditBillForm(BaseEditWidget):
     def __init__(self, unitName: str, utilityType: str, totalAmount: str, billingPeriodStart, billingPeriodEnd, status: str, dueDate):
         super().__init__(mainTitle="Edit Bill", iconPath="assets/icons/utilities.png")
@@ -130,3 +132,33 @@ QLabel {
             super().accept()
         else:
             return
+    
+    def onEditClicked(self, billID):
+        updatedData = self.getFormData()
+
+        if updatedData:
+            unitID = updatedData["UnitID"]
+            utilityID = updatedData["Utility Type"]
+            status = updatedData["Status"]
+            totalAmount = updatedData["Total Amount"]
+            dueDate = updatedData["Due Date"]
+            billStart = updatedData["Billing Period Start"]
+            billEnd = updatedData["Billing Period End"]
+
+            response = BillsController.editBill(
+                billID,
+                unitID,
+                utilityID,
+                status,
+                totalAmount,
+                dueDate,
+                billStart,
+                billEnd
+            )
+
+            if response == "Bill edited successfully":
+                self.accept()
+            else:
+                self.setErrorMessage(response)
+        else:
+            self.setErrorMessage("Please complete all required fields.")

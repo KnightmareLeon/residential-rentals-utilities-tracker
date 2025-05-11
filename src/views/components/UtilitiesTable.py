@@ -43,7 +43,7 @@ class UtilitiesTable(BaseTableWidget):
         utilityData, utilityUnits, utilityBillsData = UtilitiesController.viewUtility(id)
 
         if utilityData:
-            self.viewWindow = ViewUtility(id, utilityData, utilityUnits, utilityBillsData, utilityDataHeaders, utilityDataDatabaseHeaders)
+            self.viewWindow = ViewUtility(id, utilityData, utilityUnits, utilityBillsData, utilityDataHeaders, utilityDataDatabaseHeaders, mainWindow=self.mainWindow)
             self.viewWindow.show()
 
     def handleEditButton(self, row_idx):
@@ -70,6 +70,30 @@ class UtilitiesTable(BaseTableWidget):
             )
 
             self.mainWindow.updatePages()
+    
+    def handleEditButton(self, row_idx):
+        item = self.item(row_idx, 0)
+        if not item:
+            return
+
+        utilityID = item.text()
+        utility, units, _ = UtilitiesController.viewUtility(utilityID)
+
+        dialog = EditUtilityForm(
+            utility["Type"],
+            units,
+            utility["Status"],
+            utility["BillingCycle"],
+            utility["InstallationDate"]
+        )
+
+        dialog.addButton.setText("Update Utility")
+        dialog.addButton.clicked.disconnect()
+        dialog.addButton.clicked.connect(lambda: dialog.onEditClicked(utilityID))
+
+        if dialog.exec():
+            self.mainWindow.updatePages()
+            self.showSuccessNotification()
 
     def handleDeleteButton(self, row_idx):
         item = self.item(row_idx, 0)

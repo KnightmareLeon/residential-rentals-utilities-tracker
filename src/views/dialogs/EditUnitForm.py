@@ -3,6 +3,8 @@ from PyQt6.QtCore import Qt
 
 from src.views.widgets.BaseEditWidget import BaseEditWidget
 
+from src.controllers.unitsController import UnitsController
+
 class EditUnitForm(BaseEditWidget):
     def __init__(self, name: str, address: str, type: str):
         super().__init__(mainTitle="Edit Unit", iconPath="assets/icons/units.png")
@@ -76,3 +78,22 @@ QLabel {
             super().accept()
         else:
             return
+    
+    def onEditClicked(self, unitID):
+        updatedData = self.getFormData()
+
+        if updatedData:
+            name = updatedData["Unit Name"]
+            address = updatedData["Address"]
+            type = updatedData["Unit Type"]
+
+            response = UnitsController.editUnit(unitID, name, address, type)
+
+            if response == "Unit edited successfully":
+                self.accept()
+            else:
+                self.setErrorMessage(response)
+        else:
+            self.setErrorMessage("Please complete all required fields.")
+
+    

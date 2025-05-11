@@ -144,3 +144,21 @@ class AddUtilityForm(BaseCreateWidget):
             elif isinstance(widget, QDateEdit):
                 data[label] = widget.date()
         return data
+
+    def onAddClicked(self):
+        utilityData = self.getFormData()
+        if utilityData:
+            type = utilityData["Utility Type"]
+            unitID = utilityData["Unit"]
+            sharedUnitIDs = utilityData["Shared with Unit(s)"]
+            status = utilityData["Status"]
+            billing = utilityData["Billing Cycle"]
+
+            response = UtilitiesController.addUtility(type, unitID, sharedUnitIDs, status, billing)
+
+            if response == "Utility added successfully":
+                self.accept()
+            else:
+                self.setErrorMessage(response)
+        else:
+            self.setErrorMessage("Please complete all required fields.")

@@ -15,19 +15,10 @@ class UtilitiesPage(BasePageWidget):
 
     def handleAddButton(self):
         dialog = AddUtilityForm()
-        if dialog.exec():
-            utilityData = dialog.getFormData()
-            if utilityData:
-                type = utilityData["Utility Type"]
-                unitID = utilityData["Unit"]
-                sharedUnitIDs = utilityData["Shared with Unit(s)"]
-                status = utilityData["Status"]
-                billing = utilityData["Billing Cycle"]
 
-                response = UtilitiesController.addUtility(type, unitID, sharedUnitIDs, status, billing)
-                if response:
-                    self.mainWindow.updatePages()
-                    self.showSuccessNotification()
+        if dialog.exec():
+            self.mainWindow.updatePages()
+            self.showSuccessNotification()
     
     def showSuccessNotification(self):
         msgBox = QMessageBox(self)
