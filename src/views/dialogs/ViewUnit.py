@@ -5,10 +5,10 @@ from src.views.widgets.BaseViewWidget import BaseViewWidget
 from src.views.widgets.UtilityChartWidget import UtilityChartWidget
 
 class ViewUnit(BaseViewWidget):
-    def __init__(self, id: str, unitData: dict, unitUtilities: list, unitBillsData: list, headers: list, databaseHeaders: list, parent=None):
-        super().__init__("Unit Details", parent=parent, iconPath="assets/icons/units.png")
+    def __init__(self, id: str, unitData: dict, unitUtilities: list, unitBillsData: list, headers: list, databaseHeaders: list, parent=None, mainWindow=None):
+        super().__init__("Unit Details", parent=parent, iconPath="assets/icons/units.png", mainWindow=mainWindow)
         self.setMinimumSize(1100, 650)
-        self.setMaximumSize(1300, 850)  
+        self.setMaximumSize(1300, 850)
 
         contentLayout = QHBoxLayout()
         contentLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -33,7 +33,7 @@ class ViewUnit(BaseViewWidget):
 
         billsCard = self.createCard("Unit Bills")
         billsLayout = billsCard.layout()
-        chartWidget = UtilityChartWidget(unitBillsData, f"Total Utilities Cost of Unit {id}")
+        chartWidget = UtilityChartWidget(unitBillsData, f"Total Utilities Cost of Unit {id}", mainWindow=mainWindow)
         billsLayout.addWidget(chartWidget)
 
         contentLayout.addWidget(billsCard)

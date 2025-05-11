@@ -40,30 +40,26 @@ class UnitsTable(BaseTableWidget):
         unitData, unitUtilities, unitBillsData = UnitsController.viewUnit(id)
 
         if unitData:
-            self.viewWindow = ViewUnit(id, unitData, unitUtilities, unitBillsData, self.headers, self.databaseHeaders)
+            self.viewWindow = ViewUnit(id, unitData, unitUtilities, unitBillsData, self.headers, self.databaseHeaders, mainWindow=self.mainWindow)
             self.viewWindow.show()
 
     def handleEditButton(self, row_idx):
         item = self.item(row_idx, 0)
         if not item:
             return
-        
+
         unitID = item.text()
         unit, _, _ = UnitsController.viewUnit(unitID)
 
         dialog = EditUnitForm(name=unit["Name"], address=unit["Address"], type=unit["Type"])
 
-        if dialog.exec():
-            updatedData = dialog.getFormData()
-            
-            UnitsController.editUnit(
-                unitID,
-                updatedData["Unit Name"],
-                updatedData["Address"],
-                updatedData["Unit Type"]
-            )
+        dialog.addButton.setText("Update Unit")
+        dialog.addButton.clicked.disconnect()
+        dialog.addButton.clicked.connect(lambda: dialog.onEditClicked(unitID))
 
+        if dialog.exec():
             self.mainWindow.updatePages()
+            self.showSuccessNotification()
 
     def handleDeleteButton(self, row_idx):
         item = self.item(row_idx, 0)
