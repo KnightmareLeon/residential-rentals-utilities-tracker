@@ -23,7 +23,7 @@ class UnitsPage(BasePageWidget):
         msgBox = QMessageBox(self)
         msgBox.setIcon(QMessageBox.Icon.Information)
         msgBox.setWindowTitle("Success")
-        msgBox.setText("Utility was successfully added")
+        msgBox.setText("Unit was successfully added")
 
         # Force non-native dialog so styles apply
         msgBox.setOption(QMessageBox.Option.DontUseNativeDialog, True)

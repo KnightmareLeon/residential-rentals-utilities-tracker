@@ -101,7 +101,7 @@ class HomePage(QWidget):
                     self.mainWindow.updatePages()
                     self.showSuccessNotification()
     
-    def showSuccessNotification(self, message="Utility was successfully added"):
+    def showSuccessNotification(self, message="Bill was successfully added"):
         msgBox = QMessageBox(self)
         msgBox.setIcon(QMessageBox.Icon.Information)
         msgBox.setWindowTitle("Success")

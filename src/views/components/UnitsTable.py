@@ -59,7 +59,7 @@ class UnitsTable(BaseTableWidget):
 
         if dialog.exec():
             self.mainWindow.updatePages()
-            self.showSuccessNotification()
+            self.showSuccessNotification("Unit was updated successfully.")
 
     def handleDeleteButton(self, row_idx):
         item = self.item(row_idx, 0)
@@ -127,7 +127,7 @@ QPushButton:hover {
 
             self.mainWindow.updatePages()
     
-    def showSuccessNotification(self, message="Utility was successfully added"):
+    def showSuccessNotification(self, message="Unit was successfully added"):
         msgBox = QMessageBox(self)
         msgBox.setIcon(QMessageBox.Icon.Information)
         msgBox.setWindowTitle("Success")

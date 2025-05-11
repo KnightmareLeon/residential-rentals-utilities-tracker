@@ -93,7 +93,7 @@ class UtilitiesTable(BaseTableWidget):
 
         if dialog.exec():
             self.mainWindow.updatePages()
-            self.showSuccessNotification()
+            self.showSuccessNotification("Utility was updated successfully.")
 
     def handleDeleteButton(self, row_idx):
         item = self.item(row_idx, 0)
@@ -156,7 +156,7 @@ QPushButton:hover {
         if msgBox.clickedButton() == yesButton:
             success = UtilitiesController.deleteUtility(utilityID)
             if success:
-                self.showSuccessNotification(f"Unit '{utilityID}' was deleted.")
+                self.showSuccessNotification(f"Utility '{utilityID}' was deleted.")
             else:
                 self.showErrorNotification(f"Failed to delete Unit '{utilityID}'.")
 
