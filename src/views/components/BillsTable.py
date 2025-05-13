@@ -36,7 +36,9 @@ class BillsTable(BaseTableWidget):
         item = self.item(row_idx, 0)
         if not item:
             return
-    
+        
+        self.mainWindow.setStatusBarText("Loading Bill Data....")
+        
         id = item.text()
         billData = BillsController.viewBill(id)
 
@@ -68,8 +70,9 @@ class BillsTable(BaseTableWidget):
 
         if dialog.exec():
             self.mainWindow.updatePages()
+            self.mainWindow.setStatusBarText("Bill updated successfully.")
             self.showSuccessNotification("Bill was updated successfully.")
-
+            
     def handleDeleteButton(self, row_idx):
         item = self.item(row_idx, 0)
         if not item:
@@ -131,9 +134,11 @@ QPushButton:hover {
         if msgBox.clickedButton() == yesButton:
             success = BillsController.deleteBill(billID)
             if success:
+                self.mainWindow.setStatusBarText("Bill deleted succesfully.")
                 self.showSuccessNotification(f"Bill '{billID}' was deleted.")
             else:
-                self.showErrorNotification(f"Failed to delete Unit '{billID}'.")
+                self.mainWindow.setStatusBarText("Failed to delete Bill")
+                self.showErrorNotification(f"Failed to delete Bill '{billID}'.")
 
             self.mainWindow.updatePages()
     

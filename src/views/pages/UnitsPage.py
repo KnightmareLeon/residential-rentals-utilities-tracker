@@ -17,6 +17,7 @@ class UnitsPage(BasePageWidget):
 
         if dialog.exec():
             self.mainWindow.updatePages()
+            self.mainWindow.setStatusBarText("Unit added succesfully.")
             self.showSuccessNotification()
     
     def showSuccessNotification(self):

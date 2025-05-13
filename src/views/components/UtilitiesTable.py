@@ -38,6 +38,8 @@ class UtilitiesTable(BaseTableWidget):
         item = self.item(row_idx, 0)
         if not item:
             return
+        
+        self.mainWindow.setStatusBarText("Loading Utility Data....")
     
         id = item.text()
         utilityData, utilityUnits, utilityBillsData = UtilitiesController.viewUtility(id)
@@ -45,31 +47,6 @@ class UtilitiesTable(BaseTableWidget):
         if utilityData:
             self.viewWindow = ViewUtility(id, utilityData, utilityUnits, utilityBillsData, utilityDataHeaders, utilityDataDatabaseHeaders, mainWindow=self.mainWindow)
             self.viewWindow.show()
-
-    def handleEditButton(self, row_idx):
-        item = self.item(row_idx, 0)
-        if not item:
-            return
-        
-        utilityID = item.text()
-        utility, units, _ = UtilitiesController.viewUtility(utilityID)
-
-        dialog = EditUtilityForm(utility["Type"], units, utility["Status"], utility["BillingCycle"], utility["InstallationDate"])
-        
-        if dialog.exec():
-            updatedData = dialog.getFormData()
-            
-            UtilitiesController.editUtility(
-                utilityID,
-                updatedData["Utility"],
-                updatedData["Unit"],
-                updatedData["Shared with Unit(s)"],
-                updatedData["Status"],
-                updatedData["Billing Cycle"],
-                updatedData["Installation Date"]
-            )
-
-            self.mainWindow.updatePages()
     
     def handleEditButton(self, row_idx):
         item = self.item(row_idx, 0)
@@ -93,6 +70,7 @@ class UtilitiesTable(BaseTableWidget):
 
         if dialog.exec():
             self.mainWindow.updatePages()
+            self.mainWindow.setStatusBarText("Utility updated successfully.")
             self.showSuccessNotification("Utility was updated successfully.")
 
     def handleDeleteButton(self, row_idx):
@@ -156,9 +134,11 @@ QPushButton:hover {
         if msgBox.clickedButton() == yesButton:
             success = UtilitiesController.deleteUtility(utilityID)
             if success:
+                self.mainWindow.setStatusBarText("Utility deleted succesfully.")
                 self.showSuccessNotification(f"Utility '{utilityID}' was deleted.")
             else:
-                self.showErrorNotification(f"Failed to delete Unit '{utilityID}'.")
+                self.mainWindow.setStatusBarText("Failed to delete Utility.")
+                self.showErrorNotification(f"Failed to delete Utility '{utilityID}'.")
 
             self.mainWindow.updatePages()
     

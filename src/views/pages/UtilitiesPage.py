@@ -18,6 +18,7 @@ class UtilitiesPage(BasePageWidget):
 
         if dialog.exec():
             self.mainWindow.updatePages()
+            self.mainWindow.setStatusBarText("Utility added succesfully.")
             self.showSuccessNotification()
     
     def showSuccessNotification(self):

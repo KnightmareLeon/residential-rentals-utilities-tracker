@@ -485,3 +485,6 @@ class MainWindow(QMainWindow):
         self.utilitiesPage.updatePage()
         self.billsPage.updatePage()
         self.homePage.updateDashboards()
+    
+    def setStatusBarText(self, text: str, duration: int=3000):
+        self.statusbar.showMessage(text, duration)

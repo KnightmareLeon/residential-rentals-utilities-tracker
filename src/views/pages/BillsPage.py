@@ -14,8 +14,10 @@ class BillsPage(BasePageWidget):
 
     def handleAddButton(self):
         dialog = AddBillForm()
+        
         if dialog.exec():
             self.mainWindow.updatePages()
+            self.mainWindow.setStatusBarText("Bill added succesfully.")
             self.showSuccessNotification()
     
     def showSuccessNotification(self):
