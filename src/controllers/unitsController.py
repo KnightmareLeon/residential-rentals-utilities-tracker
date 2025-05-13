@@ -1,4 +1,10 @@
+from src.models.UnitDatabaseTable import UnitDatabaseTable as Unit
+from src.models.UtilityDatabaseTable import UtilityDatabaseTable as Utility
+from src.models.InstalledUtilityDatabaseTable import InstalledUtilityDatabaseTable as InstalledUtility
+from src.models.BillDatabaseTable import BillDatabaseTable as Bill
+
 from src.utils.sampleDataGenerator import generateRandomUtilityData, generateUnitData
+from src.utils.constants import Range
 
 class UnitsController:
     
@@ -7,8 +13,9 @@ class UnitsController:
         """
         Fetches all units with pagination, sorting, and searching.
         """
-        print(f"Fetching data for page {currentPage} with sorting {sortingField} {sortingOrder} and search '{searchValue}'")
-        return (generateUnitData(), 5) 
+        searchValue = None if searchValue == "" else searchValue
+        totalPages =  Unit.totalCount(searchValue=searchValue) // 50 + 1
+        return Unit.read(page=currentPage, sortBy=sortingField, order=sortingOrder, searchValue=searchValue), totalPages
     
     @staticmethod
     def addUnit(name: str, address: str, type: str) -> str:
@@ -23,24 +30,25 @@ class UnitsController:
         """
         Fetches all information about a single unit by ID.
         """
-
-        return ({ # UNIT INFO
-            "UnitID": id,
-            "Name": "B1R001",
-            "Address": "Block 2, Room 12, 123 Main St, New York, NY, Block 2, Room 12, 123 Main St, New York, NY",
-            "Type": "Individual",
-        }, 
-        [ # INSTALLED UTILITIES
-            {"UtilityID": "U1", "Type": "Electricity", "Status": "Active", "isShared": False},
-            {"UtilityID": "U2", "Type": "Water", "Status": "Inactive", "isShared": False},
-            {"UtilityID": "U3", "Type": "Gas", "Status": "Active", "isShared": True},
-            {"UtilityID": "U4", "Type": "Internet", "Status": "Inactive", "isShared": True},
-            {"UtilityID": "U5", "Type": "Trash", "Status": "Active", "isShared": False},
-            {"UtilityID": "U6", "Type": "Maintenance", "Status": "Inactive", "isShared": False},
-            {"UtilityID": "U7", "Type": "Miscellaneous", "Status": "Active", "isShared": True},
-        ], 
+        id = int(id)
+        unitInfo = Unit.readOne(id)
+        installedUtilites = []
+        for utilityID in InstalledUtility.getUnitUtilities(id):
+            utilityInfo = Utility.readOne(utilityID)
+            utilityInfo["isShared"] = InstalledUtility.isUtilityShared(utilityID)
+            installedUtilites.append(utilityInfo)
+        unitBills = Bill.getUnitBills(id, range = Range.THREE_MONTHS)
+        for utility in unitBills.keys():
+            for bill in unitBills[utility]:
+                bill["BillingPeriodEnd"] = bill["BillingPeriodEnd"].strftime("%Y-%m-%d")
+        
+        print(unitBills)
+        return ( # UNIT INFO
+            unitInfo, 
+        # INSTALLED UTILITIES
+            installedUtilites, 
         # UNIT UTILITY BILLS 
-        generateRandomUtilityData())
+            unitBills)
 
     @staticmethod
     def editUnit(originalID: str,  name: str, address: str, type: str) -> str:

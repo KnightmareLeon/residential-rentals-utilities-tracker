@@ -10,6 +10,7 @@ class UnitDatabaseTable(DatabaseTable):
     - UnitID: int, primary key, auto-incremented
     - Name: varchar(30), unique, not null
     - Address: varchar(255), not null
+    - Type: The type of unit (shared or individual).
     - PRIMARY KEY (UnitID)
     - UNIQUE KEY Name (Name)
     """
@@ -23,7 +24,8 @@ class UnitDatabaseTable(DatabaseTable):
             cursor.execute("CREATE TABLE IF NOT EXISTS unit( " +
                 "UnitID int NOT NULL AUTO_INCREMENT, " +
                 "Name varchar(30) NOT NULL, " +
-                "Address varchar(255) NOT NULL, " +
+                "Address varchar(255) NOT NULL, "
+                "Type enum('Shared','Individual') NOT NULL," +
                 "PRIMARY KEY (UnitID), " +
                 "UNIQUE KEY Name (Name))"
             )
@@ -72,4 +74,27 @@ class UnitDatabaseTable(DatabaseTable):
             raise e
         finally:
             cursor.close()
-        return 
+        return
+    
+    @classmethod
+    def doesUnitNameExist(cls, name: str) -> bool:
+        """
+        Check if a unit name exists in the database.
+        - name: string representing the unit name to check.
+        """
+        cls.initialize()
+        if not isinstance(name, str):
+            raise TypeError("Name must be a string.")
+        result = None
+        try:
+            cursor = DatabaseConnection.getConnection().cursor()
+            sql = f"SELECT * FROM {cls._tableName} WHERE Name = '{name}'"
+            cursor.execute(sql)
+            result = cursor.fetchone()
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+
+        return result is not None

@@ -12,7 +12,6 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
     - UnitID: The ID of the unit (foreign key).
     - UtilityID: The ID of the utility (foreign key).
     - InstallationDate: The date when the utility was installed.
-    - UnitType: The type of unit (shared or individual).
     The table has the following constraints:
     - PRIMARY KEY (UnitID, UtilityID): The combination of UnitID and UtilityID is unique.
     - FOREIGN KEY (UnitID) REFERENCES unit (UnitID): The UnitID must exist in the unit table.
@@ -61,7 +60,6 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
                 "UnitID int NOT NULL, " +
                 "UtilityID int NOT NULL, " +
                 "InstallationDate date NOT NULL, " +
-                "UnitType enum('Shared','Individual') NOT NULL," +
                 "PRIMARY KEY (UnitID,UtilityID), " +
                 "KEY UtilityID (UtilityID), " +
                 "CONSTRAINT installedutility_ibfk_1 FOREIGN KEY (UnitID) REFERENCES unit (UnitID) ON DELETE CASCADE ON UPDATE CASCADE, " +
@@ -360,6 +358,60 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
                   f"WHERE UtilityID = {utility}"
             cursor.execute(sql)
             result = cursor.fetchall()
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
+    
+    @classmethod
+    def isUtilityShared(cls,
+                        utility : int) -> bool:
+        """
+        Returns True if the utility is shared, False otherwise.
+        - utility: The ID of the utility.
+        """
+        cls.initialize()
+
+        if not isinstance(utility, int):
+            raise ValueError("Utility must be an integer.")
+        
+        result = None
+
+        try:
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            sql = f"SELECT Count(*) as UnitCount FROM {cls.getTableName()} NATURAL JOIN {UnitDatabaseTable.getTableName()} " + \
+                  f"WHERE UtilityID = {utility} AND {UnitDatabaseTable.getTableName()}.Type='Shared' "
+            cursor.execute(sql)
+            result = cursor.fetchone()["UnitCount"] > 0
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
+    
+    @classmethod
+    def getMainUnit(cls,
+                        utility : int) -> int:
+        """
+        Returns the main unit ID for the given utility ID.
+        - utility: The ID of the utility.
+        """
+        cls.initialize()
+
+        if not isinstance(utility, int):
+            raise ValueError("Utility must be an integer.")
+        
+        result = None
+
+        try:
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            sql = f"SELECT UnitID FROM {cls.getTableName()} " + \
+                  f"WHERE UtilityID = {utility} AND UnitType='Shared' "
+            cursor.execute(sql)
+            result = cursor.fetchone()["UnitID"]
         except Exception as e:
             print(f"Error: {e}")
             raise e
