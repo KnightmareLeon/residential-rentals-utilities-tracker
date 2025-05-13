@@ -1,5 +1,7 @@
 from PyQt6.QtCore import QDate
 
+from src.models.UtilityDatabaseTable import UtilityDatabaseTable as Utility
+
 from src.utils.sampleDataGenerator import generateUtilityData, generateRandomeUtilityBills
 
 class UtilitiesController:
@@ -9,8 +11,9 @@ class UtilitiesController:
         """
         Fetches all utilitys with pagination, sorting, and searching.
         """
-        print(f"Fetching data for page {currentPage} with sorting {sortingField} {sortingOrder} and search '{searchValue}'")
-        return (generateUtilityData(), 5) 
+        searchValue = None if searchValue == "" else searchValue
+        totalPages =  Utility.totalCount(searchValue=searchValue) // 50 + 1
+        return Utility.read(page=currentPage, sortBy=sortingField, order=sortingOrder, searchValue=searchValue), totalPages
     
     @staticmethod
     def addUtility(type: str, mainUnitID: str, sharedUnitIDs: list[str], status: str, billingCycle: str) -> str:

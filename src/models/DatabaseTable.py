@@ -203,7 +203,7 @@ class DatabaseTable(ABC):
         result = {}
 
         try:
-            cursor = DatabaseConnection.getConnection().cursor()
+            cursor = DatabaseConnection.getConnection().cursor(dictionary=True)
             sql = f"SELECT * FROM {cls.getTableName()} WHERE {cls.getPrimaryKey()} = {id}"
             cursor.execute(sql)
 
