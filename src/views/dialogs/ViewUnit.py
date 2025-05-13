@@ -20,6 +20,7 @@ class ViewUnit(BaseViewWidget):
 
         unitInfoCard = self.createCard("Unit Information")
         unitInfoLayout = unitInfoCard.layout()
+        unitInfoCard.setMaximumHeight(300)
         for i in range(4):
             self.addDetail(unitInfoLayout, headers[i], unitData[databaseHeaders[i]])
         leftLayout.addWidget(unitInfoCard)
