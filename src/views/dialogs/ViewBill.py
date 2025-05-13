@@ -81,7 +81,7 @@ class ViewBill(BaseViewWidget):
             )
 
             self.close()
-
+            self.mainWindow.setStatusBarText("Bill updated successfully.")
             self.mainWindow.updatePages()
             
 
