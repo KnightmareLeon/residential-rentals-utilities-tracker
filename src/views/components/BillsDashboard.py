@@ -121,6 +121,8 @@ class BillsDashboard(QWidget):
         layout.addWidget(container)
 
     def handleRowClick(self, index):
+        self.mainWindow.setStatusBarText("Loading Bill Data....")
+        
         clickedBill = self.bills[index]
         billID = clickedBill["BillID"]
         billData = BillsController.viewBill(billID)

@@ -35,6 +35,8 @@ class UnitsTable(BaseTableWidget):
         item = self.item(row_idx, 0)
         if not item:
             return
+        
+        self.mainWindow.setStatusBarText("Loading Unit Data....")
     
         id = item.text()
         unitData, unitUtilities, unitBillsData = UnitsController.viewUnit(id)
@@ -59,6 +61,7 @@ class UnitsTable(BaseTableWidget):
 
         if dialog.exec():
             self.mainWindow.updatePages()
+            self.mainWindow.setStatusBarText("Unit updated successfully.")
             self.showSuccessNotification("Unit was updated successfully.")
 
     def handleDeleteButton(self, row_idx):
@@ -121,8 +124,10 @@ QPushButton:hover {
         if msgBox.clickedButton() == yesButton:
             success = UnitsController.deleteUnit(unitID)
             if success:
+                self.mainWindow.setStatusBarText("Unit deleted succesfully.")
                 self.showSuccessNotification(f"Unit '{unitID}' was deleted.")
             else:
+                self.mainWindow.setStatusBarText("Failed to delete Unit.")
                 self.showErrorNotification(f"Failed to delete Unit '{unitID}'.")
 
             self.mainWindow.updatePages()
