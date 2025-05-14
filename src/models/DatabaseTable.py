@@ -221,8 +221,7 @@ class DatabaseTable(ABC):
         """
         Inserts data into the table. The data must be a dictionary where the keys
         are the column names and the values are the corresponding values to be inserted.
-        The primary key must be included in the data dictionary. The method will
-        raise an error if the primary key is not included or if the data is not a
+        The method will raise an error if the primary key is included or if the data is not a
         dictionary.
         """
         cls.initialize()
