@@ -1,6 +1,7 @@
 from PyQt6.QtCore import QDate
 
 from src.models.UtilityDatabaseTable import UtilityDatabaseTable as Utility
+from src.models.InstalledUtilityDatabaseTable import InstalledUtilityDatabaseTable as InstalledUtility
 
 from src.utils.sampleDataGenerator import generateUtilityData, generateRandomeUtilityBills
 
@@ -14,7 +15,16 @@ class UtilitiesController:
         print(f"Fetching utilities in page {currentPage} sorted by {sortingField} {sortingOrder} while searching for {searchValue}")
         searchValue = None if searchValue == "" else searchValue
         totalPages =  Utility.totalCount(searchValue=searchValue) // 50 + 1
-        return Utility.read(page=currentPage, sortBy=sortingField, order=sortingOrder, searchValue=searchValue), totalPages
+
+        fetchedUtils = Utility.read(page=currentPage, sortBy=sortingField, order=sortingOrder, searchValue=searchValue)
+        for utility in fetchedUtils:
+            mainUnitName = ""
+            if InstalledUtility.isUtilityShared(utility["UtilityID"]):
+                mainUnitName = InstalledUtility.getMainUnit(utility["UtilityID"], name=True)
+            else:
+                mainUnitName = InstalledUtility.getUtilityUnits(utility["UtilityID"])[0]["Name"]
+            utility["UnitName"] = mainUnitName
+        return fetchedUtils, totalPages
     
     @staticmethod
     def addUtility(type: str, mainUnitID: str, sharedUnitIDs: list[str], status: str, billingCycle: str) -> str:

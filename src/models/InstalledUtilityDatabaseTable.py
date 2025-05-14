@@ -354,7 +354,8 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
 
         try:
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
-            sql = f"SELECT UnitID, UnitType FROM {cls.getTableName()} " + \
+            sql = f"SELECT installedutility.UnitID, unit.Name FROM {cls.getTableName()} " + \
+                  f"NATURAL JOIN {UnitDatabaseTable.getTableName()} " + \
                   f"WHERE UtilityID = {utility}"
             cursor.execute(sql)
             result = cursor.fetchall()
@@ -394,10 +395,12 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
     
     @classmethod
     def getMainUnit(cls,
-                        utility : int) -> int:
+                    utility : int,
+                    name : bool = False) -> int | str:
         """
-        Returns the main unit ID for the given utility ID.
+        Returns the main unit ID or Name for the given utility ID.
         - utility: The ID of the utility.
+        - name: A boolean indicating whether to return the unit name or not.
         """
         cls.initialize()
 
@@ -408,10 +411,11 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
 
         try:
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
-            sql = f"SELECT UnitID FROM {cls.getTableName()} " + \
-                  f"WHERE UtilityID = {utility} AND UnitType='Shared' "
+            toGet = "Name" if name else "UnitID"
+            sql = f"SELECT {toGet} FROM {cls.getTableName()} NATURAL JOIN {UnitDatabaseTable.getTableName()} " + \
+                  f"WHERE UtilityID = {utility} AND {UnitDatabaseTable.getTableName()}.Type='Shared' "
             cursor.execute(sql)
-            result = cursor.fetchone()["UnitID"]
+            result = cursor.fetchone()[toGet]
         except Exception as e:
             print(f"Error: {e}")
             raise e
