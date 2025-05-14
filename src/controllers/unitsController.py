@@ -46,7 +46,6 @@ class UnitsController:
             for bill in unitBills[utility]:
                 bill["BillingPeriodEnd"] = bill["BillingPeriodEnd"].strftime("%Y-%m-%d")
         
-        print(unitBills)
         return ( # UNIT INFO
             unitInfo, 
         # INSTALLED UTILITIES
