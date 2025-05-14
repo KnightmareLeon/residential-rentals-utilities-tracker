@@ -11,7 +11,7 @@ class BillsController:
         """
         Fetches all units with pagination, sorting, and searching.
         """
-        print(f"Fetching data for page {currentPage} with sorting {sortingField} {sortingOrder} and search '{searchValue}'")
+        print(f"Fetching bills in page {currentPage} sorted by {sortingField} {sortingOrder} while searching for {searchValue}")
         
         searchValue = None if searchValue == "" else searchValue
         referred = {"unit":["Name"],"utility":["Type"]}
