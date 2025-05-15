@@ -8,6 +8,7 @@ from .UtilityDatabaseTable import UtilityDatabaseTable
 from .InstalledUtilityDatabaseTable import InstalledUtilityDatabaseTable
 
 from src.utils.constants import Range
+from src.utils.constants import UTILITIES
 
 class BillDatabaseTable(DatabaseTable):
     """
@@ -205,7 +206,7 @@ class BillDatabaseTable(DatabaseTable):
             rangeClause = cls.__rangeClause(range, offset)
 
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
-            for utility in ["Electricity", "Water", "Gas", "Wifi", "Trash", "Maintenance", "Miscellaneous"]:
+            for utility in UTILITIES:
                 sql = f"SELECT Bill.BillID, Bill.TotalAmount, Bill.BillingPeriodEnd FROM bill " + \
                     f"INNER JOIN utility ON Utility.UtilityID=Bill.UtilityID WHERE Utility.Type='{utility}'" + \
                     f"AND {rangeClause} "             
