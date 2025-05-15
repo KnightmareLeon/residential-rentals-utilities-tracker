@@ -453,7 +453,7 @@ class BillDatabaseTable(DatabaseTable):
                     f"WHERE Bill.UtilityID = {utilityID} AND Bill.UnitID = {unit}" + \
                     f" LIMIT 1"
                 cursor.execute(sql)
-                result[utilityID] = cursor.fetchone()['BillingPeriodEnd']
+                result[utilityID] = cursor.fetchone()['BillingPeriodEnd'] if cursor.rowcount > 0 else {}
 
         except Exception as e:
             print(f"Error: {e}")
@@ -483,7 +483,7 @@ class BillDatabaseTable(DatabaseTable):
                 f"WHERE Bill.UtilityID = {utility} " + \
                 f"ORDER BY Bill.BillingPeriodEnd ASC LIMIT 1"
             cursor.execute(sql)
-            result = cursor.fetchone()['BillingPeriodEnd']
+            result = cursor.fetchone()['BillingPeriodEnd'] if cursor.rowcount > 0 else {}
 
         except Exception as e:
             print(f"Error: {e}")
@@ -493,21 +493,21 @@ class BillDatabaseTable(DatabaseTable):
         return result
 
     @classmethod
-    def getEarliestBillDates(cls) -> datetime.date:
+    def getEarliestBillDate(cls) -> datetime.date:
         """
         Returns the earliest billing period end dates for all bills.
 
         """
         cls.initialize()
 
-        result = {}
+        result = None
 
         try:
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             sql = f"SELECT Bill.BillingPeriodEnd FROM {cls.getTableName()} " + \
                 f"LIMIT 1"
             cursor.execute(sql)
-            result = cursor.fetchone()['BillingPeriodEnd']
+            result = cursor.fetchone()['BillingPeriodEnd'] if cursor.rowcount > 0 else None
 
         except Exception as e:
             print(f"Error: {e}")
