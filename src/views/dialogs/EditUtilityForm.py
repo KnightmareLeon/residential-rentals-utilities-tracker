@@ -18,22 +18,22 @@ class EditUtilityForm(BaseEditWidget):
 
         self.originalType = type
 
-        self.allUnits = UnitsController.getUnitNames()  # All units
-        self.unitNameMap = {unit["UnitName"]: unit["UnitID"] for unit in self.allUnits}
+        self.allUnits = UnitsController.getUnitNames()
+        self.unitNameMap = {unit["Name"]: unit["UnitID"] for unit in self.allUnits}
         self.unitIDMap = {unit["UnitID"]: unit for unit in self.allUnits}
-        self.indivUnitNames = [f"{unit['UnitName']} ({unit['Type']})" for unit in self.allUnits if unit["Type"] == "Individual"]
-
+        self.indivUnitNames = [f"{unit['Name']} ({unit['Type']})" for unit in self.allUnits if unit["Type"] == "Individual"]
+        print("units", units)
         self.addSection("Utility Information")
 
         # Determine main unit and its display name
         mainUnit = next((u for u in units if "(Main)" in u["Name"]), None)
         self.mainUnitID = mainUnit["UnitID"] if mainUnit else None
-        self.mainUnitName = self.unitIDMap[self.mainUnitID]["UnitName"] if self.mainUnitID else None
+        self.mainUnitName = self.unitIDMap[self.mainUnitID]["Name"] if self.mainUnitID else None
         mainUnitType = self.unitIDMap[self.mainUnitID]["Type"] if self.mainUnitID else None
         mainUnitDisplay = f"{self.mainUnitName} ({mainUnitType})" if self.mainUnitName else None
 
         # Prepare dropdown display
-        unitDisplay = [f"{unit['UnitName']} ({unit['Type']})" for unit in self.allUnits]
+        unitDisplay = [f"{unit['Name']} ({unit['Type']})" for unit in self.allUnits]
 
         self.typeInput = self.addComboBox("Utility", UTILITIES, sectionTitle="Utility Information", defaultValue=type)
         self.unitNameInput = self.addComboBox("Unit", unitDisplay, sectionTitle="Utility Information")
@@ -63,7 +63,7 @@ class EditUtilityForm(BaseEditWidget):
             sharedWidget.clear()
             sharedWidget.addItems(self.indivUnitNames)
             sharedUnitIDs = [u["UnitID"] for u in self.sharedUnits]
-            sharedNames = [f"{self.unitIDMap[uid]['UnitName']} (Individual)" for uid in sharedUnitIDs if uid in self.unitIDMap]
+            sharedNames = [f"{self.unitIDMap[uid]['Name']} (Individual)" for uid in sharedUnitIDs if uid in self.unitIDMap]
 
             if unitName == self.mainUnitName:
                 selectedIndexes = []
@@ -174,69 +174,6 @@ class EditUtilityForm(BaseEditWidget):
                 data[label] = widget.date()
         return data
     
-    def accept(self):
-        msgBox = QMessageBox(self)
-        msgBox.setIcon(QMessageBox.Icon.Warning)
-        msgBox.setWindowTitle("Confirm Update")
-        msgBox.setText("Are you sure you want to update this utility?")
-        msgBox.setStyleSheet("""
-QDialog {
-    background-color: #202020;
-    font-family: "Urbanist";
-    font-size: 16px;
-    color: white;
-}
-
-QLabel {
-    color: white;
-    font-family: "Urbanist";
-    font-size: 16px;
-}
-
-""")
-        
-        yesButton = msgBox.addButton(QMessageBox.StandardButton.Yes)
-        noButton = msgBox.addButton(QMessageBox.StandardButton.No)
-
-        # Set cursors
-        yesButton.setCursor(Qt.CursorShape.PointingHandCursor)
-        noButton.setCursor(Qt.CursorShape.PointingHandCursor)
-
-        # Style buttons
-        yesButton.setStyleSheet("""
-        QPushButton {
-            background-color: #541111;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 4px;
-            border: none;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background-color: #743131;
-        }
-        """)
-        noButton.setStyleSheet("""
-        QPushButton {
-            background-color: #444444;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 4px;
-            border: none;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background-color: #666666;
-        }
-        """)
-        
-        msgBox.exec()
-
-        if msgBox.clickedButton() == yesButton:
-            super().accept()
-        else:
-            return
-    
     def onEditClicked(self, utilityID):
         updatedData = self.getFormData()
 
@@ -317,3 +254,6 @@ QLabel {
             self.accept()
         else:
             self.setErrorMessage(response)
+
+    def accept(self):
+        super().accept()
