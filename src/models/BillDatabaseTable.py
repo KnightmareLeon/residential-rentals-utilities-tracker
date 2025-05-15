@@ -453,7 +453,8 @@ class BillDatabaseTable(DatabaseTable):
                     f"WHERE Bill.UtilityID = {utilityID} AND Bill.UnitID = {unit}" + \
                     f" LIMIT 1"
                 cursor.execute(sql)
-                result[utilityID] = cursor.fetchone()['BillingPeriodEnd'] if cursor.rowcount > 0 else {}
+                sqlRes = cursor.fetchone()
+                result[utilityID] = cursor.fetchone()['BillingPeriodEnd'] if cursor.rowcount > 0 else None
 
         except Exception as e:
             print(f"Error: {e}")
@@ -463,7 +464,7 @@ class BillDatabaseTable(DatabaseTable):
         return result
 
     @classmethod
-    def getEarliestUtilityBillDates(cls,
+    def getEarliestUtilityBillDate(cls,
                                     utility: int) -> datetime.date:
         """
         Returns the earliest billing period end dates for the given utility ID.
@@ -472,7 +473,7 @@ class BillDatabaseTable(DatabaseTable):
         """
         cls.initialize()
 
-        result = {}
+        result = None
 
         try:
             if not isinstance(utility, int):
@@ -483,7 +484,8 @@ class BillDatabaseTable(DatabaseTable):
                 f"WHERE Bill.UtilityID = {utility} " + \
                 f"ORDER BY Bill.BillingPeriodEnd ASC LIMIT 1"
             cursor.execute(sql)
-            result = cursor.fetchone()['BillingPeriodEnd'] if cursor.rowcount > 0 else {}
+            sqlRes = cursor.fetchone()
+            result = sqlRes['BillingPeriodEnd'] if cursor.rowcount > 0 else None
 
         except Exception as e:
             print(f"Error: {e}")
@@ -507,7 +509,8 @@ class BillDatabaseTable(DatabaseTable):
             sql = f"SELECT Bill.BillingPeriodEnd FROM {cls.getTableName()} " + \
                 f"LIMIT 1"
             cursor.execute(sql)
-            result = cursor.fetchone()['BillingPeriodEnd'] if cursor.rowcount > 0 else None
+            sqlRes = cursor.fetchone()
+            result = sqlRes['BillingPeriodEnd'] if cursor.rowcount > 0 else None
 
         except Exception as e:
             print(f"Error: {e}")
