@@ -16,84 +16,82 @@ class EditUnitForm(BaseEditWidget):
         self.nameInput = self.addTextInput("Unit Name", placeholder="Enter name...", sectionTitle="Unit Information", defaultValue=name)
         self.addressInput = self.addTextInput("Address", placeholder="Enter address...", sectionTitle="Unit Information", defaultValue=address)
         self.unitTypeInput = self.addComboBox("Unit Type", ["Individual", "Shared"], sectionTitle="Unit Information", defaultValue=type)
-    
-    def accept(self):
+        
+    def onEditClicked(self, unitID):
+        updatedData = self.getFormData()
+
+        if not updatedData:
+            self.setErrorMessage("Please complete all required fields.")
+            return
+
+        # Show confirmation dialog
         msgBox = QMessageBox(self)
         msgBox.setIcon(QMessageBox.Icon.Warning)
         msgBox.setWindowTitle("Confirm Update")
         msgBox.setText("Are you sure you want to update this unit?")
         msgBox.setStyleSheet("""
-QDialog {
-    background-color: #202020;
-    font-family: "Urbanist";
-    font-size: 16px;
-    color: white;
-}
-
-QLabel {
-    color: white;
-    font-family: "Urbanist";
-    font-size: 16px;
-}
-
-""")
+        QDialog {
+            background-color: #202020;
+            font-family: "Urbanist";
+            font-size: 16px;
+            color: white;
+        }
+        QLabel {
+            color: white;
+            font-family: "Urbanist";
+            font-size: 16px;
+        }
+        """)
         
         yesButton = msgBox.addButton(QMessageBox.StandardButton.Yes)
         noButton = msgBox.addButton(QMessageBox.StandardButton.No)
 
-        # Set cursors
         yesButton.setCursor(Qt.CursorShape.PointingHandCursor)
         noButton.setCursor(Qt.CursorShape.PointingHandCursor)
 
-        # Style buttons
         yesButton.setStyleSheet("""
-        QPushButton {
-            background-color: #541111;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 4px;
-            border: none;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background-color: #743131;
-        }
+            QPushButton {
+                background-color: #541111;
+                color: white;
+                padding: 6px 12px;
+                border-radius: 4px;
+                border: none;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #743131;
+            }
         """)
         noButton.setStyleSheet("""
-        QPushButton {
-            background-color: #444444;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 4px;
-            border: none;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background-color: #666666;
-        }
+            QPushButton {
+                background-color: #444444;
+                color: white;
+                padding: 6px 12px;
+                border-radius: 4px;
+                border: none;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #666666;
+            }
         """)
+
         msgBox.exec()
 
-        if msgBox.clickedButton() == yesButton:
-            super().accept()
-        else:
+        if msgBox.clickedButton() != yesButton:
             return
-    
-    def onEditClicked(self, unitID):
-        updatedData = self.getFormData()
 
-        if updatedData:
-            name = updatedData["Unit Name"]
-            address = updatedData["Address"]
-            type = updatedData["Unit Type"]
+        name = updatedData["Unit Name"]
+        address = updatedData["Address"]
+        type = updatedData["Unit Type"]
 
-            response = UnitsController.editUnit(unitID, name, address, type)
+        response = UnitsController.editUnit(unitID, name, address, type)
 
-            if response == "Unit edited successfully":
-                self.accept()
-            else:
-                self.setErrorMessage(response)
+        if response == "Unit edited successfully":
+            self.accept()
         else:
-            self.setErrorMessage("Please complete all required fields.")
+            self.setErrorMessage(response)
 
-    
+    def accept(self):
+        super().accept()
+        

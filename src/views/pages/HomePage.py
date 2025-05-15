@@ -6,7 +6,9 @@ from src.utils.sampleDataGenerator import generateBillsDataFromUtility
 from src.views.components.UtilityDashboard import UtilityDashboard
 from src.views.components.BillsDashboard import BillsDashboard
 from src.views.dialogs.AddBillForm import AddBillForm
+
 from src.controllers.billsController import BillsController
+from src.controllers.dashboardController import DashboardController
 
 class HomePage(QWidget):
     def __init__(self, parent=None, mainWindow=None):
@@ -32,7 +34,7 @@ class HomePage(QWidget):
         centerLayout.addWidget(self.utilityDashboard)
 
         # === Right Column ===
-        billsData = generateBillsDataFromUtility()
+        billsData = DashboardController.fetchUpcomingBills() 
 
         billsDashboard = BillsDashboard(billsData, self.mainWindow)
         billsDashboard.viewBills.connect(self.openBillsPage)
