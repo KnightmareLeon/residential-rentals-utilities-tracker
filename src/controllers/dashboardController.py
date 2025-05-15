@@ -16,7 +16,7 @@ class DashboardController:
         return (d1.year - d2.year) * 12 + d1.month - d2.month
 
     @staticmethod
-    def fetchUtilityDashboard(monthRange: int, offset: datetime) -> tuple[dict[str, list[dict[str, str]]], int]:
+    def fetchUtilityDashboard(monthRange: int, offset: datetime) -> tuple[dict[str, list[dict[str, str]]], datetime]:
         """
         Fetches all bills per utility within a given range of months as well as the total number of pages needed for the monthRange.
         """
@@ -26,13 +26,14 @@ class DashboardController:
             if r.value == monthRange:
                 range = r
                 break
-        
-        offsetInt = DashboardController.diff_month(datetime.now(), offset) + 1
+        offsetInt = (DashboardController.diff_month(datetime.now(), offset)) // range.value + 1
         unitBills = Bill.getAllUnitsBills(range = range, offset=offsetInt)
         for utility in unitBills.keys():
             for bill in unitBills[utility]:
                 bill["BillingPeriodEnd"] = bill["BillingPeriodEnd"].strftime("%Y-%m-%d")
-        return unitBills, Bill.getAllUnitBillsMaxOffset(range)
+        
+        monthsDiff = DashboardController.diff_month(datetime.now(), datetime.combine(Bill.getEarliestBillDates(), datetime.min.time()))
+        return unitBills,  datetime.now() - relativedelta(months=monthsDiff)
     
     @staticmethod
     def fetchBillsSummary(monthRange: int, currPage: QDate) -> tuple[str, str, int]:

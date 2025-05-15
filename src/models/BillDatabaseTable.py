@@ -491,6 +491,30 @@ class BillDatabaseTable(DatabaseTable):
             cursor.close()
         return result
 
+    @classmethod
+    def getEarliestBillDates(cls) -> datetime.date:
+        """
+        Returns the earliest billing period end dates for all bills.
+
+        """
+        cls.initialize()
+
+        result = {}
+
+        try:
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            sql = f"SELECT Bill.BillingPeriodEnd FROM {cls.getTableName()} " + \
+                f"LIMIT 1"
+            cursor.execute(sql)
+            result = cursor.fetchone()['BillingPeriodEnd']
+
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
+
     #Helper methods
 
     @classmethod
