@@ -128,7 +128,6 @@ class EditUtilityForm(BaseEditWidget):
         else:
             self.typeInput.setCurrentIndex(0)
 
-
     def getFormData(self) -> dict:
         data = {}
         for label, (labelWidget, widget) in self.fields.items():
@@ -241,21 +240,80 @@ QLabel {
     def onEditClicked(self, utilityID):
         updatedData = self.getFormData()
 
-        if updatedData:
-            type = updatedData["Utility"]
-            unitID = updatedData["Unit"]
-            sharedUnitIDs = updatedData["Shared with Unit(s)"]
-            status = updatedData["Status"]
-            billing = updatedData["Billing Cycle"]
-            installDate = updatedData["Installation Date"]
-
-            response = UtilitiesController.editUtility(
-                utilityID, type, unitID, sharedUnitIDs, status, billing, installDate
-            )
-
-            if response == "Utility edited successfully":
-                self.accept()
-            else:
-                self.setErrorMessage(response)
-        else:
+        if not updatedData:
             self.setErrorMessage("Please fill out all required fields.")
+            return
+
+        # Show confirmation dialog
+        msgBox = QMessageBox(self)
+        msgBox.setIcon(QMessageBox.Icon.Warning)
+        msgBox.setWindowTitle("Confirm Update")
+        msgBox.setText("Are you sure you want to update this utility?")
+        msgBox.setStyleSheet("""
+        QDialog {
+            background-color: #202020;
+            font-family: "Urbanist";
+            font-size: 16px;
+            color: white;
+        }
+        QLabel {
+            color: white;
+            font-family: "Urbanist";
+            font-size: 16px;
+        }
+        """)
+
+        yesButton = msgBox.addButton(QMessageBox.StandardButton.Yes)
+        noButton = msgBox.addButton(QMessageBox.StandardButton.No)
+
+        yesButton.setCursor(Qt.CursorShape.PointingHandCursor)
+        noButton.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        yesButton.setStyleSheet("""
+            QPushButton {
+                background-color: #541111;
+                color: white;
+                padding: 6px 12px;
+                border-radius: 4px;
+                border: none;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #743131;
+            }
+        """)
+        noButton.setStyleSheet("""
+            QPushButton {
+                background-color: #444444;
+                color: white;
+                padding: 6px 12px;
+                border-radius: 4px;
+                border: none;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #666666;
+            }
+        """)
+
+        msgBox.exec()
+
+        if msgBox.clickedButton() != yesButton:
+            return
+
+        # Proceed with update after confirmation
+        type = updatedData["Utility"]
+        unitID = updatedData["Unit"]
+        sharedUnitIDs = updatedData["Shared with Unit(s)"]
+        status = updatedData["Status"]
+        billing = updatedData["Billing Cycle"]
+        installDate = updatedData["Installation Date"]
+
+        response = UtilitiesController.editUtility(
+            utilityID, type, unitID, sharedUnitIDs, status, billing, installDate
+        )
+
+        if response == "Utility edited successfully":
+            self.accept()
+        else:
+            self.setErrorMessage(response)

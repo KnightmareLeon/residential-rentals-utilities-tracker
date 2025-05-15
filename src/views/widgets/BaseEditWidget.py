@@ -337,17 +337,17 @@ class BaseEditWidget(QDialog):
 
     def getFormData(self) -> dict:
         data = {}
-        for label, widget in self.fields.items():
+        for label, (labelWidget, widget) in self.fields.items():
             if isinstance(widget, QLineEdit):
                 data[label] = widget.text()
+            elif isinstance(widget, MultiSelectComboBox):
+                data[label] = widget.currentData()
             elif isinstance(widget, QComboBox):
                 data[label] = widget.currentText()
             elif isinstance(widget, QSpinBox):
                 data[label] = widget.value()
             elif isinstance(widget, QDateEdit):
-                data[label] = widget.date().toString("yyyy-MM-dd")
-            else:
-                data[label] = None
+                data[label] = widget.date()
         return data
 
     def onEditClicked(self):
