@@ -57,7 +57,12 @@ class DashboardController:
         Fetches 15 upcoming bills.
         """
         print("Fetching upcoming bills")
-        print(Bill.urgentBills())
-        return Bill.urgentBills()
+        urgentBills = Bill.urgentBills()
+        for bill in urgentBills:
+            bill["BillID"] = str(bill["BillID"])
+            bill["DueDate"] = bill["DueDate"].strftime("%Y-%m-%d")
+
+        print(urgentBills)
+        return urgentBills
     
     
