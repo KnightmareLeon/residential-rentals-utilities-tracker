@@ -129,8 +129,6 @@ class UtilitiesController:
         Fetches all utilities with unit ID.
         """
         print("Fetching utilities by unit ID:", unitID)
-        return [
-            {"UtilityID": "E001", "Type": "Electricity"},
-            {"UtilityID": "W001", "Type": "Water"},
-            {"UtilityID": "WI001", "Type": "Internet"},
-        ]
+        unitID = int(unitID)
+        utilities = InstalledUtility.getUnitUtilities(unitID, type=True)
+        return utilities

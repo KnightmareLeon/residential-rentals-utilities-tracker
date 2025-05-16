@@ -3,6 +3,8 @@ from PyQt6.QtCore import QDate
 from src.utils.sampleDataGenerator import generateBillData
 
 from src.models.BillDatabaseTable import BillDatabaseTable as Bill
+from src.models.UnitDatabaseTable import UnitDatabaseTable as Unit
+from src.models.UtilityDatabaseTable import UtilityDatabaseTable as Utility
 
 class BillsController:
     
@@ -25,7 +27,15 @@ class BillsController:
         Adds a new unit with the given data.
         """
         # Get unit ID using unitName and UtilityID using utilityType
-        print("Adding bill:", unitID, utilityID, totalAmount, billingPeriodStart, billingPeriodEnd, status, dueDate)
+        Bill.create({
+            "UnitID": unitID,
+            "UtilityID": utilityID,
+            "TotalAmount": str(totalAmount),
+            "BillingPeriodStart": billingPeriodStart.toString("yyyy-MM-dd"),
+            "BillingPeriodEnd": billingPeriodEnd.toString("yyyy-MM-dd"),
+            "Status": status,
+            "DueDate": dueDate.toString("yyyy-MM-dd")
+        })
         return "Bill added successfully"
 
     @staticmethod
@@ -33,17 +43,11 @@ class BillsController:
         """
         Fetches all information about a single bill by ID.
         """
-        return {
-            "BillID": id,
-            "UnitName": "B01R02",
-            "UtilityID": "E001",
-            "Type": "Electricity",
-            "TotalAmount": "100.00",
-            "BillingPeriodStart": QDate.currentDate().addMonths(-1),
-            "BillingPeriodEnd": QDate.currentDate(),
-            "Status": "Paid",
-            "DueDate": QDate.currentDate()
-        }
+        id = int(id)
+        billInfo = Bill.readOne(id)
+        billInfo["Type"] = Utility.readOne(billInfo["UtilityID"])["Type"]
+        billInfo["UnitName"] = Unit.readOne(billInfo["UnitID"])["Name"]
+        return billInfo
 
     @staticmethod
     def editBill(originalID: str, unitID: str, utilityID: str, totalAmount: str, billingPeriodStart: QDate, billingPeriodEnd: QDate, status: str, dueDate: QDate) -> str:
@@ -51,6 +55,17 @@ class BillsController:
         Edits a unit with the given data.
         """
         print("Editing bill:", originalID, unitID, utilityID, totalAmount, billingPeriodStart, billingPeriodEnd, status, dueDate)
+        editedColumns = {
+            "UnitID": unitID,
+            "UtilityID": utilityID,
+            "TotalAmount": str(totalAmount),
+            "BillingPeriodStart": billingPeriodStart.toString("yyyy-MM-dd"),
+            "BillingPeriodEnd": billingPeriodEnd.toString("yyyy-MM-dd"),
+            "Status": status,
+            "DueDate": dueDate.toString("yyyy-MM-dd")
+        }
+
+        Bill.update(int(originalID), editedColumns)
         return "Bill edited successfully"
     
     @staticmethod
@@ -59,4 +74,5 @@ class BillsController:
         Deletes a new unit with the given data.
         """
         print("Deleting bill:", id)
+        Bill.delete([int(id)])
         return "Bill deleted successfully"
