@@ -131,4 +131,5 @@ class UtilitiesController:
         print("Fetching utilities by unit ID:", unitID)
         unitID = int(unitID)
         utilities = InstalledUtility.getUnitUtilities(unitID, type=True)
+        print(utilities)
         return utilities
