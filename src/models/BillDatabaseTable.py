@@ -482,7 +482,7 @@ class BillDatabaseTable(DatabaseTable):
                     f" LIMIT 1"
                 cursor.execute(sql)
                 sqlRes = cursor.fetchone()
-                result[utilityID] = cursor.fetchone()['BillingPeriodEnd'] if cursor.rowcount > 0 else None
+                result[utilityID] = sqlRes['BillingPeriodEnd'] if cursor.rowcount > 0 else None
 
         except Exception as e:
             print(f"Error: {e}")

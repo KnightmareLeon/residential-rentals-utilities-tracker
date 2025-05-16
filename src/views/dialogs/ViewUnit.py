@@ -34,7 +34,9 @@ class ViewUnit(BaseViewWidget):
 
         billsCard = self.createCard("Unit Bills")
         billsLayout = billsCard.layout()
-        chartWidget = UtilityChartWidget(unitBillsData, f"Total Utilities Cost of Unit {id}", mainWindow=mainWindow, dataType="unit")
+
+        chartWidget = UtilityChartWidget(unitBillsData, f"Total Utilities Cost of Unit {id}", mainWindow=mainWindow, dataType="unit", dataID=id)
+
         billsLayout.addWidget(chartWidget)
 
         contentLayout.addWidget(billsCard)

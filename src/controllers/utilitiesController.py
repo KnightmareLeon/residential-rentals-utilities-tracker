@@ -1,4 +1,6 @@
-import datetime
+from datetime import date, datetime
+from dateutil.relativedelta import relativedelta
+
 from PyQt6.QtCore import QDate
 
 from src.models.UtilityDatabaseTable import UtilityDatabaseTable as Utility
@@ -8,6 +10,7 @@ from src.models.InstalledUtilityDatabaseTable import InstalledUtilityDatabaseTab
 
 from src.utils.constants import Range
 from src.utils.sampleDataGenerator import generateUtilityData, generateRandomeUtilityBills
+from src.utils.diffMonths import diffMonths
 
 class UtilitiesController:
     
@@ -98,14 +101,18 @@ class UtilitiesController:
                 if unit["UnitID"] == mainUnit:
                     unit["Name"] = unit["Name"] + " (Main)"
                     break
+        utilityBills = {utilityInfo["Type"] : Bill.getUtilityBills(id, range=Range.THREE_MONTHS)}
+        for bill in utilityBills[utilityInfo["Type"]]:
+            bill["BillingPeriodEnd"] = bill["BillingPeriodEnd"].strftime("%Y-%m-%d")
         return ( 
             # UTILITY INFORMATION
             utilityInfo, 
             # UTILITY UNITS
             utilityUnits,
             # UTILITY BILLS
-            generateRandomeUtilityBills(utilityInfo["Type"])
+            utilityBills
         )
+    
     @staticmethod
     def editUtility(originalID: str, type: str, unitID: str, sharedUnitIDs: list[str], status: str, billingCycle: str, installationDate) -> str:
         """
@@ -133,3 +140,20 @@ class UtilitiesController:
         utilities = InstalledUtility.getUnitUtilities(unitID, type=True)
         print(utilities)
         return utilities
+
+    @staticmethod
+    def fetchUtilityBills(id : str, monthRange : int, offset : datetime) -> tuple[dict[str, list[dict[str, str]]], datetime] :
+        id = int(id)
+        range = None
+        for r in Range:
+            if r.value == monthRange:
+                range = r
+                break
+        offsetInt = (diffMonths(datetime.now(), offset)) // range.value + 1
+        utilityType = Utility.readOne(id)["Type"] 
+        utilityBills = {utilityType : Bill.getUtilityBills(id, range, offset=offsetInt)}
+        for bill in utilityBills[utilityType]:
+            bill["BillingPeriodEnd"] = bill["BillingPeriodEnd"].strftime("%Y-%m-%d")
+        earliestBillDate = Bill.getEarliestUtilityBillDate(id) if Bill.getEarliestUtilityBillDate(id) is not None else date.today() - relativedelta(months=monthRange)
+        monthsDiff = diffMonths(datetime.now(), datetime.combine(earliestBillDate, datetime.min.time())) - monthRange
+        return utilityBills,  datetime.now() - relativedelta(months=monthsDiff)
