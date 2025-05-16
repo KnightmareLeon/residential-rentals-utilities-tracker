@@ -300,10 +300,10 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
     @classmethod
     def getUnitUtilities(cls,
                    unit : int,
-                   type: bool = False) -> list[int] | dict[int, str]:
+                   type: bool = False) -> list[int] | list[dict[str, str]]:
         """
         Returns a list of utility IDs for the given unit ID.
-        If type is True, returns a dictionary where the keys are utility IDs and the values are the utility types.
+        If type is True, returns a list of dictionaries with utility IDs and types.
         If type is False, returns a list of utility IDs.
         - unit: The ID of the unit.
         - type: A boolean indicating whether to return the utility types or not.
@@ -326,9 +326,12 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             if not type:
                 result = [row["UtilityID"] for row in cursor.fetchall()]
             else:
-                result = {}
+                result = []
                 for row in cursor.fetchall():
-                    result[row["UtilityID"]] = row["Type"]
+                    result.append({
+                        "UtilityID": row["UtilityID"],
+                        "Type": row["Type"]
+                    })
 
         except Exception as e:
             print(f"Error: {e}")
