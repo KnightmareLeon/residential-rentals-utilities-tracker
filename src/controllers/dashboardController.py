@@ -63,7 +63,6 @@ class DashboardController:
             bill["BillID"] = str(bill["BillID"])
             bill["DueDate"] = bill["DueDate"].strftime("%Y-%m-%d")
 
-        print(urgentBills)
         return urgentBills
     
     

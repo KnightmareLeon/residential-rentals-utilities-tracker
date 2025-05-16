@@ -255,6 +255,34 @@ class BillDatabaseTable(DatabaseTable):
         return result
 
     @classmethod
+    def getAllGroupedBills(cls,
+                           range : Range,
+                           offset : int = 1) -> dict[str, list[dict[str, float | datetime.date]]]:
+        """
+        Returns a dictionary where each utility type is a key. Each utility type
+        will have a list of bills grouped by billing period end date and their
+        total amount is summed up. Bills are limited to the given range and offset.
+        """
+        cls.initialize()
+        result = {}
+        try:
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            rangeClause = cls.__rangeClause(range, offset)
+            for utility in UTILITIES:
+                sql = f"SELECT Bill.BillingPeriodEnd, SUM(Bill.TotalAmount) AS TotalAmount FROM {cls.getTableName()} " + \
+                    f"NATURAL JOIN {UtilityDatabaseTable.getTableName()} " + \
+                    f"WHERE Utility.Type='{utility}' AND {rangeClause} " + \
+                    f"GROUP BY Bill.BillingPeriodEnd"
+                cursor.execute(sql)
+                result[utility] = cursor.fetchall()
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
+    
+    @classmethod
     def billsTotalSum(cls,
                       range: Range,
                       offset: int = 1,
