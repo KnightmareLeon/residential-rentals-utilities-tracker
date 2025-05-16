@@ -14,7 +14,7 @@ class AddBillForm(BaseCreateWidget):
         self.setMinimumWidth(400)
 
         self.unitNames = UnitsController.getUnitNames()
-        self.unitNameMap = {unit["UnitName"]: unit["UnitID"] for unit in self.unitNames}
+        self.unitNameMap = {unit["Name"]: unit["UnitID"] for unit in self.unitNames}
         self.utilityTypeMap = {}
 
         if not hasattr(self, 'sections'):
@@ -23,7 +23,7 @@ class AddBillForm(BaseCreateWidget):
         self.addSection("Bill Information")
         self.addSection("Bill Details")
         
-        self.unitNameInput = self.addComboBox("Unit", [f"{name['UnitName']} ({name['Type']})" for name in self.unitNames], "Bill Information")
+        self.unitNameInput = self.addComboBox("Unit", [f"{name['Name']} ({name['Type']})" for name in self.unitNames], "Bill Information")
         self.unitNameInput.currentTextChanged.connect(self.handleUnitChange)
         
         self.utilityInput = self.addComboBox("Utility Type", [], "Bill Information")
@@ -84,7 +84,7 @@ class AddBillForm(BaseCreateWidget):
         unitName = match.group(1)
         unitID = None
         for unit in self.unitNames:
-            if unit["UnitName"] == unitName:
+            if unit["Name"] == unitName:
                 unitID = unit["UnitID"]
                 break
 
