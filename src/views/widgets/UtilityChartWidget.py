@@ -27,10 +27,12 @@ from src.views.widgets.CheckableComboBox import CheckableComboBox
 from src.views.dialogs.ViewBill import ViewBill
 from src.controllers.dashboardController import DashboardController
 from src.controllers.billsController import BillsController
+from src.controllers.unitsController import UnitsController
+from src.controllers.utilitiesController import UtilitiesController
 
 class UtilityChartWidget(QFrame):
 
-    def __init__(self, data, title, parent=None, mainWindow=None):
+    def __init__(self, data, title, parent=None, mainWindow=None, dataType=None, dataID=None):
         super().__init__(parent)
         self.mainWindow = mainWindow
 
@@ -42,9 +44,12 @@ class UtilityChartWidget(QFrame):
         self.plottedPoints = []
         self.utilityFilters = data.keys()
         self.data = data
+        self.dataType = dataType
         self.title = title
+        self.dataID = dataID
 
         self.setupUI()
+
 
         self.annotation = self.ax.annotate("", xy=(0, 0), xytext=(15, 15),
             textcoords="offset points", bbox=dict(boxstyle="round", fc="black", ec="white", lw=0.5),
@@ -201,7 +206,7 @@ class UtilityChartWidget(QFrame):
 
         self.ax.margins(x=0.13, y=0.2)
 
-        today = datetime.today()
+        today = self.currDateOffset
         months = self.parseDateRangeToMonths(self.dateRange)
         startDate = today - relativedelta(months=months)
         endDate = today
@@ -409,9 +414,17 @@ class UtilityChartWidget(QFrame):
     # Controllers
     def updateWidget(self) -> None:
         months = self.parseDateRangeToMonths(self.dateRange)
-        data, lastDateOffset = DashboardController.fetchUtilityDashboard(months, self.currDateOffset)
-        self.data = data
-        self.lastDateOffset = lastDateOffset
+
+        if self.dataType == "unit":
+            unitBillsData, lastDateOffset = UnitsController.fetchUnitBills(self.dataID, months)
+            self.data = unitBillsData
+            self.lastDateOffset = lastDateOffset
+        elif self.dataType == "utility":
+            utilityBillsData, lastDateOffset = UtilitiesController.fetchUtilityBills(self.dataID, months)
+            self.data = utilityBillsData
+            self.lastDateOffset = lastDateOffset
+        else:
+            self.data = None
+
         self.updatePageLabel()
-        
-        self.updateChart(data)
+        self.updateChart(self.data)
