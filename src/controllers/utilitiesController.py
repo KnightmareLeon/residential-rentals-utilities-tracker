@@ -2,6 +2,7 @@ import datetime
 from PyQt6.QtCore import QDate
 
 from src.models.UtilityDatabaseTable import UtilityDatabaseTable as Utility
+from src.models.UnitDatabaseTable import UnitDatabaseTable as Unit
 from src.models.BillDatabaseTable import BillDatabaseTable as Bill
 from src.models.InstalledUtilityDatabaseTable import InstalledUtilityDatabaseTable as InstalledUtility
 
@@ -30,17 +31,53 @@ class UtilitiesController:
         return fetchedUtils, totalPages
     
     @staticmethod
-    def addUtility(type: str, mainUnitID: str, sharedUnitIDs: list[str], status: str, billingCycle: str) -> str:
+    def addUtility(type: str, mainUnitID: str, sharedUnitIDs: list[str], status: str, billingCycle: str, installationDate : QDate) -> str:
         """
         Adds a new utility with the given data.
         """
         # get mainUnit ID using mainUnit name and sharedUnits ID using sharedUnits name
-        print("Adding utility:", type, mainUnitID, sharedUnitIDs, status, billingCycle)
+        print("Adding utility:", type, mainUnitID, sharedUnitIDs, status, billingCycle, installationDate)
+        
+        #Conversion of input to proper format
+        mainUnitID = int(mainUnitID)
+        if len(sharedUnitIDs) > 0:
+            sharedUnitIDs = [int(unitID) for unitID in sharedUnitIDs]
+        installationDate = installationDate.toString("yyyy-MM-dd")
+
+        #Error Checking
+        if InstalledUtility.unitHasUtilityType(mainUnitID, type):
+            unitName = Unit.readOne(mainUnitID)["Name"]
+            return (f"{type} already exists for {unitName}. Please input another type.")
+        if len(sharedUnitIDs) > 0:
+            errorMsg = ""
+            for sharedUnitID in sharedUnitIDs:
+                if InstalledUtility.unitHasUtilityType(sharedUnitID, type):
+                    unitName = Unit.readOne(mainUnitID)["Name"]
+                    errorMsg += (f"{type} already exists for {unitName}. Please input another type.\n")
+            if errorMsg != "":
+                return errorMsg
+        
+        #Adding
         Utility.create({
             "Type": type,
             "Status": status,
             "BillingCycle": billingCycle
         })
+
+        InstalledUtility.create({
+            "UtilityID": Utility.getLastID(),
+            "UnitID": mainUnitID,
+            "InstallationDate": installationDate,
+        })
+
+        if len(sharedUnitIDs) > 0:
+            for id in sharedUnitIDs:
+                InstalledUtility.create({
+                    "UtilityID": Utility.getLastID(),
+                    "UnitID": id,
+                    "InstallationDate": installationDate,
+                })
+
         return "Utility added successfully"
 
     @staticmethod
@@ -83,6 +120,7 @@ class UtilitiesController:
         Deletes a new utility with the given data.
         """
         print("Deleting utility:", id)
+        Utility.delete([int(id)])
         return "Utility deleted successfully"
     
     @staticmethod
