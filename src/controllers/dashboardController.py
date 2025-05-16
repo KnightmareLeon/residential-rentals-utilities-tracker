@@ -8,12 +8,9 @@ from src.models.BillDatabaseTable import BillDatabaseTable as Bill
 from src.utils.constants import Range
 from src.utils.formatMoney import formatMoney
 from src.utils.sampleDataGenerator import generateRandomUtilityData
+from src.utils.diffMonths import diffMonths
 
 class DashboardController:
-        
-    @staticmethod
-    def diff_month(d1, d2):
-        return (d1.year - d2.year) * 12 + d1.month - d2.month
 
     @staticmethod
     def fetchUtilityDashboard(monthRange: int, offset: datetime) -> tuple[dict[str, list[dict[str, str]]], datetime]:
@@ -26,14 +23,14 @@ class DashboardController:
             if r.value == monthRange:
                 range = r
                 break
-        offsetInt = (DashboardController.diff_month(datetime.now(), offset)) // range.value + 1
+        offsetInt = (diffMonths(datetime.now(), offset)) // range.value + 1
         unitBills = Bill.getAllUnitsBills(range = range, offset=offsetInt)
         for utility in unitBills.keys():
             for bill in unitBills[utility]:
                 bill["BillingPeriodEnd"] = bill["BillingPeriodEnd"].strftime("%Y-%m-%d")
         
         earliestBillDates = Bill.getEarliestBillDate() if Bill.getEarliestBillDate() is not None else date(1900, 1, 1)
-        monthsDiff = DashboardController.diff_month(datetime.now(), datetime.combine(earliestBillDates, datetime.min.time()))
+        monthsDiff = diffMonths(datetime.now(), datetime.combine(earliestBillDates, datetime.min.time()))
         return unitBills,  datetime.now() - relativedelta(months=monthsDiff)
     
     @staticmethod
@@ -46,7 +43,7 @@ class DashboardController:
             if r.value == monthRange:
                 range = r
                 break
-        offsetInt = DashboardController.diff_month(datetime.now(), currPage) + 1
+        offsetInt = diffMonths(datetime.now(), currPage) + 1
         balance, paid, unpaid = (formatMoney(Bill.billsTotalSum(range=range, offset=offsetInt)), 
                                  formatMoney(Bill.billsTotalSum(range=range, offset=offsetInt, paidOnly=True)),
                                  str(Bill.unpaidBillsCount(range=range, offset=offsetInt)))

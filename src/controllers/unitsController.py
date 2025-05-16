@@ -1,3 +1,6 @@
+from datetime import date, datetime
+from dateutil.relativedelta import relativedelta
+
 from src.models.UnitDatabaseTable import UnitDatabaseTable as Unit
 from src.models.UtilityDatabaseTable import UtilityDatabaseTable as Utility
 from src.models.InstalledUtilityDatabaseTable import InstalledUtilityDatabaseTable as InstalledUtility
@@ -5,6 +8,7 @@ from src.models.BillDatabaseTable import BillDatabaseTable as Bill
 
 from src.utils.sampleDataGenerator import generateRandomUtilityData, generateUnitData
 from src.utils.constants import Range
+from src.utils.diffMonths import diffMonths
 
 class UnitsController:
     
@@ -94,3 +98,26 @@ class UnitsController:
         print("Fetching unit names")
         
         return Unit.read(columns=["UnitID", "Name", "Type"], limit=Unit.totalCount(), sortBy="Name", order="ASC")
+    
+    @staticmethod
+    def fetchUnitBills(id : str, monthRange : int, offset : datetime) -> tuple[dict[str, list[dict[str, str]]], datetime] :
+        id = int(id)
+        range = None
+        for r in Range:
+            if r.value == monthRange:
+                range = r
+                break
+        offsetInt = (diffMonths(datetime.now(), offset)) // range.value + 1
+        unitBills = Bill.getUnitBills(id, range, offset=offsetInt)
+        for utility in unitBills.keys():
+            for bill in unitBills[utility]:
+                bill["BillingPeriodEnd"] = bill["BillingPeriodEnd"].strftime("%Y-%m-%d")
+        
+        earliestBillDates = Bill.getEarliestUnitBillDates(id) if Bill.getEarliestUnitBillDates(id) is not None else None
+        if earliestBillDates is not None:
+            for utility in earliestBillDates.keys():
+                earliestBillDates[utility] = earliestBillDates[utility] if earliestBillDates[utility] is not None else date.today()
+        earliestBillDate = min(earliestBillDates.values()) if earliestBillDates is not None else date.today() - relativedelta(months=monthRange)
+        monthsDiff = diffMonths(datetime.now(), datetime.combine(earliestBillDate, datetime.min.time())) - monthRange
+        return unitBills,  datetime.now() - relativedelta(months=monthsDiff)
+        

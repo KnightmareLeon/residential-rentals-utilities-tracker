@@ -416,11 +416,11 @@ class UtilityChartWidget(QFrame):
         months = self.parseDateRangeToMonths(self.dateRange)
 
         if self.dataType == "unit":
-            unitBillsData, lastDateOffset = UnitsController.fetchUnitBills(self.dataID, months)
+            unitBillsData, lastDateOffset = UnitsController.fetchUnitBills(self.dataID, months, self.currDateOffset)
             self.data = unitBillsData
             self.lastDateOffset = lastDateOffset
         elif self.dataType == "utility":
-            utilityBillsData, lastDateOffset = UtilitiesController.fetchUtilityBills(self.dataID, months)
+            utilityBillsData, lastDateOffset = UtilitiesController.fetchUtilityBills(self.dataID, months, self.currDateOffset)
             self.data = utilityBillsData
             self.lastDateOffset = lastDateOffset
         else:

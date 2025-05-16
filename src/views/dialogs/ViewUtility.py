@@ -62,7 +62,7 @@ class ViewUtility(BaseViewWidget):
 
         billInfoSection = self.createCard("Utility Bills")
         billInfoLayout = billInfoSection.layout()
-        chartWidget = UtilityChartWidget(utilityBillsData, f"Total Cost of Utility {id}", mainWindow=mainWindow, dataType="utility")
+        chartWidget = UtilityChartWidget(utilityBillsData, f"Total Cost of Utility {id}", mainWindow=mainWindow, dataType="utility", dataID=id)
         billInfoLayout.addWidget(chartWidget)
 
         contentLayout.addWidget(billInfoSection)
