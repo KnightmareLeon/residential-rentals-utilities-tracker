@@ -421,7 +421,7 @@ class UtilityChartWidget(QFrame):
             self.lastDateOffset = lastDateOffset
         elif self.dataType == "utility":
             utilityBillsData, lastDateOffset = UtilitiesController.fetchUtilityBills(self.dataID, months, self.currDateOffset)
-            self.data = unitBillsData
+            self.data = utilityBillsData
             self.lastDateOffset = lastDateOffset
         else:
             self.data = None
