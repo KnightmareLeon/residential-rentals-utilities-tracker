@@ -35,7 +35,12 @@ class UtilitiesController:
         Adds a new utility with the given data.
         """
         # get mainUnit ID using mainUnit name and sharedUnits ID using sharedUnits name
-        print("Adding utility:", type, mainUnitID, sharedUnitIDs, status, billingCycle)    
+        print("Adding utility:", type, mainUnitID, sharedUnitIDs, status, billingCycle)
+        Utility.create({
+            "Type": type,
+            "Status": status,
+            "BillingCycle": billingCycle
+        })
         return "Utility added successfully"
 
     @staticmethod
@@ -62,7 +67,7 @@ class UtilitiesController:
             # UTILITY UNITS
             utilityUnits,
             # UTILITY BILLS
-            Bill.getUtilityBills(id, Range.THREE_MONTHS)
+            generateRandomeUtilityBills(utilityInfo["Type"])
         )
     @staticmethod
     def editUtility(originalID: str, type: str, unitID: str, sharedUnitIDs: list[str], status: str, billingCycle: str, installationDate) -> str:
