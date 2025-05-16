@@ -204,8 +204,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         """
         Inserts data into the table. The data must be a dictionary where the keys
         are the column names and the values are the corresponding values to be inserted.
-        The primary key must be included in the data dictionary. The method will
-        raise an error if the primary key is not included or if the data is not a
+        The method will raise an error if the primary keys are included or if the data is not a
         dictionary.
         - data: A dictionary containing the data to be inserted into the table.
         """
@@ -443,6 +442,35 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
                   f"WHERE UtilityID = {utility}"
             cursor.execute(sql)
             result = cursor.fetchall()
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
+    
+    @classmethod
+    def unitHasUtilityType(cls,
+                            unit : int,
+                            utilityType : str) -> bool:
+        """
+        Returns True if the unit has the given utility type, False otherwise.
+        - unit: The ID of the unit.
+        - utilityType: The type of the utility.
+        """
+        cls.initialize()
+
+        if not isinstance(unit, int):
+            raise ValueError("Unit must be an integer.")
+        
+        result = None
+
+        try:
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            sql = f"SELECT Count(*) as UnitCount FROM {cls.getTableName()} NATURAL JOIN {UtilityDatabaseTable.getTableName()} " + \
+                  f"WHERE UnitID = {unit} AND Utility.Type='{utilityType}' "
+            cursor.execute(sql)
+            result = cursor.fetchone()["UnitCount"] > 0
         except Exception as e:
             print(f"Error: {e}")
             raise e

@@ -410,6 +410,29 @@ class DatabaseTable(ABC):
             cursor.close()
         return total
     
+    @classmethod
+    def getLastID(cls) -> int:
+        """
+        Returns the last inserted ID in the table. The method will raise an error
+        if the table is not initialized or if there is an error while fetching
+        the last ID.
+        """
+        cls.initialize()
+        
+        result = 0
+        try:
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            sql = f"SELECT MAX({cls._primary}) AS lastID FROM {cls._tableName}"
+            cursor.execute(sql)
+            result = cursor.fetchone()['lastID']
+            result = 0 if result is None else result
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
+
     def _readColumns(cls) -> list[str]:
         """
         A protected method that returns a list of column names in the table.
