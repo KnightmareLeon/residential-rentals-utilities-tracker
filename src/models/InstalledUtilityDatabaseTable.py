@@ -422,3 +422,30 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         finally:
             cursor.close()
         return result
+    
+    @classmethod
+    def getInstallationDates(cls,
+                            utility : int) -> list[dict[str, str]]:
+        """
+        Returns a list of the installation dates for the given utility ID.
+        - utility: The ID of the utility.
+        """
+        cls.initialize()
+
+        if not isinstance(utility, int):
+            raise ValueError("Utility must be an integer.")
+        
+        result = None
+
+        try:
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            sql = f"SELECT UnitID, InstallationDate FROM {cls.getTableName()} " + \
+                  f"WHERE UtilityID = {utility}"
+            cursor.execute(sql)
+            result = cursor.fetchall()
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result

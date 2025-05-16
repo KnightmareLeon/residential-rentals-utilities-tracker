@@ -1,8 +1,11 @@
+import datetime
 from PyQt6.QtCore import QDate
 
 from src.models.UtilityDatabaseTable import UtilityDatabaseTable as Utility
+from src.models.BillDatabaseTable import BillDatabaseTable as Bill
 from src.models.InstalledUtilityDatabaseTable import InstalledUtilityDatabaseTable as InstalledUtility
 
+from src.utils.constants import Range
 from src.utils.sampleDataGenerator import generateUtilityData, generateRandomeUtilityBills
 
 class UtilitiesController:
@@ -32,7 +35,12 @@ class UtilitiesController:
         Adds a new utility with the given data.
         """
         # get mainUnit ID using mainUnit name and sharedUnits ID using sharedUnits name
-        print("Adding utility:", type, mainUnitID, sharedUnitIDs, status, billingCycle)    
+        print("Adding utility:", type, mainUnitID, sharedUnitIDs, status, billingCycle)
+        Utility.create({
+            "Type": type,
+            "Status": status,
+            "BillingCycle": billingCycle
+        })
         return "Utility added successfully"
 
     @staticmethod
@@ -40,22 +48,27 @@ class UtilitiesController:
         """
         Fetches all information about a single utility by ID.
         """
-        return ({ # UTILITY INFORMATION
-            "UtilityID": id,
-            "Type": "Electricity",
-            "Status": "Active",
-            "BillingCycle": "Monthly",
-            "InstallationDate": QDate.currentDate(),
-        }, 
-        [ # UTILITY UNITS
-            {"UnitID": "U001", "Name": "B01 (Main)"}, # butngan ug Main ang main unit niya pero controller na bahala haha
-            {"UnitID": "U002", "Name": "B01R02"},
-            {"UnitID": "U003", "Name": "B01R03"},
+        id = int(id)
+        
+        utilityInfo = Utility.readOne(id)
+        installationDates = InstalledUtility.getInstallationDates(id)
+        utilityInfo["InstallationDate"] = installationDates[0]["InstallationDate"] if len(installationDates) > 0 else datetime.now()
 
-        ],
-        # UTILITY BILLS
-        generateRandomeUtilityBills("Electricity"))
-
+        utilityUnits = InstalledUtility.getUtilityUnits(id)
+        if InstalledUtility.isUtilityShared(id):
+            mainUnit = InstalledUtility.getMainUnit(id)
+            for unit in utilityUnits:
+                if unit["UnitID"] == mainUnit:
+                    unit["Name"] = unit["Name"] + " (Main)"
+                    break
+        return ( 
+            # UTILITY INFORMATION
+            utilityInfo, 
+            # UTILITY UNITS
+            utilityUnits,
+            # UTILITY BILLS
+            generateRandomeUtilityBills(utilityInfo["Type"])
+        )
     @staticmethod
     def editUtility(originalID: str, type: str, unitID: str, sharedUnitIDs: list[str], status: str, billingCycle: str, installationDate) -> str:
         """
