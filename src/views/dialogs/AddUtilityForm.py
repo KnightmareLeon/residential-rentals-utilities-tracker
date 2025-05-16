@@ -14,12 +14,12 @@ class AddUtilityForm(BaseCreateWidget):
         self.setMinimumWidth(400)
 
         self.unitNames = UnitsController.getUnitNames()
-        self.unitNameMap = {unit["UnitName"]: unit["UnitID"] for unit in self.unitNames}
-        self.indivUnitNames = [f"{name['UnitName']} ({name['Type']})" for name in self.unitNames if name['Type'] != "Shared"]
+        self.unitNameMap = {unit["Name"]: unit["UnitID"] for unit in self.unitNames}
+        self.indivUnitNames = [f"{name['Name']} ({name['Type']})" for name in self.unitNames if name['Type'] != "Shared"]
 
         self.addSection("Utility Information")
 
-        self.unitNameInput = self.addComboBox("Unit", [f"{name['UnitName']} ({name['Type']})" for name in self.unitNames], sectionTitle="Utility Information")
+        self.unitNameInput = self.addComboBox("Unit", [f"{name['Name']} ({name['Type']})" for name in self.unitNames], sectionTitle="Utility Information")
         self.unitNameInput.currentTextChanged.connect(self.handleUnitNameChange)
 
         self.multipleUnitInput = self.addMultiselectComboBox("Shared with Unit(s)", [], sectionTitle="Utility Information", isVisible=False)
