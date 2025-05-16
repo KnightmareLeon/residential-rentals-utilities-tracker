@@ -152,9 +152,10 @@ class AddUtilityForm(BaseCreateWidget):
             unitID = utilityData["Unit"]
             sharedUnitIDs = utilityData["Shared with Unit(s)"]
             status = utilityData["Status"]
+            installationDate = utilityData["Installation Date"]
             billing = utilityData["Billing Cycle"]
 
-            response = UtilitiesController.addUtility(type, unitID, sharedUnitIDs, status, billing)
+            response = UtilitiesController.addUtility(type, unitID, sharedUnitIDs, status, billing, installationDate)
 
             if response == "Utility added successfully":
                 self.accept()
