@@ -284,7 +284,7 @@ class UtilitySumChartWidget(QFrame):
         closestPoint = None
         closestDist = float("inf")
 
-        for x, y, billDate, category, _ in self.plottedPoints:
+        for x, y, billDate, category in self.plottedPoints:
             dispCoords = self.ax.transData.transform((x, y))
             dist = ((dispCoords[0] - event.x) ** 2 + (dispCoords[1] - event.y) ** 2) ** 0.5
             if dist < displayThreshold and dist < closestDist:

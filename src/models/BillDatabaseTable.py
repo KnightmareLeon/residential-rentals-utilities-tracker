@@ -269,9 +269,9 @@ class BillDatabaseTable(DatabaseTable):
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             rangeClause = cls.__rangeClause(range, offset)
             for utility in UTILITIES:
-                sql = f"SELECT Bill.BillingPeriodEnd, SUM(Bill.TotalAmount) AS TotalAmount FROM {cls.getTableName()} " + \
-                    f"NATURAL JOIN {UtilityDatabaseTable.getTableName()} " + \
-                    f"WHERE Utility.Type='{utility}' AND {rangeClause} " + \
+                sql = f"SELECT Bill.BillingPeriodEnd, SUM(Bill.TotalAmount) AS TotalAmount FROM {cls.getTableName()}, " + \
+                    f"{UtilityDatabaseTable.getTableName()} " + \
+                    f"WHERE bill.UtilityID = utility.UtilityID AND utility.Type='{utility}' AND {rangeClause} " + \
                     f"GROUP BY Bill.BillingPeriodEnd"
                 cursor.execute(sql)
                 result[utility] = cursor.fetchall()
