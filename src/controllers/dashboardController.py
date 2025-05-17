@@ -24,7 +24,7 @@ class DashboardController:
                 range = r
                 break
         offsetInt = (diffMonths(datetime.now(), offset)) // range.value + 1
-        unitBills = Bill.getAllUnitsBills(range = range, offset=offsetInt)
+        unitBills = Bill.getAllGroupedBills(range = range, offset=offsetInt)
         for utility in unitBills.keys():
             for bill in unitBills[utility]:
                 bill["BillingPeriodEnd"] = bill["BillingPeriodEnd"].strftime("%Y-%m-%d")
