@@ -114,11 +114,89 @@ class UtilitiesController:
         )
     
     @staticmethod
-    def editUtility(originalID: str, type: str, unitID: str, sharedUnitIDs: list[str], status: str, billingCycle: str, installationDate) -> str:
+    def editUtility(originalID: str, type: str, mainUnitID: str, sharedUnitIDs: list[str], status: str, billingCycle: str, installationDate) -> str:
         """
         Edits a utility with the given data.
         """
-        print("Editing utility:", originalID, type, unitID, sharedUnitIDs, status, billingCycle, installationDate)
+        print("Editing utility:", originalID, type, mainUnitID, sharedUnitIDs, status, billingCycle, installationDate)
+        
+        #Conversion of input to proper format
+        originalID = int(originalID)
+        mainUnitID = int(mainUnitID)
+        if len(sharedUnitIDs) > 0:
+            sharedUnitIDs = [int(unitID) for unitID in sharedUnitIDs]
+        installationDate = installationDate.toString("yyyy-MM-dd")
+
+           
+        originalData = Utility.readOne(originalID)
+        originalUnitID = InstalledUtility.getMainUnit(originalID)
+        originalSharedUnitIDs = InstalledUtility.getUtilityUnits(originalID)
+        originalSharedUnitIDs = [unit["UnitID"] for unit in originalSharedUnitIDs if unit["UnitID"] != originalUnitID]
+
+        editedColumns = {}
+
+        #Error Checking 
+        if type != originalData["Type"] and InstalledUtility.unitHasUtilityType(mainUnitID, type):
+            unitName = Unit.readOne(mainUnitID)["Name"]
+            return (f"{type} already exists for {unitName}. Please input another type or another unit.")
+        if len(sharedUnitIDs) > 0:
+            errorMsg = ""
+            for sharedUnitID in sharedUnitIDs:
+                if InstalledUtility.unitHasUtilityType(sharedUnitID, type):
+                    unitName = Unit.readOne(sharedUnitID)["Name"]
+                    errorMsg += (f"{type} already exists for {unitName}. Please input another type or another unit.\n")
+            if errorMsg != "":
+                return errorMsg
+        
+
+        if type != originalData["Type"]:
+            editedColumns["Type"] = type
+        if status != originalData["Status"]:
+            editedColumns["Status"] = status
+        if billingCycle != originalData["BillingCycle"]:
+            editedColumns["BillingCycle"] = billingCycle
+        
+        Utility.update(originalID, {
+            "Type": type,
+            "Status": status,
+            "BillingCycle": billingCycle
+        })
+
+        if mainUnitID != originalUnitID:
+            InstalledUtility.delete([originalUnitID, originalID])
+            for id in originalSharedUnitIDs:
+                InstalledUtility.delete([id, originalID])
+            InstalledUtility.create({
+                "UtilityID": originalID,
+                "UnitID": mainUnitID,
+                "InstallationDate": installationDate,
+            })
+            if len(sharedUnitIDs) > 0:
+                for id in sharedUnitIDs:
+                    if id != mainUnitID:
+                        InstalledUtility.create({
+                            "UtilityID": originalID,
+                            "UnitID": id,
+                            "InstallationDate": installationDate,
+                        })
+        else:
+            originalInstallationDate = InstalledUtility.getInstallationDates(originalID)[0]["InstallationDate"]
+
+            if installationDate != originalInstallationDate:
+                print(installationDate, originalInstallationDate)
+                InstalledUtility.update([originalUnitID, originalID], {"InstallationDate": installationDate})
+            if sorted(sharedUnitIDs) != sorted(originalSharedUnitIDs):
+                for id in originalSharedUnitIDs:
+                    if id not in sharedUnitIDs:
+                        InstalledUtility.delete([id, originalID])
+                for id in sharedUnitIDs:
+                    if id not in originalSharedUnitIDs and id != mainUnitID:
+                        InstalledUtility.create({
+                            "UtilityID": originalID,
+                            "UnitID": id,
+                            "InstallationDate": installationDate
+                        })    
+
         return "Utility edited successfully"
     
     @staticmethod
