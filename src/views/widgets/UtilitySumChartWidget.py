@@ -200,7 +200,7 @@ class UtilitySumChartWidget(QFrame):
 
         self.ax.margins(x=0.13, y=0.2)
 
-        today = datetime.today()
+        today = self.currDateOffset
         months = self.parseDateRangeToMonths(self.dateRange)
         startDate = today - relativedelta(months=months)
         endDate = today

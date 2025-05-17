@@ -108,7 +108,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         columns = [] if columns is None else columns
 
         if page < 1 or limit < 1:
-                raise ValueError("Page and limit must be positive integers.")
+            raise ValueError("Page and limit must be positive integers.")
         if sortBy is not None and not isinstance(sortBy, str):
             raise ValueError("sortBy must be a string.")
         if not isinstance(order, str):
@@ -211,12 +211,12 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         cls.initialize()
 
         if not isinstance(data, dict):
-                raise ValueError("Data must be a dictionary.")
+            raise ValueError("Data must be a dictionary.")
         for key in data.keys():
             if key not in cls._columns:
                 raise ValueError(f"Column '{key}' does not exist in the table.")
         if sorted(list(data.keys())) != sorted(cls._columns):
-                raise ValueError(f"Data keys {data.keys()} do not match table columns {cls._columns}.")
+            raise ValueError(f"Data keys {data.keys()} do not match table columns {cls._columns}.")
         try:
             cursor = DatabaseConnection.getConnection().cursor()
             columnsClause = ', '.join(data.keys())
@@ -241,11 +241,72 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
     @classmethod
     def delete(cls, keys : list[int]):
         """
-        Disabled the delete method for this class, to delete data from the table,
-        use the delete method of either the Unit or Utility table."""
+        Deletes a row from the table with the given primary keys.
+        - keys: A list of two integers representing the primary keys (UnitID, UtilityID).
+        """
         cls.initialize()
-        pass
-
+        
+        if not isinstance(keys, list):
+            raise TypeError("Keys must be a list.")
+        if not all(isinstance(key, int) for key in keys):
+            raise TypeError("Keys must be a list of integers.")
+        if len(keys) != 2:
+            raise TypeError("Keys must be a list of two integers.")
+        if keys[0] < 0 or keys[1] < 0:
+            raise ValueError("Keys must be positive integers.")
+        try:
+            cursor = DatabaseConnection.getConnection().cursor()
+            sql = f"DELETE FROM {cls._tableName} WHERE {cls._primary[0]} = {keys[0]} AND {cls._primary[1]} = {keys[1]}"
+            cursor.execute(sql)
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+    
+    @classmethod
+    def update(cls,
+                keys : list[int],
+                data : dict[str, str]):
+        """
+        Updates the table with the given primary keys and data.
+        - keys: A list of two integers representing the primary keys (UnitID, UtilityID).
+        - data: A dictionary containing the data to be updated in the table.
+        """
+        cls.initialize()
+        if not isinstance(keys, list):
+            raise TypeError("Keys must be a list.")
+        if not all(isinstance(key, int) for key in keys):
+            raise TypeError("Keys must be a list of integers.")
+        if len(keys) != 2:
+            raise TypeError("Keys must be a list of two integers.")
+        if keys[0] < 0 or keys[1] < 0:
+            raise ValueError("Keys must be positive integers.")
+        if not isinstance(data, dict):
+            raise TypeError("Data must be a dict.")
+        for column in data.keys():
+            if not isinstance(column, str):
+                raise TypeError("Data keys must be strings.")
+            if not isinstance(data[column], str):
+                raise TypeError("Data values must be strings.")
+            if column not in cls._columns:
+                raise ValueError(f"Column {column} is not a valid column name.")
+            if column == cls._primary[0]:
+                raise ValueError(f"Cannot update primary key {cls._primary[0]}.")
+            if column == cls._primary[1]:
+                raise ValueError(f"Cannot update primary key {cls._primary[1]}.")
+        try:
+            cursor = DatabaseConnection.getConnection().cursor()
+            sql = f"UPDATE {cls._tableName} SET "
+            sql += ", ".join([f"{column} = '{value}'" for column, value in data.items()])
+            sql += f" WHERE {cls._primary[0]} = {keys[0]} AND {cls._primary[1]} = {keys[1]}"
+            cursor.execute(sql)
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        
     @classmethod
     def batchUpdate(cls, 
                     keys : list[tuple[int, int]],
@@ -288,11 +349,35 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         return 
     
     @classmethod
-    def readOne(cls, id : int):
+    def readOne(cls, id : list[int]) -> dict[str, str]:
         """
-        Method disabled
+        Reads a single row from the table with the given primary keys.
+        - id: A list of two integers representing the primary keys (UnitID, UtilityID).
         """
-        pass
+        cls.initialize()
+
+        if not isinstance(id, list):
+            raise TypeError("ID must be a list.")
+        if not all(isinstance(key, int) for key in id):
+            raise TypeError("ID must be a list of integers.")
+        if len(id) != 2:
+            raise TypeError("ID must be a list of two integers.")
+        if id[0] < 0 or id[1] < 0:
+            raise ValueError("ID must be positive integers.")
+        
+        result = None
+
+        try:
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            sql = f"SELECT * FROM {cls._tableName} WHERE {cls._primary[0]} = {id[0]} AND {cls._primary[1]} = {id[1]}"
+            cursor.execute(sql)
+            result = cursor.fetchone()
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
     
     #Unique methods for InstalledUtilityDatabaseTable
     #<----------------------------------------->

@@ -30,7 +30,7 @@ class DashboardController:
                 bill["BillingPeriodEnd"] = bill["BillingPeriodEnd"].strftime("%Y-%m-%d")
         
         earliestBillDates = Bill.getEarliestBillDate() if Bill.getEarliestBillDate() is not None else date(1900, 1, 1)
-        monthsDiff = diffMonths(datetime.now(), datetime.combine(earliestBillDates, datetime.min.time()))
+        monthsDiff = diffMonths(datetime.now(), datetime.combine(earliestBillDates, datetime.min.time())) - monthRange
         return unitBills,  datetime.now() - relativedelta(months=monthsDiff)
     
     @staticmethod
