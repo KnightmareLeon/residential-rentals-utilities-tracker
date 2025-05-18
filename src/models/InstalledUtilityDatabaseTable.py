@@ -426,17 +426,6 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
                 sql += f"AND (u.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
                 sql += f"OR Status REGEXP \'{searchValue}\' OR BillingCycle REGEXP \'{searchValue}\' "
                 sql += f"OR u.UtilityID REGEXP \'{searchValue}\') "
-            sql += """   
-                UNION SELECT u.UtilityID, u.Type, unit.Name, u.Status, u.BillingCycle FROM utility u 
-                RIGHT JOIN installedutility ON installedutility.UtilityID = u.UtilityID JOIN unit ON installedutility.UnitID = unit.UnitID
-                WHERE ((unit.Type = 'Shared') 
-                OR ((SELECT COUNT(*) FROM (SELECT * FROM installedutility iu WHERE iu.UtilityID = u.UtilityID) AS c) <= 1 AND unit.Type = 'Individual')
-                OR (unit.NAME IS NULL))
-                """
-            if searchValue is not None:
-                sql += f"AND (u.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
-                sql += f"OR Status REGEXP \'{searchValue}\' OR BillingCycle REGEXP \'{searchValue}\' "
-                sql += f"OR u.UtilityID REGEXP \'{searchValue}\') "
             sql += f"ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset};"
             cursor.execute(sql)
             result = cursor.fetchall()
@@ -473,22 +462,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
                 sql += f"OR Status REGEXP \'{searchValue}\' OR BillingCycle REGEXP \'{searchValue}\' "
                 sql += f"OR u.UtilityID REGEXP \'{searchValue}\') "
             cursor.execute(sql)
-            res1 = cursor.fetchone()["COUNT(*)"]
-            sql = """
-            SELECT COUNT(*) FROM utility u 
-            RIGHT JOIN installedutility ON installedutility.UtilityID = u.UtilityID JOIN unit ON installedutility.UnitID = unit.UnitID
-            WHERE ((unit.Type = 'Shared') 
-            OR ((SELECT COUNT(*) FROM (SELECT * FROM installedutility iu WHERE iu.UtilityID = u.UtilityID) AS c) <= 1 AND unit.Type = 'Individual')
-            OR (unit.NAME IS NULL));
-            """
-            if searchValue is not None:
-                sql += f"AND (u.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
-                sql += f"OR Status REGEXP \'{searchValue}\' OR BillingCycle REGEXP \'{searchValue}\' "
-                sql += f"OR u.UtilityID REGEXP \'{searchValue}\') "
-            cursor.execute(sql)
-            res2 = cursor.fetchone()["COUNT(*)"]
-
-            result = max(res1, res2)
+            result = cursor.fetchone()["COUNT(*)"]
         except Exception as e:
             print(f"Error: {e}")
             raise e
