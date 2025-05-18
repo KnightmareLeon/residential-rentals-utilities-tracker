@@ -189,7 +189,6 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             offset = (page - 1) * limit
             sql = f"SELECT {selectClause} FROM {tableNames} {searchClause} ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset}; "
-            print(sql)
             cursor.execute(sql)
             result = cursor.fetchall()
         except Exception as e:
