@@ -332,7 +332,7 @@ class DatabaseTable(ABC):
                 columns : list[str] = None,
                 referred : dict['DatabaseTable', list[str]] = None,
                 searchValue : str = None,
-             ) -> int:
+            ) -> int:
         """
         Returns the total number of rows in the table. The method accepts various
         arguments to filter the results. The parameters include:

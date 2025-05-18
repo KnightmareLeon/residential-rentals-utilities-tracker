@@ -24,13 +24,9 @@ class UtilitiesController:
         totalPages =  InstalledUtility.uniqueTotalCount(searchValue) // 50 + 1
 
         fetchedUtils = InstalledUtility.uniqueRead(searchValue,
-                                             sortingField,
-                                             sortingOrder,
-                                             page=currentPage,)
-        fetchedUtils = [utility for utility in fetchedUtils 
-                        if InstalledUtility.isUtilityShared(utility["UtilityID"])
-                        and InstalledUtility.getMainUnit(utility["UtilityID"], name=True) == utility["Name"]
-                        or not InstalledUtility.isUtilityShared(utility["UtilityID"])]
+                                            sortingField,
+                                            sortingOrder,
+                                            page=currentPage,)
         return fetchedUtils, totalPages
     
     @staticmethod
@@ -127,7 +123,6 @@ class UtilitiesController:
             sharedUnitIDs = [int(unitID) for unitID in sharedUnitIDs]
         installationDate = installationDate.toString("yyyy-MM-dd")
 
-           
         originalData = Utility.readOne(originalID)
         originalUnitID = InstalledUtility.getMainUnit(originalID)
         originalSharedUnitIDs = InstalledUtility.getUtilityUnits(originalID)

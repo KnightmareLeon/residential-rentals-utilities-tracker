@@ -33,6 +33,9 @@ class AddUtilityForm(BaseCreateWidget):
 
         self.handleUnitNameChange(self.unitNameInput.currentText())
 
+    def handleUnitNameChangeFromShared(self):
+        self.handleUnitNameChange(self.unitNameInput.currentText())
+
     def handleUnitNameChange(self, text: str):
         unitType = text.split(' ')[-1][1:-1]
         labelWidget, sharedWidget = self.fields["Shared with Unit(s)"]

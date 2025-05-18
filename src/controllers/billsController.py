@@ -16,10 +16,9 @@ class BillsController:
         print(f"Fetching bills in page {currentPage} sorted by {sortingField} {sortingOrder} while searching for {searchValue}")
         
         searchValue = None if searchValue == "" else searchValue
-        referred = {"unit":["Name"],"utility":["Type"]}
-        columns = ["BillID", "TotalAmount", "DueDate", "Status"]
-        totalPages =  Bill.totalCount(columns=columns, referred=referred, searchValue=searchValue) // 50 + 1
-        return Bill.read(columns=columns, referred=referred, page=currentPage, sortBy=sortingField, order=sortingOrder, searchValue=searchValue), totalPages 
+
+        totalPages =  Bill.uniqueTotalCount(searchValue) // 50 + 1
+        return Bill.uniqueRead(searchValue, sortingField, sortingOrder, page=currentPage), totalPages 
     
     @staticmethod
     def addBill(unitID: str, utilityID: str, totalAmount: str, billingPeriodStart: QDate, billingPeriodEnd: QDate, status: str, dueDate: QDate) -> str:
@@ -61,8 +60,8 @@ class BillsController:
         """
         id = int(id)
         billInfo = Bill.readOne(id)
-        billInfo["Type"] = Utility.readOne(billInfo["UtilityID"])["Type"]
-        billInfo["UnitName"] = Unit.readOne(billInfo["UnitID"])["Name"]
+        billInfo["Type"] = Utility.readOne(billInfo["UtilityID"])["Type"] if billInfo["UtilityID"] is not None else None
+        billInfo["UnitName"] = Unit.readOne(billInfo["UnitID"])["Name"] if billInfo["UnitID"] is not None else None
         return billInfo
 
     @staticmethod

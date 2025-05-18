@@ -35,7 +35,7 @@ class BillDatabaseTable(DatabaseTable):
     
     _tableName = "bill"
     referredTables = {UnitDatabaseTable.getTableName() : UnitDatabaseTable, 
-                      UtilityDatabaseTable.getTableName() : UtilityDatabaseTable}
+                    UtilityDatabaseTable.getTableName() : UtilityDatabaseTable}
 
     @classmethod
     def initialize(cls):
@@ -144,10 +144,112 @@ class BillDatabaseTable(DatabaseTable):
     #<----------------------------------------->
 
     @classmethod
+    def uniqueRead(cls,
+            searchValue : str,
+            sortBy : str, 
+            order : str,
+            page : int = 1, 
+            limit : int = 50
+            ) -> list[dict[str, any]]:
+        """
+        The unique method for reading data from the installedutility table with records
+        from unit and utility table.
+        The method accepts various parameters to filter,
+        sort, and paginate the results. The parameters include:
+        - searchValue: A string to search for in the columns.
+        - sortBy: A string indicating the column to sort by.
+        - order: A string indicating the order of sorting ('ASC' or 'DESC').
+        - page: An integer indicating the page number for pagination.
+        - limit: An integer indicating the number of records per page.
+        """
+        cls.initialize()
+
+        if page < 1 or limit < 1:
+            raise ValueError("Page and limit must be positive integers.")
+        if not isinstance(sortBy, str):
+            raise ValueError("sortBy must be a string.")
+        if not isinstance(order, str):
+            raise ValueError("order must be a string.")
+        
+        result = None
+
+        try:
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            offset = (page - 1) * limit
+            sql = """
+                SELECT b.BillID, u.Name, ut.Type, b.TotalAmount, b.DueDate, b.Status FROM bill b
+                LEFT JOIN utility ut ON b.UtilityID = ut.UtilityID LEFT JOIN unit u ON b.UnitID = u.UnitID 
+                """
+            if searchValue is not None:
+                sql += f"AND (BillID REGEXP \'{searchValue}\' ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
+                sql += f"OR TotalAmount REGEXP \'{searchValue}\' OR DueDate REGEXP \'{searchValue}\' "
+                sql += f"OR Status REGEXP \'{searchValue}\') "
+            sql += """   
+                UNION SELECT b.billID, u.Name, ut.Type, b.TotalAmount, b.DueDate, b.Status FROM bill b
+                RIGHT JOIN utility ut ON b.UtilityID = ut.UtilityID JOIN unit u ON b.UnitID = u.UnitID 
+                """
+            if searchValue is not None:
+                sql += f"AND (BillID REGEXP \'{searchValue}\' ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
+                sql += f"OR TotalAmount REGEXP \'{searchValue}\' OR DueDate REGEXP \'{searchValue}\' "
+                sql += f"OR Status REGEXP \'{searchValue}\') "
+            sql += f"ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset};"
+            cursor.execute(sql)
+            result = cursor.fetchall()
+        
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
+
+    @classmethod
+    def uniqueTotalCount(cls,
+        searchValue : str) -> int:
+        """
+        Unique method to get the total count of records in the bills table with records
+        from unit and utility table.
+        """
+        cls.initialize()
+
+        result = 0
+        
+        try:
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            sql = """
+            SELECT COUNT(*) FROM bill b 
+            LEFT JOIN utility ut ON b.UtilityID = ut.UtilityID LEFT JOIN unit u ON b.UnitID = u.UnitID 
+            """
+            if searchValue is not None:
+                sql += f"AND (BillID REGEXP \'{searchValue}\' ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
+                sql += f"OR TotalAmount REGEXP \'{searchValue}\' OR DueDate REGEXP \'{searchValue}\' "
+                sql += f"OR Status REGEXP \'{searchValue}\') "
+            cursor.execute(sql)
+            res1 = cursor.fetchone()["COUNT(*)"]
+            sql = """
+            SELECT COUNT(*) FROM bill b 
+            RIGHT JOIN utility ut ON b.UtilityID = ut.UtilityID JOIN unit u ON b.UnitID = u.UnitID 
+            """
+            if searchValue is not None:
+                sql += f"AND (BillID REGEXP \'{searchValue}\' ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
+                sql += f"OR TotalAmount REGEXP \'{searchValue}\' OR DueDate REGEXP \'{searchValue}\' "
+                sql += f"OR Status REGEXP \'{searchValue}\') "
+            cursor.execute(sql)
+            res2 = cursor.fetchone()["COUNT(*)"]
+
+            result = max(res1, res2)
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
+    
+    @classmethod
     def getUnitBills(cls,
-                  unit : int,
-                  range: Range,
-                  offset: int = 1) -> dict[str, list[dict[str, any]]]:
+                unit : int,
+                range: Range,
+                offset: int = 1) -> dict[str, list[dict[str, any]]]:
         """
         Returns a dictionary of bills for the given unit ID and range.
         The dictionary keys are the utility types, and the values are lists of bills.
@@ -188,8 +290,8 @@ class BillDatabaseTable(DatabaseTable):
 
     @classmethod
     def getAllUnitsBills(cls,
-                      range: Range,
-                      offset: int = 1) -> dict[str, list[dict[str, any]]]:
+                    range: Range,
+                    offset: int = 1) -> dict[str, list[dict[str, any]]]:
         """
         Returns a dictionary of all bills for the given range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
@@ -225,9 +327,9 @@ class BillDatabaseTable(DatabaseTable):
 
     @classmethod
     def getUtilityBills(cls,
-                     utility : int,
-                     range: Range,
-                     offset: int = 1) -> list[dict[str, int | float | datetime.date]]:
+                    utility : int,
+                    range: Range,
+                    offset: int = 1) -> list[dict[str, int | float | datetime.date]]:
         """
         Returns a list of bills for the given utility ID and range.
         Each bill is represented as a dictionary with keys: BillID, UnitID, TotalAmount, BillingPeriodEnd.
@@ -258,8 +360,8 @@ class BillDatabaseTable(DatabaseTable):
 
     @classmethod
     def getAllGroupedBills(cls,
-                           range : Range,
-                           offset : int = 1) -> dict[str, list[dict[str, float | datetime.date]]]:
+                        range : Range,
+                        offset : int = 1) -> dict[str, list[dict[str, float | datetime.date]]]:
         """
         Returns a dictionary where each utility type is a key. Each utility type
         will have a list of bills grouped by billing period end date and their
@@ -286,9 +388,9 @@ class BillDatabaseTable(DatabaseTable):
     
     @classmethod
     def billsTotalSum(cls,
-                      range: Range,
-                      offset: int = 1,
-                      paidOnly: bool = False) -> float:
+                    range: Range,
+                    offset: int = 1,
+                    paidOnly: bool = False) -> float:
         """
         Returns the total sum of all bills for the given range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
@@ -321,8 +423,8 @@ class BillDatabaseTable(DatabaseTable):
     
     @classmethod
     def unpaidBillsCount(cls,
-                         range: Range,
-                         offset: int = 1) -> int:
+                        range: Range,
+                        offset: int = 1) -> int:
         """
         Returns the total count of unpaid bills for the given range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
