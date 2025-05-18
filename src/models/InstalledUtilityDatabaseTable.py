@@ -390,6 +390,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             page : int = 1, 
             limit : int = 50
             ) -> list[dict[str, any]]:
+
         """
         The unique method for reading data from the installedutility table with records
         from unit and utility table.
