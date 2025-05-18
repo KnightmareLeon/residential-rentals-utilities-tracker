@@ -117,7 +117,8 @@ class UnitsController:
         if earliestBillDates is not None:
             for utility in earliestBillDates.keys():
                 earliestBillDates[utility] = earliestBillDates[utility] if earliestBillDates[utility] is not None else date.today()
-        earliestBillDate = min(earliestBillDates.values()) if earliestBillDates is not None else date.today() - relativedelta(months=monthRange)
+        print(earliestBillDates)
+        earliestBillDate = min(earliestBillDates.values()) if len(earliestBillDates.values()) > 0 else date.today() - relativedelta(months=monthRange)
         monthsDiff = diffMonths(datetime.now(), datetime.combine(earliestBillDate, datetime.min.time())) - monthRange
         return unitBills,  datetime.now() - relativedelta(months=monthsDiff)
         
