@@ -26,6 +26,22 @@ class BillsController:
         """
         Adds a new unit with the given data.
         """
+        
+        if billingPeriodEnd <= billingPeriodStart:
+            return "Billing Period End must be later than Billing Period Start"
+
+        if dueDate <= billingPeriodStart:
+            return "Due Date must be later than Billing Period Start"
+
+        if totalAmount.strip() == "":
+            return "Total Amount is required"
+        
+        amountValue = float(totalAmount)
+        if amountValue >= 100000000:
+            return "Total Amount must be less than 100,000,000"
+        elif amountValue < 0:
+            return "Total Amount cannot be negative"
+        
         # Get unit ID using unitName and UtilityID using utilityType
         Bill.create({
             "UnitID": unitID,
