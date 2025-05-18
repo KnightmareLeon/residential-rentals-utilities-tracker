@@ -21,13 +21,12 @@ class UtilitiesController:
         """
         print(f"Fetching utilities in page {currentPage} sorted by {sortingField} {sortingOrder} while searching for {searchValue}")
         searchValue = None if searchValue == "" else searchValue
-        totalPages =  Utility.totalCount(searchValue=searchValue) // 50 + 1
+        totalPages =  InstalledUtility.uniqueTotalCount(searchValue) // 50 + 1
 
-        fetchedUtils = InstalledUtility.read(columns=["UtilityID"], referred={"unit":["Name"],"utility":["Type","Status","BillingCycle"]},
-                                             page=currentPage,
-                                             sortBy=sortingField,
-                                             order=sortingOrder,
-                                             searchValue=searchValue)
+        fetchedUtils = InstalledUtility.uniqueRead(searchValue,
+                                             sortingField,
+                                             sortingOrder,
+                                             page=currentPage,)
         fetchedUtils = [utility for utility in fetchedUtils 
                         if InstalledUtility.isUtilityShared(utility["UtilityID"])
                         and InstalledUtility.getMainUnit(utility["UtilityID"], name=True) == utility["Name"]
@@ -164,7 +163,8 @@ class UtilitiesController:
         })
 
         if mainUnitID != originalUnitID:
-            InstalledUtility.delete([originalUnitID, originalID])
+            if originalUnitID is not None:
+                InstalledUtility.delete([originalUnitID, originalID])
             for id in originalSharedUnitIDs:
                 InstalledUtility.delete([id, originalID])
             InstalledUtility.create({

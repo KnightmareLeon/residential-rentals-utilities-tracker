@@ -189,6 +189,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             offset = (page - 1) * limit
             sql = f"SELECT {selectClause} FROM {tableNames} {searchClause} ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset}; "
+            print(sql)
             cursor.execute(sql)
             result = cursor.fetchall()
         except Exception as e:
@@ -382,6 +383,106 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
     #<----------------------------------------->
 
     @classmethod
+    def uniqueRead(cls,
+             searchValue : str,
+             sortBy : str, 
+             order : str,
+             page : int = 1, 
+             limit : int = 50
+             ) -> list[dict[str, any]]:
+        """
+        The unique method for reading data from the installedutility table with records
+        from unit and utility table.
+        The method accepts various parameters to filter,
+        sort, and paginate the results. The parameters include:
+        - searchValue: A string to search for in the columns.
+        - sortBy: A string indicating the column to sort by.
+        - order: A string indicating the order of sorting ('ASC' or 'DESC').
+        - page: An integer indicating the page number for pagination.
+        - limit: An integer indicating the number of records per page.
+        """
+        cls.initialize()
+
+        if page < 1 or limit < 1:
+            raise ValueError("Page and limit must be positive integers.")
+        if not isinstance(sortBy, str):
+            raise ValueError("sortBy must be a string.")
+        if not isinstance(order, str):
+            raise ValueError("order must be a string.")
+        
+        result = None
+
+        try:
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            offset = (page - 1) * limit
+            sql = """
+                SELECT utility.UtilityID, utility.Type, unit.Name, utility.Status, utility.BillingCycle FROM utility 
+                LEFT JOIN installedutility ON installedutility.UtilityID = utility.UtilityID LEFT JOIN unit ON installedutility.UnitID = unit.UnitID 
+                """
+            if searchValue is not None:
+                sql += f"WHERE utility.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
+                sql += f"OR Status REGEXP \'{searchValue}\' OR BillingCycle REGEXP \'{searchValue}\' "
+                sql += f"OR utility.UtilityID REGEXP \'{searchValue}\' "
+            sql += """   
+                UNION SELECT utility.UtilityID, utility.Type, unit.Name, utility.Status, utility.BillingCycle FROM utility 
+                RIGHT JOIN installedutility ON installedutility.UtilityID = utility.UtilityID JOIN unit ON installedutility.UnitID = unit.UnitID 
+                """
+            if searchValue is not None:
+                sql += f"WHERE utility.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
+                sql += f"OR Status REGEXP \'{searchValue}\' OR BillingCycle REGEXP \'{searchValue}\' "
+                sql += f"OR utility.UtilityID REGEXP \'{searchValue}\' "
+            sql += f"ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset};"
+            cursor.execute(sql)
+            result = cursor.fetchall()
+        
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
+
+    @classmethod
+    def uniqueTotalCount(cls,
+                         searchValue : str) -> int:
+        """
+        Unique method to get the total count of records in the installedutility table with records
+        from unit and utility table.
+        """
+        result = 0
+        
+        try:
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            sql = """
+            SELECT COUNT(*) FROM utility 
+            LEFT JOIN installedutility ON installedutility.UtilityID = utility.UtilityID LEFT JOIN unit ON installedutility.UnitID = unit.UnitID 
+            """
+            if searchValue is not None:
+                sql += f"WHERE utility.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
+                sql += f"OR Status REGEXP \'{searchValue}\' OR BillingCycle REGEXP \'{searchValue}\' "
+                sql += f"OR utility.UtilityID REGEXP \'{searchValue}\' "
+            cursor.execute(sql)
+            res1 = cursor.fetchone()["COUNT(*)"]
+            sql = """
+            SELECT COUNT(*) FROM utility 
+            RIGHT JOIN installedutility ON installedutility.UtilityID = utility.UtilityID JOIN unit ON installedutility.UnitID = unit.UnitID 
+            """
+            if searchValue is not None:
+                sql += f"WHERE utility.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
+                sql += f"OR Status REGEXP \'{searchValue}\' OR BillingCycle REGEXP \'{searchValue}\' "
+                sql += f"OR utility.UtilityID REGEXP \'{searchValue}\' "
+            cursor.execute(sql)
+            res2 = cursor.fetchone()["COUNT(*)"]
+
+            result = min(res1, res2)
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
+
+    @classmethod
     def getUnitUtilities(cls,
                    unit : int,
                    type: bool = False) -> list[int] | list[dict[str, str]]:
@@ -501,7 +602,8 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             sql = f"SELECT {toGet} FROM {cls.getTableName()} NATURAL JOIN {UnitDatabaseTable.getTableName()} " + \
                   f"WHERE UtilityID = {utility} AND {UnitDatabaseTable.getTableName()}.Type='Shared' "
             cursor.execute(sql)
-            result = cursor.fetchone()[toGet]
+            sqlRes = cursor.fetchone()
+            result = sqlRes[toGet] if sqlRes else None
         except Exception as e:
             print(f"Error: {e}")
             raise e
