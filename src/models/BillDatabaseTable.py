@@ -174,8 +174,10 @@ class BillDatabaseTable(DatabaseTable):
                 sql = f"SELECT Type FROM {UtilityDatabaseTable.getTableName()} WHERE UtilityID = {utilityID}"
                 cursor.execute(sql)
                 utilityType = cursor.fetchone()['Type']
-
-                result[utilityType] = cls.getUtilityBills(utilityID, range, offset)
+                unitType = UnitDatabaseTable.readOne(unit)['Type']
+                utilityIsShared = InstalledUtilityDatabaseTable.isUtilityShared(utilityID)
+                if(unitType == 'Shared' and utilityIsShared or unitType == 'Individual' and not utilityIsShared):
+                    result[utilityType] = cls.getUtilityBills(utilityID, range, offset)
 
         except Exception as e:
             print(f"Error: {e}")
