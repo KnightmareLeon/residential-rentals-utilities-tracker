@@ -155,8 +155,8 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
                 if searchClause == "":
                     searchClause = "WHERE "
                 searchClause += " AND ".join([f"{cls._tableName}.{cls.referredTables[table].getPrimaryKey()} " + \
-                                              f"= {cls.referredTables[table].getTableName()}.{cls.referredTables[table].getPrimaryKey()}" 
-                                              for table in referred.keys()])
+                                            f"= {cls.referredTables[table].getTableName()}.{cls.referredTables[table].getPrimaryKey()}" 
+                                            for table in referred.keys()])
 
             if searchValue is not None: # Check if searchValue is not empty
                 allcolumns = "(" + " OR ".join([column + " REGEXP \'" + searchValue + "\'" for column in columns]) + ")"
@@ -384,12 +384,12 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
 
     @classmethod
     def uniqueRead(cls,
-             searchValue : str,
-             sortBy : str, 
-             order : str,
-             page : int = 1, 
-             limit : int = 50
-             ) -> list[dict[str, any]]:
+            searchValue : str,
+            sortBy : str, 
+            order : str,
+            page : int = 1, 
+            limit : int = 50
+            ) -> list[dict[str, any]]:
         """
         The unique method for reading data from the installedutility table with records
         from unit and utility table.
@@ -416,21 +416,27 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             offset = (page - 1) * limit
             sql = """
-                SELECT utility.UtilityID, utility.Type, unit.Name, utility.Status, utility.BillingCycle FROM utility 
-                LEFT JOIN installedutility ON installedutility.UtilityID = utility.UtilityID LEFT JOIN unit ON installedutility.UnitID = unit.UnitID 
+                SELECT u.UtilityID, u.Type, unit.Name, u.Status, u.BillingCycle FROM utility u 
+                LEFT JOIN installedutility ON installedutility.UtilityID = u.UtilityID LEFT JOIN unit ON installedutility.UnitID = unit.UnitID
+                WHERE ((unit.Type = 'Shared') 
+                OR ((SELECT COUNT(*) FROM (SELECT * FROM installedutility iu WHERE iu.UtilityID = u.UtilityID) AS c) <= 1 AND unit.Type = 'Individual')
+                OR (unit.NAME IS NULL))
                 """
             if searchValue is not None:
-                sql += f"WHERE utility.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
+                sql += f"AND (u.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
                 sql += f"OR Status REGEXP \'{searchValue}\' OR BillingCycle REGEXP \'{searchValue}\' "
-                sql += f"OR utility.UtilityID REGEXP \'{searchValue}\' "
+                sql += f"OR u.UtilityID REGEXP \'{searchValue}\') "
             sql += """   
-                UNION SELECT utility.UtilityID, utility.Type, unit.Name, utility.Status, utility.BillingCycle FROM utility 
-                RIGHT JOIN installedutility ON installedutility.UtilityID = utility.UtilityID JOIN unit ON installedutility.UnitID = unit.UnitID 
+                UNION SELECT u.UtilityID, u.Type, unit.Name, u.Status, u.BillingCycle FROM utility u 
+                RIGHT JOIN installedutility ON installedutility.UtilityID = u.UtilityID JOIN unit ON installedutility.UnitID = unit.UnitID
+                WHERE ((unit.Type = 'Shared') 
+                OR ((SELECT COUNT(*) FROM (SELECT * FROM installedutility iu WHERE iu.UtilityID = u.UtilityID) AS c) <= 1 AND unit.Type = 'Individual')
+                OR (unit.NAME IS NULL))
                 """
             if searchValue is not None:
-                sql += f"WHERE utility.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
+                sql += f"AND (u.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
                 sql += f"OR Status REGEXP \'{searchValue}\' OR BillingCycle REGEXP \'{searchValue}\' "
-                sql += f"OR utility.UtilityID REGEXP \'{searchValue}\' "
+                sql += f"OR u.UtilityID REGEXP \'{searchValue}\') "
             sql += f"ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset};"
             cursor.execute(sql)
             result = cursor.fetchall()
@@ -444,7 +450,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
 
     @classmethod
     def uniqueTotalCount(cls,
-                         searchValue : str) -> int:
+        searchValue : str) -> int:
         """
         Unique method to get the total count of records in the installedutility table with records
         from unit and utility table.
@@ -454,27 +460,33 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         try:
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             sql = """
-            SELECT COUNT(*) FROM utility 
-            LEFT JOIN installedutility ON installedutility.UtilityID = utility.UtilityID LEFT JOIN unit ON installedutility.UnitID = unit.UnitID 
+            SELECT COUNT(*) FROM utility u 
+            LEFT JOIN installedutility ON installedutility.UtilityID = u.UtilityID LEFT JOIN unit ON installedutility.UnitID = unit.UnitID
+            WHERE ((unit.Type = 'Shared') 
+            OR ((SELECT COUNT(*) FROM (SELECT * FROM installedutility iu WHERE iu.UtilityID = u.UtilityID) AS c) <= 1 AND unit.Type = 'Individual')
+            OR (unit.NAME IS NULL)); 
             """
             if searchValue is not None:
-                sql += f"WHERE utility.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
+                sql += f"AND (u.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
                 sql += f"OR Status REGEXP \'{searchValue}\' OR BillingCycle REGEXP \'{searchValue}\' "
-                sql += f"OR utility.UtilityID REGEXP \'{searchValue}\' "
+                sql += f"OR u.UtilityID REGEXP \'{searchValue}\') "
             cursor.execute(sql)
             res1 = cursor.fetchone()["COUNT(*)"]
             sql = """
-            SELECT COUNT(*) FROM utility 
-            RIGHT JOIN installedutility ON installedutility.UtilityID = utility.UtilityID JOIN unit ON installedutility.UnitID = unit.UnitID 
+            SELECT COUNT(*) FROM utility u 
+            RIGHT JOIN installedutility ON installedutility.UtilityID = u.UtilityID JOIN unit ON installedutility.UnitID = unit.UnitID
+            WHERE ((unit.Type = 'Shared') 
+            OR ((SELECT COUNT(*) FROM (SELECT * FROM installedutility iu WHERE iu.UtilityID = u.UtilityID) AS c) <= 1 AND unit.Type = 'Individual')
+            OR (unit.NAME IS NULL));
             """
             if searchValue is not None:
-                sql += f"WHERE utility.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
+                sql += f"AND (u.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
                 sql += f"OR Status REGEXP \'{searchValue}\' OR BillingCycle REGEXP \'{searchValue}\' "
-                sql += f"OR utility.UtilityID REGEXP \'{searchValue}\' "
+                sql += f"OR u.UtilityID REGEXP \'{searchValue}\') "
             cursor.execute(sql)
             res2 = cursor.fetchone()["COUNT(*)"]
 
-            result = min(res1, res2)
+            result = max(res1, res2)
         except Exception as e:
             print(f"Error: {e}")
             raise e
@@ -483,9 +495,11 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         return result
 
     @classmethod
-    def getUnitUtilities(cls,
-                   unit : int,
-                   type: bool = False) -> list[int] | list[dict[str, str]]:
+    def getUnitUtilities(
+        cls,
+        unit : int,
+        type: bool = False
+        ) -> list[int] | list[dict[str, str]]:
         """
         Returns a list of utility IDs for the given unit ID.
         If type is True, returns a list of dictionaries with utility IDs and types.
@@ -503,7 +517,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         try:
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             ifTypeText = f"SELECT UtilityID, Utility.Type FROM {cls.getTableName()} " + \
-                         f"JOIN {UtilityDatabaseTable.getTableName()} USING (UtilityID)"
+                f"JOIN {UtilityDatabaseTable.getTableName()} USING (UtilityID)"
             defaultText = f"SELECT UtilityID FROM {cls.getTableName()}"
             sql = ifTypeText if type else defaultText
             sql += f" WHERE UnitID = {unit}"
@@ -542,8 +556,8 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         try:
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             sql = f"SELECT installedutility.UnitID, unit.Name FROM {cls.getTableName()} " + \
-                  f"NATURAL JOIN {UnitDatabaseTable.getTableName()} " + \
-                  f"WHERE UtilityID = {utility}"
+                f"NATURAL JOIN {UnitDatabaseTable.getTableName()} " + \
+                f"WHERE UtilityID = {utility}"
             cursor.execute(sql)
             result = cursor.fetchall()
         except Exception as e:
@@ -570,7 +584,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         try:
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             sql = f"SELECT Count(*) as UnitCount FROM {cls.getTableName()} NATURAL JOIN {UnitDatabaseTable.getTableName()} " + \
-                  f"WHERE UtilityID = {utility} AND {UnitDatabaseTable.getTableName()}.Type='Shared' "
+                f"WHERE UtilityID = {utility} AND {UnitDatabaseTable.getTableName()}.Type='Shared' "
             cursor.execute(sql)
             result = cursor.fetchone()["UnitCount"] > 0
         except Exception as e:
@@ -600,7 +614,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             toGet = "Name" if name else "UnitID"
             sql = f"SELECT {toGet} FROM {cls.getTableName()} NATURAL JOIN {UnitDatabaseTable.getTableName()} " + \
-                  f"WHERE UtilityID = {utility} AND {UnitDatabaseTable.getTableName()}.Type='Shared' "
+                f"WHERE UtilityID = {utility} AND {UnitDatabaseTable.getTableName()}.Type='Shared' "
             cursor.execute(sql)
             sqlRes = cursor.fetchone()
             result = sqlRes[toGet] if sqlRes else None
@@ -657,7 +671,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         try:
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             sql = f"SELECT Count(*) as UnitCount FROM {cls.getTableName()} NATURAL JOIN {UtilityDatabaseTable.getTableName()} " + \
-                  f"WHERE UnitID = {unit} AND Utility.Type='{utilityType}' "
+                f"WHERE UnitID = {unit} AND Utility.Type='{utilityType}' "
             cursor.execute(sql)
             result = cursor.fetchone()["UnitCount"] > 0
         except Exception as e:
