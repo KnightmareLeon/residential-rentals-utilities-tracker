@@ -11,7 +11,7 @@ from src.utils.constants import utilityDataHeaders, utilityDataDatabaseHeaders
 
 class UtilitiesTable(BaseTableWidget):
     def __init__(self, parent=None, mainWindow=None):
-        self.databaseHeaders = ["UtilityID", "Type", "UnitName", "Status", "BillingCycle"]
+        self.databaseHeaders = ["UtilityID", "Type", "Name", "Status", "BillingCycle"]
         self.headers = ["Utility ID", "Type", "Unit Name", "Status", "Billing Cycle", "Actions"]
         super().__init__(self.headers, self.databaseHeaders, parent=parent, mainWindow=mainWindow)
 

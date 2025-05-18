@@ -23,14 +23,15 @@ class UtilitiesController:
         searchValue = None if searchValue == "" else searchValue
         totalPages =  Utility.totalCount(searchValue=searchValue) // 50 + 1
 
-        fetchedUtils = Utility.read(page=currentPage, sortBy=sortingField, order=sortingOrder, searchValue=searchValue)
-        for utility in fetchedUtils:
-            mainUnitName = ""
-            if InstalledUtility.isUtilityShared(utility["UtilityID"]):
-                mainUnitName = InstalledUtility.getMainUnit(utility["UtilityID"], name=True)
-            else:
-                mainUnitName = InstalledUtility.getUtilityUnits(utility["UtilityID"])[0]["Name"]
-            utility["UnitName"] = mainUnitName
+        fetchedUtils = InstalledUtility.read(columns=["UtilityID"], referred={"unit":["Name"],"utility":["Type","Status","BillingCycle"]},
+                                             page=currentPage,
+                                             sortBy=sortingField,
+                                             order=sortingOrder,
+                                             searchValue=searchValue)
+        fetchedUtils = [utility for utility in fetchedUtils 
+                        if InstalledUtility.isUtilityShared(utility["UtilityID"])
+                        and InstalledUtility.getMainUnit(utility["UtilityID"], name=True) == utility["Name"]
+                        or not InstalledUtility.isUtilityShared(utility["UtilityID"])]
         return fetchedUtils, totalPages
     
     @staticmethod
