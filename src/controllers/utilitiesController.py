@@ -123,7 +123,6 @@ class UtilitiesController:
             sharedUnitIDs = [int(unitID) for unitID in sharedUnitIDs]
         installationDate = installationDate.toString("yyyy-MM-dd")
 
-           
         originalData = Utility.readOne(originalID)
         originalUnitID = InstalledUtility.getMainUnit(originalID)
         originalSharedUnitIDs = InstalledUtility.getUtilityUnits(originalID)

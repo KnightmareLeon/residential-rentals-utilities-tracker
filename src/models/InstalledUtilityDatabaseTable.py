@@ -134,7 +134,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             if len(referred[table]) == 0:
                 raise ValueError(f"referredColumns for table '{table}' must not be empty.")
 
-         # Check if columns is empty, if so, use all columns
+        # Check if columns is empty, if so, use all columns
         if len(columns) == 0:
             columns += cls._columns
         else: # Check if columns are valid
@@ -455,6 +455,8 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         Unique method to get the total count of records in the installedutility table with records
         from unit and utility table.
         """
+        cls.initialize()
+
         result = 0
         
         try:
