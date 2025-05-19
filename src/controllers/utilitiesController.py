@@ -10,6 +10,7 @@ from src.models.InstalledUtilityDatabaseTable import InstalledUtilityDatabaseTab
 
 from src.utils.constants import Range
 from src.utils.diffMonths import diffMonths
+from src.utils.constants import UTILITIES
 
 class UtilitiesController:
     
@@ -41,9 +42,9 @@ class UtilitiesController:
         if len(sharedUnitIDs) > 0:
             sharedUnitIDs = [int(unitID) for unitID in sharedUnitIDs]
         installationDate = installationDate.toString("yyyy-MM-dd")
-
+        
         #Error Checking
-        if InstalledUtility.unitHasUtilityType(mainUnitID, type):
+        if InstalledUtility.unitHasUtilityType(mainUnitID, type) or "(added)" in type:
             unitName = Unit.readOne(mainUnitID)["Name"]
             return (f"{type} already exists for {unitName}. Please input another type.")
         if len(sharedUnitIDs) > 0:

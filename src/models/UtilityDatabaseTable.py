@@ -22,7 +22,7 @@ class UtilityDatabaseTable(DatabaseTable):
             cursor.execute("CREATE TABLE IF NOT EXISTS utility (" +
                 "UtilityID int NOT NULL AUTO_INCREMENT, " + 
                 "Type enum('Electricity','Water','Gas','Internet','Trash','Maintenance','Miscellaneous') NOT NULL, " +
-                "Status enum('Active','Inactive') NOT NULL, " +
+                "Status enum('Active','Inactive','N/A') NOT NULL, " +
                 "BillingCycle enum('Monthly','Quarterly','Annually','Irregular') NOT NULL," +
                 "PRIMARY KEY (UtilityID))"
             )

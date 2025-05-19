@@ -490,8 +490,8 @@ class BillDatabaseTable(DatabaseTable):
 
     @classmethod
     def getUnitBillsMaxOffset(cls,
-                             unit: int,
-                             range: Range) -> dict[str, int]:
+                            unit: int,
+                            range: Range) -> dict[str, int]:
         """
         Returns the maximum offset for the given unit ID and range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
