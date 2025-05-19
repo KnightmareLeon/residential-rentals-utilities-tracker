@@ -131,9 +131,10 @@ class UtilitiesController:
         editedColumns = {}
 
         #Error Checking 
-        if InstalledUtility.unitHasUtilityType(mainUnitID, type):
-            unitName = Unit.readOne(mainUnitID)["Name"]
-            return (f"{type} already exists for {unitName}. Please input another type or another unit.")
+        if type != originalData["Type"]: 
+            if InstalledUtility.unitHasUtilityType(mainUnitID, type):
+                unitName = Unit.readOne(mainUnitID)["Name"]
+                return (f"{type} already exists for {unitName}. Please input another type or another unit.")
         if len(sharedUnitIDs) > 0:
             errorMsg = ""
             for sharedUnitID in sharedUnitIDs:

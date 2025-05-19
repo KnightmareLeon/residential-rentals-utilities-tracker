@@ -21,7 +21,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
     
     _tableName = "installedutility"
     referredTables = {UnitDatabaseTable.getTableName() : UnitDatabaseTable, 
-                      UtilityDatabaseTable.getTableName() : UtilityDatabaseTable}
+                    UtilityDatabaseTable.getTableName() : UtilityDatabaseTable}
 
     @classmethod
     def initialize(cls):
@@ -43,7 +43,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
                 cls._createTable()
                 cursor.execute("SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE " +
                             f"WHERE TABLE_NAME = '{cls._tableName}' AND CONSTRAINT_NAME = " +
-                            "'PRIMARY'")
+                            "'PRIMARY' AND TABLE_SCHEMA = DATABASE()")
                 cls._primary = [row['COLUMN_NAME'] for row in cursor.fetchall()]
                 cls._columns = cls._readColumns(cls)
         except Exception as e:

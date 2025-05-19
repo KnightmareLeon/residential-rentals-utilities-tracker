@@ -29,9 +29,10 @@ class DatabaseTable(ABC):
             if not cls._initialized:
                 cls._initialized = True
                 cls._createTable()
-                cursor.execute("SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE " +
-                            f"WHERE TABLE_NAME = '{cls._tableName}' AND CONSTRAINT_NAME = " +
-                            "'PRIMARY'")
+                sql = f"SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE " + \
+                f"WHERE TABLE_NAME = '{cls._tableName}' AND CONSTRAINT_NAME = " + \
+                f"'PRIMARY' AND TABLE_SCHEMA = DATABASE()"
+                cursor.execute(sql)
                 cls._primary = cursor.fetchone()['COLUMN_NAME']
                 cls._columns = cls._readColumns(cls)
         except Exception as e:
@@ -77,14 +78,14 @@ class DatabaseTable(ABC):
 
     @classmethod
     def read(cls, 
-             columns : list[str] = None,
-             referred : dict[str, list[str]] = None,
-             searchValue : str = None,
-             sortBy : str = None, 
-             order : str = "ASC",
-             page : int = 1, 
-             limit : int = 50
-             ) -> list[dict[str, str]]:
+            columns : list[str] = None,
+            referred : dict[str, list[str]] = None,
+            searchValue : str = None,
+            sortBy : str = None, 
+            order : str = "ASC",
+            page : int = 1, 
+            limit : int = 50
+            ) -> list[dict[str, str]]:
         """
         Reads data from the table. The method accepts various parameters to filter,
         sort, and paginate the results. The parameters include:
@@ -150,8 +151,8 @@ class DatabaseTable(ABC):
                 if searchClause == "":
                     searchClause = "WHERE "
                 searchClause += " AND ".join([f"{cls._tableName}.{cls.referredTables[table].getPrimaryKey()} " + \
-                                              f"= {cls.referredTables[table].getTableName()}.{cls.referredTables[table].getPrimaryKey()}" 
-                                              for table in referred.keys()])
+                                            f"= {cls.referredTables[table].getTableName()}.{cls.referredTables[table].getPrimaryKey()}" 
+                                            for table in referred.keys()])
 
             if searchValue is not None: # Check if searchValue is not empty
                 allcolumns = "(" + " OR ".join([column + " REGEXP \'" + searchValue + "\'" for column in columns]) + ")"
@@ -443,8 +444,10 @@ class DatabaseTable(ABC):
         columns = []
         try:
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
-            cursor.execute(f"SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_NAME = '{cls._tableName}'")
-            columns = [row['COLUMN_NAME'] for row in cursor.fetchall()]
+            sql = f"SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_NAME = '{cls._tableName}' AND TABLE_SCHEMA = DATABASE()"
+            cursor.execute(sql)
+            columns = cursor.fetchall()
+            columns = [row['COLUMN_NAME'] for row in columns]
         except Exception as e:
             print(f"Error: {e}")
             raise e
