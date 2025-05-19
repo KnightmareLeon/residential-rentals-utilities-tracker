@@ -9,7 +9,6 @@ from src.models.BillDatabaseTable import BillDatabaseTable as Bill
 from src.models.InstalledUtilityDatabaseTable import InstalledUtilityDatabaseTable as InstalledUtility
 
 from src.utils.constants import Range
-from src.utils.sampleDataGenerator import generateUtilityData, generateRandomeUtilityBills
 from src.utils.diffMonths import diffMonths
 
 class UtilitiesController:
@@ -24,13 +23,9 @@ class UtilitiesController:
         totalPages =  InstalledUtility.uniqueTotalCount(searchValue) // 50 + 1
 
         fetchedUtils = InstalledUtility.uniqueRead(searchValue,
-                                             sortingField,
-                                             sortingOrder,
-                                             page=currentPage,)
-        fetchedUtils = [utility for utility in fetchedUtils 
-                        if InstalledUtility.isUtilityShared(utility["UtilityID"])
-                        and InstalledUtility.getMainUnit(utility["UtilityID"], name=True) == utility["Name"]
-                        or not InstalledUtility.isUtilityShared(utility["UtilityID"])]
+                                            sortingField,
+                                            sortingOrder,
+                                            page=currentPage,)
         return fetchedUtils, totalPages
     
     @staticmethod
@@ -55,7 +50,7 @@ class UtilitiesController:
             errorMsg = ""
             for sharedUnitID in sharedUnitIDs:
                 if InstalledUtility.unitHasUtilityType(sharedUnitID, type):
-                    unitName = Unit.readOne(mainUnitID)["Name"]
+                    unitName = Unit.readOne(sharedUnitID)["Name"]
                     errorMsg += (f"{type} already exists for {unitName}. Please input another type.\n")
             if errorMsg != "":
                 return errorMsg
@@ -127,7 +122,6 @@ class UtilitiesController:
             sharedUnitIDs = [int(unitID) for unitID in sharedUnitIDs]
         installationDate = installationDate.toString("yyyy-MM-dd")
 
-           
         originalData = Utility.readOne(originalID)
         originalUnitID = InstalledUtility.getMainUnit(originalID)
         originalSharedUnitIDs = InstalledUtility.getUtilityUnits(originalID)
@@ -136,9 +130,10 @@ class UtilitiesController:
         editedColumns = {}
 
         #Error Checking 
-        if type != originalData["Type"] and InstalledUtility.unitHasUtilityType(mainUnitID, type):
-            unitName = Unit.readOne(mainUnitID)["Name"]
-            return (f"{type} already exists for {unitName}. Please input another type or another unit.")
+        if type != originalData["Type"]: 
+            if InstalledUtility.unitHasUtilityType(mainUnitID, type):
+                unitName = Unit.readOne(mainUnitID)["Name"]
+                return (f"{type} already exists for {unitName}. Please input another type or another unit.")
         if len(sharedUnitIDs) > 0:
             errorMsg = ""
             for sharedUnitID in sharedUnitIDs:
@@ -217,7 +212,6 @@ class UtilitiesController:
         print("Fetching utilities by unit ID:", unitID)
         unitID = int(unitID)
         utilities = InstalledUtility.getUnitUtilities(unitID, type=True)
-        print(utilities)
         return utilities
 
     @staticmethod

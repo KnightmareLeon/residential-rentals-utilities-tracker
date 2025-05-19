@@ -40,3 +40,6 @@ build/
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Developer Only
+bugs.txt

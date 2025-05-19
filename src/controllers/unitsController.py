@@ -6,7 +6,6 @@ from src.models.UtilityDatabaseTable import UtilityDatabaseTable as Utility
 from src.models.InstalledUtilityDatabaseTable import InstalledUtilityDatabaseTable as InstalledUtility
 from src.models.BillDatabaseTable import BillDatabaseTable as Bill
 
-from src.utils.sampleDataGenerator import generateRandomUtilityData, generateUnitData
 from src.utils.constants import Range
 from src.utils.diffMonths import diffMonths
 
