@@ -181,17 +181,17 @@ class BillDatabaseTable(DatabaseTable):
                 LEFT JOIN utility ut ON b.UtilityID = ut.UtilityID LEFT JOIN unit u ON b.UnitID = u.UnitID 
                 """
             if searchValue is not None:
-                sql += f"AND (BillID REGEXP \'{searchValue}\' ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
+                sql += f"WHERE (BillID REGEXP \'{searchValue}\' OR ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
                 sql += f"OR TotalAmount REGEXP \'{searchValue}\' OR DueDate REGEXP \'{searchValue}\' "
-                sql += f"OR Status REGEXP \'{searchValue}\') "
+                sql += f"OR b.Status REGEXP \'{searchValue}\') "
             sql += """   
                 UNION SELECT b.billID, u.Name, ut.Type, b.TotalAmount, b.DueDate, b.Status FROM bill b
                 RIGHT JOIN utility ut ON b.UtilityID = ut.UtilityID JOIN unit u ON b.UnitID = u.UnitID 
                 """
             if searchValue is not None:
-                sql += f"AND (BillID REGEXP \'{searchValue}\' ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
+                sql += f"WHERE (BillID REGEXP \'{searchValue}\' OR ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
                 sql += f"OR TotalAmount REGEXP \'{searchValue}\' OR DueDate REGEXP \'{searchValue}\' "
-                sql += f"OR Status REGEXP \'{searchValue}\') "
+                sql += f"OR b.Status REGEXP \'{searchValue}\') "
             sql += f"ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset};"
             cursor.execute(sql)
             result = cursor.fetchall()
@@ -221,9 +221,9 @@ class BillDatabaseTable(DatabaseTable):
             LEFT JOIN utility ut ON b.UtilityID = ut.UtilityID LEFT JOIN unit u ON b.UnitID = u.UnitID 
             """
             if searchValue is not None:
-                sql += f"AND (BillID REGEXP \'{searchValue}\' ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
+                sql += f"WHERE (BillID REGEXP \'{searchValue}\' OR ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
                 sql += f"OR TotalAmount REGEXP \'{searchValue}\' OR DueDate REGEXP \'{searchValue}\' "
-                sql += f"OR Status REGEXP \'{searchValue}\') "
+                sql += f"OR b.Status REGEXP \'{searchValue}\') "
             cursor.execute(sql)
             res1 = cursor.fetchone()["COUNT(*)"]
             sql = """
@@ -231,9 +231,10 @@ class BillDatabaseTable(DatabaseTable):
             RIGHT JOIN utility ut ON b.UtilityID = ut.UtilityID JOIN unit u ON b.UnitID = u.UnitID 
             """
             if searchValue is not None:
-                sql += f"AND (BillID REGEXP \'{searchValue}\' ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
+                sql += f"WHERE (BillID REGEXP \'{searchValue}\' OR ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
                 sql += f"OR TotalAmount REGEXP \'{searchValue}\' OR DueDate REGEXP \'{searchValue}\' "
-                sql += f"OR Status REGEXP \'{searchValue}\') "
+                sql += f"OR b.Status REGEXP \'{searchValue}\') "
+            print(sql)
             cursor.execute(sql)
             res2 = cursor.fetchone()["COUNT(*)"]
 
