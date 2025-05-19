@@ -138,7 +138,7 @@ class UtilitiesController:
         if len(sharedUnitIDs) > 0:
             errorMsg = ""
             for sharedUnitID in sharedUnitIDs:
-                if InstalledUtility.unitHasUtilityType(sharedUnitID, type):
+                if InstalledUtility.unitHasUtilityType(sharedUnitID, type) and sharedUnitID not in originalSharedUnitIDs:
                     unitName = Unit.readOne(sharedUnitID)["Name"]
                     errorMsg += (f"{type} already exists for {unitName}. Please input another type or another unit.\n")
             if errorMsg != "":

@@ -3,6 +3,7 @@ from PyQt6.QtCore import QDate
 from src.models.BillDatabaseTable import BillDatabaseTable as Bill
 from src.models.UnitDatabaseTable import UnitDatabaseTable as Unit
 from src.models.UtilityDatabaseTable import UtilityDatabaseTable as Utility
+from src.models.InstalledUtilityDatabaseTable import InstalledUtilityDatabaseTable as InstalledUtility
 from src.controllers.utilitiesController import UtilitiesController
 
 class BillsController:
@@ -33,6 +34,11 @@ class BillsController:
 
         if totalAmount.strip() == "":
             return "Total Amount is required"
+        
+        if InstalledUtility.isUtilityShared(int(utilityID)) and InstalledUtility.getMainUnit(int(utilityID)) != int(unitID):
+            unitName = Unit.readOne(int(unitID))["Name"]
+            utilType = Utility.readOne(int(utilityID))["Type"]
+            return f"{unitName} is an individual unit. Cannot add a bill for the shared {utilType} utility."
         
         amountValue = float(totalAmount)
         if amountValue >= 100000000:
@@ -80,6 +86,11 @@ class BillsController:
                     break
             else:
                 return f"No Utilities found for this unit"
+
+        if InstalledUtility.isUtilityShared(int(utilityID)) and InstalledUtility.getMainUnit(int(utilityID)) != int(unitID):
+            unitName = Unit.readOne(int(unitID))["Name"]
+            utilType = Utility.readOne(int(utilityID))["Type"]
+            return f"{unitName} is an individual unit. Cannot add a bill for the shared {utilType} utility."
 
         amountText = str(totalAmount).strip()
         if amountText == "":
