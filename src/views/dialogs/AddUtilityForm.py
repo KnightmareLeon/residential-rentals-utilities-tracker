@@ -23,6 +23,7 @@ class AddUtilityForm(BaseCreateWidget):
         self.unitNameInput.currentTextChanged.connect(self.handleUnitNameChange)
 
         self.multipleUnitInput = self.addMultiselectComboBox("Shared with Unit(s)", [], sectionTitle="Utility Information", isVisible=False)
+        self.multipleUnitInput.currentTextChanged.connect(self.updateUtilityTypeOptions)
 
         self.typeInput = self.addComboBox("Utility Type", ['Electricity','Water','Gas','Internet','Trash','Maintenance','Miscellaneous'], sectionTitle="Utility Information")
         self.typeInput.currentTextChanged.connect(self.handleUtilityTypeChange)
@@ -33,18 +34,28 @@ class AddUtilityForm(BaseCreateWidget):
 
         self.handleUnitNameChange(self.unitNameInput.currentText())
 
-    def handleUnitNameChangeFromShared(self):
-        self.handleUnitNameChange(self.unitNameInput.currentText())
-
     def handleUnitNameChange(self, text: str):
         unitType = text.split(' ')[-1][1:-1]
         labelWidget, sharedWidget = self.fields["Shared with Unit(s)"]
+
+        allTypes = ['Electricity','Water','Gas','Internet','Trash','Maintenance','Miscellaneous']
 
         if unitType == "Shared":
             sharedWidget.clear()
             sharedWidget.addItems(self.indivUnitNames)
             labelWidget.setVisible(True)
             sharedWidget.setVisible(True)
+
+            # Get selected shared unit names, strip "(Type)"
+            sharedNames = [re.sub(r'\s*\(.*?\)', '', name).strip() for name in sharedWidget.currentData()]
+            sharedUnitIDs = [self.unitNameMap.get(name) for name in sharedNames if self.unitNameMap.get(name)]
+
+            # Get all utility types used by shared units
+            existingTypes = set()
+            for uid in sharedUnitIDs:
+                existingUtilities = UtilitiesController.getUtilitiesByUnitID(uid)
+                existingTypes.update(util['Type'] for util in existingUtilities)
+
         else:
             sharedWidget.clear()
             labelWidget.setVisible(False)
@@ -64,26 +75,59 @@ class AddUtilityForm(BaseCreateWidget):
             existingUtilities = UtilitiesController.getUtilitiesByUnitID(unitID)
             existingTypes = {util['Type'] for util in existingUtilities}
 
-            allTypes = ['Electricity','Water','Gas','Internet','Trash','Maintenance','Miscellaneous']
+        self.updateUtilityTypeOptions()
+    
+    def updateUtilityTypeOptions(self):
+        allTypes = ['Electricity','Water','Gas','Internet','Trash','Maintenance','Miscellaneous']
+        selectedMain = self.unitNameInput.currentText().strip()
+        sharedUnits = self.multipleUnitInput.currentData() if self.multipleUnitInput.isVisible() else []
 
-            self.typeInput.clear()
-            model = QStandardItemModel()
+        unitIDs = []
 
-            for t in allTypes:
-                if t not in existingTypes:
-                    item = QStandardItem(t)
-                    model.appendRow(item)
+        # Get main unit ID
+        match = re.match(r'^(.*)\s+\((.*?)\)$', selectedMain)
+        if match:
+            unitName = match.group(1).strip()
+            mainUnitID = self.unitNameMap.get(unitName)
+            if mainUnitID:
+                unitIDs.append(mainUnitID)
 
-            for t in allTypes:
-                if t in existingTypes:
-                    item = QStandardItem(f"{t} (added)")
-                    item.setEnabled(False)
-                    item.setForeground(QBrush(QColor("707070")))
-                    item.setBackground(QBrush(QColor("#383838")))
-                    model.appendRow(item)
+        # Add shared unit IDs (if any)
+        strippedSharedNames = [re.sub(r'\s*\(.*?\)', '', name).strip() for name in sharedUnits]
+        for name in strippedSharedNames:
+            sharedID = self.unitNameMap.get(name)
+            if sharedID:
+                unitIDs.append(sharedID)
 
-            self.typeInput.setModel(model)
+        # Collect all existing utility types from selected units
+        existingTypes = set()
+        for uid in unitIDs:
+            existingUtilities = UtilitiesController.getUtilitiesByUnitID(uid)
+            existingTypes.update(util['Type'] for util in existingUtilities)
+
+        self.typeInput.clear()
+        model = QStandardItemModel()
+
+        hasAvailable = False
+        for t in allTypes:
+            if t not in existingTypes:
+                hasAvailable = True
+                item = QStandardItem(t)
+                model.appendRow(item)
+
+        for t in allTypes:
+            if t in existingTypes:
+                item = QStandardItem(f"{t} (added)")
+                item.setEnabled(False)
+                item.setForeground(QBrush(QColor("707070")))
+                item.setBackground(QBrush(QColor("#383838")))
+                model.appendRow(item)
+
+        self.typeInput.setModel(model)
+        if hasAvailable:
             self.typeInput.setCurrentIndex(0)
+        else:
+            self.typeInput.setCurrentIndex(-1)
 
     def handleUtilityTypeChange(self, text: str):
         labelWidget, widget = self.fields["Status"]

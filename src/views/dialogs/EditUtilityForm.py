@@ -17,12 +17,12 @@ class EditUtilityForm(BaseEditWidget):
         self.setMinimumWidth(400)
 
         self.originalType = type
+        self.originalUnits = units
 
         self.allUnits = UnitsController.getUnitNames()
         self.unitNameMap = {unit["Name"]: unit["UnitID"] for unit in self.allUnits}
         self.unitIDMap = {unit["UnitID"]: unit for unit in self.allUnits}
         self.indivUnitNames = [f"{unit['Name']} ({unit['Type']})" for unit in self.allUnits if unit["Type"] == "Individual"]
-        print("units", units)
         self.addSection("Utility Information")
 
         # Determine main unit and its display name
@@ -44,6 +44,7 @@ class EditUtilityForm(BaseEditWidget):
 
         # Connect logic
         self.unitNameInput.currentTextChanged.connect(self.handleUnitNameChange)
+        self.sharedWithInput.currentTextChanged.connect(self.updateUtilityTypeOptions)
 
         self.sharedUnits = [u for u in units if "(Main)" not in u["Name"]]
 
@@ -53,63 +54,106 @@ class EditUtilityForm(BaseEditWidget):
             if index >= 0:
                 self.unitNameInput.setCurrentIndex(index)
                 self.handleUnitNameChange(mainUnitDisplay)
+        
+        self.handleUnitNameChange(self.unitNameInput.currentText())
+
+        if self.sharedUnits:
+            sharedNames = [f"{unit['Name']} ({self.unitIDMap[unit['UnitID']]['Type']})" for unit in self.sharedUnits]
+            
+            items = [self.sharedWithInput.itemText(i) for i in range(self.sharedWithInput.count())]
+            indexesToCheck = [i for i, item in enumerate(items) if item in sharedNames]
+            
+            self.sharedWithInput.setCurrentIndexes(indexesToCheck)
 
     def handleUnitNameChange(self, text: str):
-        unitName = ' '.join(text.split(' ')[:-1])
         unitType = text.split(' ')[-1][1:-1]
         labelWidget, sharedWidget = self.fields["Shared with Unit(s)"]
+
+        allTypes = ['Electricity','Water','Gas','Internet','Trash','Maintenance','Miscellaneous']
 
         if unitType == "Shared":
             sharedWidget.clear()
             sharedWidget.addItems(self.indivUnitNames)
-            sharedUnitIDs = [u["UnitID"] for u in self.sharedUnits]
-            sharedNames = [f"{self.unitIDMap[uid]['Name']} (Individual)" for uid in sharedUnitIDs if uid in self.unitIDMap]
-
-            if unitName == self.mainUnitName:
-                selectedIndexes = []
-                for i in range(sharedWidget.count()):
-                    if sharedWidget.itemText(i) in sharedNames:
-                        selectedIndexes.append(i)
-
-                sharedWidget.setCurrentIndexes(selectedIndexes)
-
             labelWidget.setVisible(True)
             sharedWidget.setVisible(True)
-            sharedWidget.setPlaceholderText("")
+
+            # Get selected shared unit names, strip "(Type)"
+            sharedNames = [re.sub(r'\s*\(.*?\)', '', name).strip() for name in sharedWidget.currentData()]
+            sharedUnitIDs = [self.unitNameMap.get(name) for name in sharedNames if self.unitNameMap.get(name)]
+
+            # Get all utility types used by shared units
+            existingTypes = set()
+            for uid in sharedUnitIDs:
+                existingUtilities = UtilitiesController.getUtilitiesByUnitID(uid)
+                existingTypes.update(util['Type'] for util in existingUtilities)
+
         else:
             sharedWidget.clear()
             labelWidget.setVisible(False)
             sharedWidget.setVisible(False)
 
-        # Parse unit name and update utility types
-        match = re.match(r'^(.*)\s+\((.*?)\)$', text.strip())
-        if not match:
-            print(f"Warning: Could not parse unit from '{text}'")
-            return
+            match = re.match(r'^(.*)\s+\((.*?)\)$', text.strip())
+            if not match:
+                print(f"Warning: Could not parse unit from '{text}'")
+                return
 
-        unitName = match.group(1).strip()
-        unitID = self.unitNameMap.get(unitName)
-        if unitID is None:
-            print(f"Warning: Unit ID not found for '{unitName}'")
-            return
+            unitName = match.group(1).strip()
+            unitID = self.unitNameMap.get(unitName)
+            if unitID is None:
+                print(f"Warning: Unit ID not found for '{unitName}'")
+                return
 
-        existingUtilities = UtilitiesController.getUtilitiesByUnitID(unitID)
-        existingTypes = {util['Type'] for util in existingUtilities}
+            existingUtilities = UtilitiesController.getUtilitiesByUnitID(unitID)
+            existingTypes = {util['Type'] for util in existingUtilities}
 
-        allTypes = ['Electricity', 'Water', 'Gas', 'Internet', 'Trash', 'Maintenance', 'Miscellaneous']
+        self.updateUtilityTypeOptions()
+    
+    def updateUtilityTypeOptions(self):
+        allTypes = ['Electricity','Water','Gas','Internet','Trash','Maintenance','Miscellaneous']
+        selectedMain = self.unitNameInput.currentText().strip()
+        sharedUnits = self.sharedWithInput.currentData() if self.sharedWithInput.isVisible() else []
+
+        unitIDs = []
+
+        # Get main unit ID
+        match = re.match(r'^(.*)\s+\((.*?)\)$', selectedMain)
+        if match:
+            unitName = match.group(1).strip()
+            mainUnitID = self.unitNameMap.get(unitName)
+            if mainUnitID:
+                unitIDs.append(mainUnitID)
+
+        # Add shared unit IDs (if any)
+        strippedSharedNames = [re.sub(r'\s*\(.*?\)', '', name).strip() for name in sharedUnits]
+        for name in strippedSharedNames:
+            sharedID = self.unitNameMap.get(name)
+            if sharedID:
+                unitIDs.append(sharedID)
+
+        # Collect all existing utility types from selected units
+        existingTypes = set()
+        for uid in unitIDs:
+            existingUtilities = UtilitiesController.getUtilitiesByUnitID(uid)
+            existingTypes.update(util['Type'] for util in existingUtilities)
+
+        existingTypes.discard(self.originalType)
+
         self.typeInput.clear()
         model = QStandardItemModel()
 
-        # Check if we're still on the original main unit
-        isOriginalUnit = (unitID == self.mainUnitID)
+        hasAvailable = False
+        selectedIndex = -1
 
-        for t in allTypes:
-            if t not in existingTypes or (isOriginalUnit and t == self.originalType):
+        for i, t in enumerate(allTypes):
+            if t == self.originalType:
                 item = QStandardItem(t)
                 model.appendRow(item)
-
-        for t in allTypes:
-            if t in existingTypes and not (isOriginalUnit and t == self.originalType):
+                selectedIndex = i
+            elif t not in existingTypes:
+                hasAvailable = True
+                item = QStandardItem(t)
+                model.appendRow(item)
+            else:
                 item = QStandardItem(f"{t} (added)")
                 item.setEnabled(False)
                 item.setForeground(QBrush(QColor("707070")))
@@ -118,15 +162,12 @@ class EditUtilityForm(BaseEditWidget):
 
         self.typeInput.setModel(model)
 
-        # Restore the original type if it's still valid
-        if isOriginalUnit and self.originalType:
-            index = self.typeInput.findText(self.originalType)
-            if index >= 0:
-                self.typeInput.setCurrentIndex(index)
-            else:
-                self.typeInput.setCurrentIndex(0)
-        else:
+        if selectedIndex != -1:
+            self.typeInput.setCurrentIndex(selectedIndex)
+        elif hasAvailable:
             self.typeInput.setCurrentIndex(0)
+        else:
+            self.typeInput.setCurrentIndex(-1)
 
     def getFormData(self) -> dict:
         data = {}
