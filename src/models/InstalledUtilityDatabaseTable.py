@@ -456,7 +456,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             LEFT JOIN installedutility ON installedutility.UtilityID = u.UtilityID LEFT JOIN unit ON installedutility.UnitID = unit.UnitID
             WHERE ((unit.Type = 'Shared') 
             OR ((SELECT COUNT(*) FROM (SELECT * FROM installedutility iu WHERE iu.UtilityID = u.UtilityID) AS c) <= 1 AND unit.Type = 'Individual')
-            OR (unit.NAME IS NULL)); 
+            OR (unit.NAME IS NULL))
             """
             if searchValue is not None:
                 sql += f"AND (u.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
