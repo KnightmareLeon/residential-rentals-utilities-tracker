@@ -9,7 +9,6 @@ from src.models.BillDatabaseTable import BillDatabaseTable as Bill
 from src.models.InstalledUtilityDatabaseTable import InstalledUtilityDatabaseTable as InstalledUtility
 
 from src.utils.constants import Range
-from src.utils.sampleDataGenerator import generateUtilityData, generateRandomeUtilityBills
 from src.utils.diffMonths import diffMonths
 
 class UtilitiesController:
@@ -213,7 +212,6 @@ class UtilitiesController:
         print("Fetching utilities by unit ID:", unitID)
         unitID = int(unitID)
         utilities = InstalledUtility.getUnitUtilities(unitID, type=True)
-        print(utilities)
         return utilities
 
     @staticmethod

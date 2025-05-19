@@ -7,7 +7,6 @@ from src.models.BillDatabaseTable import BillDatabaseTable as Bill
 
 from src.utils.constants import Range
 from src.utils.formatMoney import formatMoney
-from src.utils.sampleDataGenerator import generateRandomUtilityData
 from src.utils.diffMonths import diffMonths
 
 class DashboardController:

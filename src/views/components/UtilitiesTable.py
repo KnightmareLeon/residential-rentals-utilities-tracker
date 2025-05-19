@@ -29,7 +29,6 @@ class UtilitiesTable(BaseTableWidget):
             sortingOrderStr = "ASC"
 
         data, count = UtilitiesController.fetchUtilities(currentPage, sortingOrderStr, sortingField, searchValue)
-        print(data, count)
         self.populateTable(data)
         self.parentWidget().totalPages = count
         self.parentWidget().pageLabel.setText(f"Page {currentPage} of {count}")

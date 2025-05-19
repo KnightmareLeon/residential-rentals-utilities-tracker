@@ -1,7 +1,5 @@
 from PyQt6.QtCore import QDate
 
-from src.utils.sampleDataGenerator import generateBillData
-
 from src.models.BillDatabaseTable import BillDatabaseTable as Bill
 from src.models.UnitDatabaseTable import UnitDatabaseTable as Unit
 from src.models.UtilityDatabaseTable import UtilityDatabaseTable as Utility
