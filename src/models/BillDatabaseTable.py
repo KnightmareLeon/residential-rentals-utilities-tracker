@@ -234,7 +234,6 @@ class BillDatabaseTable(DatabaseTable):
                 sql += f"WHERE (BillID REGEXP \'{searchValue}\' OR ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
                 sql += f"OR TotalAmount REGEXP \'{searchValue}\' OR DueDate REGEXP \'{searchValue}\' "
                 sql += f"OR b.Status REGEXP \'{searchValue}\') "
-            print(sql)
             cursor.execute(sql)
             res2 = cursor.fetchone()["COUNT(*)"]
 
