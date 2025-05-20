@@ -63,12 +63,12 @@ class BillsController:
         if billingPeriodEnd <= billingPeriodStart:
             return "Billing Period End must be later than Billing Period Start"
 
-        if dueDate <= billingPeriodEnd:
-            return "Due Date must be later than Billing Period End"
+        if dueDate < billingPeriodEnd:
+            return "Due Date must be later than or equall to Billing Period End"
 
         if totalAmount.strip() == "":
             return "Total Amount is required"
-        
+
         if InstalledUtility.isUtilityShared(int(utilityID)) and InstalledUtility.getMainUnit(int(utilityID)) != int(unitID):
             unitName = Unit.readOne(int(unitID))["Name"]
             utilType = Utility.readOne(int(utilityID))["Type"]
@@ -139,8 +139,8 @@ class BillsController:
         if billingPeriodEnd <= billingPeriodStart:
             return "Billing Period End must be later than Billing Period Start"
 
-        if dueDate <= billingPeriodStart:
-            return "Due Date must be later than Billing Period Start"
+        if dueDate < billingPeriodEnd:
+            return "Due Date must be later than or equal to Billing Period End"
 
         print("Editing bill:", originalID, unitID, utilityID, amountValue, billingPeriodStart, billingPeriodEnd, status, dueDate)
         editedColumns = {
