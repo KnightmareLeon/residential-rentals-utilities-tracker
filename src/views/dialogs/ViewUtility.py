@@ -10,6 +10,9 @@ class ViewUtility(BaseViewWidget):
         self.setMinimumSize(1075, 600)
         self.setMaximumSize(1300, 600)
 
+        # format installation dates
+        utilityData["InstallationDate"] = utilityData["InstallationDate"].strftime("%B %d, %Y")
+
         contentLayout = QHBoxLayout()
         contentLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         contentLayout.setSpacing(30)

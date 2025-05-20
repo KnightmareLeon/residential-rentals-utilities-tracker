@@ -12,6 +12,11 @@ class ViewBill(BaseViewWidget):
 
         self.mainWindow = mainWindow
         self.billID = id
+
+        # format dates
+        billData["BillingPeriodStart"] = billData["BillingPeriodStart"].strftime("%B %d, %Y")
+        billData["BillingPeriodEnd"] = billData["BillingPeriodEnd"].strftime("%B %d, %Y")
+        billData["DueDate"] = billData["DueDate"].strftime("%B %d, %Y")
         
         # Create "Bill Information" card and add details
         billInfoCard = self.createCard("Bill Information")

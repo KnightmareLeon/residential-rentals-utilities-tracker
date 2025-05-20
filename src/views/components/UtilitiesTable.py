@@ -33,7 +33,6 @@ class UtilitiesTable(BaseTableWidget):
         self.parentWidget().totalPages = count
         self.parentWidget().pageLabel.setText(f"Page {currentPage} of {count}")
 
-
     def handleViewButton(self, row_idx):
         item = self.item(row_idx, 0)
         if not item:
