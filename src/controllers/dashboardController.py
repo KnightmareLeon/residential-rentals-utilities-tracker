@@ -27,11 +27,11 @@ class DashboardController:
         for utility in unitBills.keys():
             for bill in unitBills[utility]:
                 bill["BillingPeriodEnd"] = bill["BillingPeriodEnd"].strftime("%Y-%m-%d")
-        
+
         earliestBillDates = Bill.getEarliestBillDate() if Bill.getEarliestBillDate() is not None else date(1900, 1, 1)
         monthsDiff = diffMonths(datetime.now(), datetime.combine(earliestBillDates, datetime.min.time())) - monthRange
         return unitBills,  datetime.now() - relativedelta(months=monthsDiff)
-    
+
     @staticmethod
     def fetchBillsSummary(monthRange: int, currPage: QDate) -> tuple[str, str, int]:
         """
@@ -43,12 +43,11 @@ class DashboardController:
                 range = r
                 break
         offsetInt = diffMonths(datetime.now(), currPage) + 1
-        print(range)
         balance, paid, unpaid = (formatMoney(Bill.billsTotalSum(range=range, offset=offsetInt)), 
                                 formatMoney(Bill.billsTotalSum(range=range, offset=offsetInt, paidOnly=True)),
                                 str(Bill.unpaidBillsCount(range=range, offset=offsetInt)))
         return (balance, paid, unpaid)
-    
+
     @staticmethod
     def fetchUpcomingBills() -> list[dict[str, str]]:
         """
@@ -61,5 +60,3 @@ class DashboardController:
             bill["DueDate"] = bill["DueDate"].strftime("%B %d, %Y")
 
         return urgentBills
-    
-    

@@ -22,24 +22,36 @@ class BillsController:
         
         searchValue = None if searchValue == "" else searchValue
 
-        #monthsMap = {"January" : "01", "February" : "02", "March" : "03", "April" : "04", "May" : "05", "June" : "06", "July": "07",
-        #            "August" : "08", "September" : "09", "October" : "10", "November" : "11", "December" : "12"}
-        #
-        #if searchValue is not None:
-        #    m = 0
-        #    regex = re.escape(searchValue)
-        #    for month in monthsMap.keys():
-        #        if re.search(regex, month, re.IGNORECASE):
-        #            if m == 0:
-        #                searchValue = monthsMap[month]
-        #                m += 1
-        #            else :
-        #                searchValue += "|" + monthsMap[month]
-        totalPages =  Bill.uniqueTotalCount(searchValue) // 50 + 1
-        fetchedBills = Bill.uniqueRead(searchValue, sortingField, sortingOrder, page=currentPage)
+        monthsMap = {"January" : "1", "February" : "2", "March" : "3", "April" : "4", "May" : "5", "June" : "6", "July": "7",
+                    "August" : "8", "September" : "9", "October" : "1", "November" : "11", "December" : "12"}
+        months = []
+        day = ""
+        year = ""
+
+        if searchValue is not None:
+            regex = re.escape(searchValue) 
+            for month in monthsMap.keys():
+                if re.search(regex, month, re.IGNORECASE):
+                    months.append(monthsMap[month])
+                else:
+                    monthregex = re.escape(month)
+                    if re.search(monthregex, searchValue, re.IGNORECASE):
+                        months.append(monthsMap[month])
+                        splitSearch = searchValue.split()
+                        if len(splitSearch) > 1:
+                            day = splitSearch[1].replace(",","") if splitSearch[1].replace(",","").isdigit() else ""
+                            if day.isdigit():
+                                if int(day) > 31:
+                                    day = ""
+                                    year = splitSearch[1] if splitSearch[1].isdigit else "" 
+                        if len(splitSearch) > 2:
+                            year = splitSearch[2] if splitSearch[2].isdigit else ""
+
+        totalPages =  Bill.uniqueTotalCount(searchValue, months, day, year) // 50 + 1
+        fetchedBills = Bill.uniqueRead(searchValue, sortingField, sortingOrder, months, day, year, page=currentPage)
         for bill in fetchedBills:
             bill["TotalAmount"] = formatMoney(amount = bill["TotalAmount"])
-        #    bill["DueDate"] = bill["DueDate"].strftime("%B %d, %Y")
+            bill["DueDate"] = bill["DueDate"].strftime("%B %d, %Y")
         return fetchedBills, totalPages 
     
     @staticmethod
@@ -51,12 +63,12 @@ class BillsController:
         if billingPeriodEnd <= billingPeriodStart:
             return "Billing Period End must be later than Billing Period Start"
 
-        if dueDate <= billingPeriodEnd:
-            return "Due Date must be later than Billing Period End"
+        if dueDate < billingPeriodEnd:
+            return "Due Date must be later than or equall to Billing Period End"
 
         if totalAmount.strip() == "":
             return "Total Amount is required"
-        
+
         if InstalledUtility.isUtilityShared(int(utilityID)) and InstalledUtility.getMainUnit(int(utilityID)) != int(unitID):
             unitName = Unit.readOne(int(unitID))["Name"]
             utilType = Utility.readOne(int(utilityID))["Type"]
@@ -127,8 +139,8 @@ class BillsController:
         if billingPeriodEnd <= billingPeriodStart:
             return "Billing Period End must be later than Billing Period Start"
 
-        if dueDate <= billingPeriodStart:
-            return "Due Date must be later than Billing Period Start"
+        if dueDate < billingPeriodEnd:
+            return "Due Date must be later than or equal to Billing Period End"
 
         print("Editing bill:", originalID, unitID, utilityID, amountValue, billingPeriodStart, billingPeriodEnd, status, dueDate)
         editedColumns = {
