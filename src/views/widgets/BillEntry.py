@@ -33,8 +33,8 @@ class BillEntry(QWidget):
         self.frame = QFrame(self)
         self.frame.setStyleSheet("background-color: #1C1C1C; border-radius: 5px; padding: 8px;")
         self.frame.setContentsMargins(0, 0, 0, 0)
-        self.frame.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-        self.frame.setFixedHeight(45)
+        self.frame.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
+        self.frame.setMaximumHeight(50)
 
         layout = QGridLayout(self.frame)
         layout.setContentsMargins(0, 0, 0, 0)
