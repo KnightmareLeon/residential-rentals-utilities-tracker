@@ -303,7 +303,7 @@ class BaseViewWidget(QDialog):
         hLayout.setContentsMargins(0, 0, 0, 0)
         hLayout.setSpacing(10)
 
-        labelWidget = QLabel(f"{label}:")
+        labelWidget = QLabel(str(label))
         labelWidget.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         labelWidget.setWordWrap(True)
         labelWidget.setContentsMargins(0, 0, 0, 0)
