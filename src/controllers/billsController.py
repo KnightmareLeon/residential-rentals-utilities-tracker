@@ -1,10 +1,15 @@
+import re
+
 from PyQt6.QtCore import QDate
 
 from src.models.BillDatabaseTable import BillDatabaseTable as Bill
 from src.models.UnitDatabaseTable import UnitDatabaseTable as Unit
 from src.models.UtilityDatabaseTable import UtilityDatabaseTable as Utility
 from src.models.InstalledUtilityDatabaseTable import InstalledUtilityDatabaseTable as InstalledUtility
+
 from src.controllers.utilitiesController import UtilitiesController
+
+from src.utils.formatMoney import formatMoney
 
 class BillsController:
     
@@ -17,8 +22,25 @@ class BillsController:
         
         searchValue = None if searchValue == "" else searchValue
 
+        #monthsMap = {"January" : "01", "February" : "02", "March" : "03", "April" : "04", "May" : "05", "June" : "06", "July": "07",
+        #            "August" : "08", "September" : "09", "October" : "10", "November" : "11", "December" : "12"}
+        #
+        #if searchValue is not None:
+        #    m = 0
+        #    regex = re.escape(searchValue)
+        #    for month in monthsMap.keys():
+        #        if re.search(regex, month, re.IGNORECASE):
+        #            if m == 0:
+        #                searchValue = monthsMap[month]
+        #                m += 1
+        #            else :
+        #                searchValue += "|" + monthsMap[month]
         totalPages =  Bill.uniqueTotalCount(searchValue) // 50 + 1
-        return Bill.uniqueRead(searchValue, sortingField, sortingOrder, page=currentPage), totalPages 
+        fetchedBills = Bill.uniqueRead(searchValue, sortingField, sortingOrder, page=currentPage)
+        for bill in fetchedBills:
+            bill["TotalAmount"] = formatMoney(amount = bill["TotalAmount"])
+        #    bill["DueDate"] = bill["DueDate"].strftime("%B %d, %Y")
+        return fetchedBills, totalPages 
     
     @staticmethod
     def addBill(unitID: str, utilityID: str, totalAmount: str, billingPeriodStart: QDate, billingPeriodEnd: QDate, status: str, dueDate: QDate) -> str:
@@ -29,8 +51,8 @@ class BillsController:
         if billingPeriodEnd <= billingPeriodStart:
             return "Billing Period End must be later than Billing Period Start"
 
-        if dueDate <= billingPeriodStart:
-            return "Due Date must be later than Billing Period Start"
+        if dueDate <= billingPeriodEnd:
+            return "Due Date must be later than Billing Period End"
 
         if totalAmount.strip() == "":
             return "Total Amount is required"
