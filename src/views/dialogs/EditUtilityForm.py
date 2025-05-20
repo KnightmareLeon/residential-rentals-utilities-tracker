@@ -26,8 +26,12 @@ class EditUtilityForm(BaseEditWidget):
         self.addSection("Utility Information")
 
         # Determine main unit and its display name
-        mainUnit = next((u for u in units if "(Main)" in u["Name"]), None)
-        self.mainUnitID = mainUnit["UnitID"] if mainUnit else None
+        if len(units) == 1:
+            self.mainUnitID = units[0]["UnitID"]
+        else:
+            mainUnit = next((u for u in units if "(Main)" in u["Name"]), None)
+            self.mainUnitID = mainUnit["UnitID"] if mainUnit else None
+
         self.mainUnitName = self.unitIDMap[self.mainUnitID]["Name"] if self.mainUnitID else None
         mainUnitType = self.unitIDMap[self.mainUnitID]["Type"] if self.mainUnitID else None
         mainUnitDisplay = f"{self.mainUnitName} ({mainUnitType})" if self.mainUnitName else None
@@ -36,7 +40,7 @@ class EditUtilityForm(BaseEditWidget):
         unitDisplay = [f"{unit['Name']} ({unit['Type']})" for unit in self.allUnits]
 
         self.typeInput = self.addComboBox("Utility", UTILITIES, sectionTitle="Utility Information", defaultValue=type)
-        self.unitNameInput = self.addComboBox("Unit", unitDisplay, sectionTitle="Utility Information")
+        self.unitNameInput = self.addComboBox("Unit", unitDisplay, sectionTitle="Utility Information", defaultValue=mainUnitDisplay)
         self.sharedWithInput = self.addMultiselectComboBox("Shared with Unit(s)", [], sectionTitle="Utility Information", isVisible=False)
         self.installationDateInput = self.addDateInput("Installation Date", sectionTitle="Utility Information", defaultDate=installationDate)
         self.statusInput = self.addComboBox("Status", ['Active','Inactive', 'N/A'], sectionTitle="Utility Information", defaultValue=status)
