@@ -48,10 +48,10 @@ class BillsDashboard(QWidget):
 
         contentWidget = QWidget()
         contentWidget.setStyleSheet("background-color: #1C1C1C; border-radius: 10px;")
-        contentLayout = QVBoxLayout(contentWidget)
-        contentLayout.setSpacing(0)
-        contentLayout.setContentsMargins(0, 0, 0, 0)
-        contentLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.contentLayout = QVBoxLayout(contentWidget)
+        self.contentLayout.setSpacing(0)
+        self.contentLayout.setContentsMargins(0, 0, 0, 0)
+        self.contentLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         headerLayout = QGridLayout()
         headerLayout.setContentsMargins(5, 10, 5, 10)
@@ -71,13 +71,13 @@ class BillsDashboard(QWidget):
 
         headerWidget = QWidget()
         headerWidget.setLayout(headerLayout)
-        contentLayout.addWidget(headerWidget)
+        self.contentLayout.addWidget(headerWidget)
 
         line = QFrame()
         line.setFrameShape(QFrame.Shape.HLine)
         line.setFrameShadow(QFrame.Shadow.Sunken)
         line.setStyleSheet("background-color: #444;")
-        contentLayout.addWidget(line)
+        self.contentLayout.addWidget(line)
 
         for index, bill in enumerate(self.bills[:15]):
             utility = bill["Type"]
@@ -89,7 +89,7 @@ class BillsDashboard(QWidget):
             billEntry = BillEntry(index, utility, color, balance, due, status)
             billEntry.rowClicked.connect(self.handleRowClick) 
 
-            contentLayout.addWidget(billEntry)
+            self.contentLayout.addWidget(billEntry)
 
         scrollArea.setWidget(contentWidget)
         outerLayout.addWidget(scrollArea)
@@ -139,16 +139,26 @@ class BillsDashboard(QWidget):
         for index, bill in enumerate(self.bills[:15]):
             utility = bill["Type"]
             color = categoryColors.get(utility, defaultColor)
-            balance = f"₱{bill['TotalAmount']}"
+            balance = bill['TotalAmount']
             due = bill["DueDate"]
             status = bill["Status"]
 
-            billEntry = BillEntry(utility, color, balance, due, status, index)
+            billEntry = BillEntry(index=index, utility=utility, color=color, balance=balance, due=due, status=status)
             billEntry.rowClicked.connect(self.handleRowClick)
             self.contentLayout.addWidget(billEntry)
+        
+        self.contentLayout.addStretch()
 
     def clearDashboard(self):
+        numStaticWidgets = 2
+
         for i in reversed(range(self.contentLayout.count())):
-            widget = self.contentLayout.itemAt(i).widget()
-            if widget is not None:
-                widget.deleteLater()
+            if i < numStaticWidgets:
+                break
+
+            item = self.contentLayout.itemAt(i)
+
+            if item.widget():
+                item.widget().deleteLater()
+            else:
+                self.contentLayout.removeItem(item)

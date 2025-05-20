@@ -36,8 +36,8 @@ class HomePage(QWidget):
         # === Right Column ===
         billsData = DashboardController.fetchUpcomingBills() 
 
-        billsDashboard = BillsDashboard(billsData, self.mainWindow)
-        billsDashboard.viewBills.connect(self.openBillsPage)
+        self.billsDashboard = BillsDashboard(billsData, self.mainWindow)
+        self.billsDashboard.viewBills.connect(self.openBillsPage)
 
         bottomRightWidget = QFrame()
         bottomRightWidget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -76,13 +76,14 @@ class HomePage(QWidget):
 
         rightLayout.addWidget(bottomRightWidget)
         rightLayout.addSpacing(5)
-        rightLayout.addWidget(billsDashboard)
+        rightLayout.addWidget(self.billsDashboard)
     
     def openBillsPage(self):
         self.mainWindow.updatePage(self.mainWindow.billsPage, self.mainWindow.billsButton, "Bills")
     
     def updateDashboards(self):
         self.utilityDashboard.updateWidgets()
+        self.billsDashboard.updateDashboard()
 
     def handleAddBillButton(self):
         dialog = AddBillForm()
