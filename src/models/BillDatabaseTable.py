@@ -148,6 +148,9 @@ class BillDatabaseTable(DatabaseTable):
             searchValue : str,
             sortBy : str, 
             order : str,
+            months : list[str],
+            day : str,
+            year : str,
             page : int = 1, 
             limit : int = 50
             ) -> list[dict[str, any]]:
@@ -184,7 +187,14 @@ class BillDatabaseTable(DatabaseTable):
                 sql += f"WHERE (BillID REGEXP \'{searchValue}\' OR ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
                 sql += f"OR TotalAmount REGEXP \'{searchValue}\' OR DueDate REGEXP \'{searchValue}\' "
                 sql += f"OR b.Status REGEXP \'{searchValue}\') "
-
+            if len(months) > 0:
+                sql += " OR ("
+                sql += " OR ".join([f"MONTH(DueDate) = {month} " for month in months])
+                if day != "":
+                    sql += f" AND DAY(DueDate) = {day}"
+                if year != "":
+                    sql += f" AND YEAR(DueDate) = {year}"
+                sql += " )"
             sql += f"ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset};"
             cursor.execute(sql)
             result = cursor.fetchall()
@@ -198,7 +208,10 @@ class BillDatabaseTable(DatabaseTable):
 
     @classmethod
     def uniqueTotalCount(cls,
-        searchValue : str) -> int:
+                searchValue : str,
+                months : list[str],
+                day : str,
+                year : str) -> int:
         """
         Unique method to get the total count of records in the bills table with records
         from unit and utility table.
@@ -217,6 +230,14 @@ class BillDatabaseTable(DatabaseTable):
                 sql += f"WHERE (BillID REGEXP \'{searchValue}\' OR ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
                 sql += f"OR TotalAmount REGEXP \'{searchValue}\' OR DueDate REGEXP \'{searchValue}\' "
                 sql += f"OR b.Status REGEXP \'{searchValue}\') "
+            if len(months) > 0:
+                sql += " OR ("
+                sql += " OR ".join([f"MONTH(DueDate) = {month} " for month in months])
+                if day != "":
+                    sql += f" AND DAY(DueDate) ={day}"
+                if year != "":
+                    sql += f" AND YEAR(DueDate) = {year}"
+                sql += " )"
             cursor.execute(sql)
             result = cursor.fetchone()["COUNT(*)"]
 

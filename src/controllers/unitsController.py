@@ -10,7 +10,7 @@ from src.utils.constants import Range
 from src.utils.diffMonths import diffMonths
 
 class UnitsController:
-    
+
     @staticmethod
     def fetchUnits(currentPage: int, sortingOrder: str, sortingField: str, searchValue: str) -> tuple[list[dict[str, str]], int]:
         """
@@ -20,7 +20,7 @@ class UnitsController:
         searchValue = None if searchValue == "" else searchValue
         totalPages =  Unit.totalCount(searchValue=searchValue) // 50 + 1
         return Unit.read(page=currentPage, sortBy=sortingField, order=sortingOrder, searchValue=searchValue), totalPages
-    
+
     @staticmethod
     def addUnit(name: str, address: str, type: str) -> str:
         """
@@ -97,7 +97,7 @@ class UnitsController:
         print("Fetching unit names")
         
         return Unit.read(columns=["UnitID", "Name", "Type"], limit=Unit.totalCount(), sortBy="Name", order="ASC")
-    
+
     @staticmethod
     def fetchUnitBills(id : str, monthRange : int, offset : datetime) -> tuple[dict[str, list[dict[str, str]]], datetime] :
         id = int(id)
@@ -120,4 +120,3 @@ class UnitsController:
         earliestBillDate = min(earliestBillDates.values()) if len(earliestBillDates.values()) > 0 else date.today() - relativedelta(months=monthRange)
         monthsDiff = diffMonths(datetime.now(), datetime.combine(earliestBillDate, datetime.min.time())) - monthRange
         return unitBills,  datetime.now() - relativedelta(months=monthsDiff)
-        
