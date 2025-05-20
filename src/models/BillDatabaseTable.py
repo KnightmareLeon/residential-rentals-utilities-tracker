@@ -184,14 +184,7 @@ class BillDatabaseTable(DatabaseTable):
                 sql += f"WHERE (BillID REGEXP \'{searchValue}\' OR ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
                 sql += f"OR TotalAmount REGEXP \'{searchValue}\' OR DueDate REGEXP \'{searchValue}\' "
                 sql += f"OR b.Status REGEXP \'{searchValue}\') "
-            sql += """   
-                UNION SELECT b.billID, u.Name, ut.Type, b.TotalAmount, b.DueDate, b.Status FROM bill b
-                RIGHT JOIN utility ut ON b.UtilityID = ut.UtilityID JOIN unit u ON b.UnitID = u.UnitID 
-                """
-            if searchValue is not None:
-                sql += f"WHERE (BillID REGEXP \'{searchValue}\' OR ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
-                sql += f"OR TotalAmount REGEXP \'{searchValue}\' OR DueDate REGEXP \'{searchValue}\' "
-                sql += f"OR b.Status REGEXP \'{searchValue}\') "
+
             sql += f"ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset};"
             cursor.execute(sql)
             result = cursor.fetchall()
@@ -225,19 +218,8 @@ class BillDatabaseTable(DatabaseTable):
                 sql += f"OR TotalAmount REGEXP \'{searchValue}\' OR DueDate REGEXP \'{searchValue}\' "
                 sql += f"OR b.Status REGEXP \'{searchValue}\') "
             cursor.execute(sql)
-            res1 = cursor.fetchone()["COUNT(*)"]
-            sql = """
-            SELECT COUNT(*) FROM bill b 
-            RIGHT JOIN utility ut ON b.UtilityID = ut.UtilityID JOIN unit u ON b.UnitID = u.UnitID 
-            """
-            if searchValue is not None:
-                sql += f"WHERE (BillID REGEXP \'{searchValue}\' OR ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
-                sql += f"OR TotalAmount REGEXP \'{searchValue}\' OR DueDate REGEXP \'{searchValue}\' "
-                sql += f"OR b.Status REGEXP \'{searchValue}\') "
-            cursor.execute(sql)
-            res2 = cursor.fetchone()["COUNT(*)"]
+            result = cursor.fetchone()["COUNT(*)"]
 
-            result = max(res1, res2)
         except Exception as e:
             print(f"Error: {e}")
             raise e
@@ -654,9 +636,10 @@ class BillDatabaseTable(DatabaseTable):
     #Helper methods
 
     @classmethod
-    def __rangeClause(cls,
-                      range: Range,
-                      offset: int) -> str:
+    def __rangeClause(
+                    cls,
+                    range: Range,
+                    offset: int) -> str:
         """
         Helper method that returns the range clause for the given range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
@@ -680,9 +663,10 @@ class BillDatabaseTable(DatabaseTable):
         return rangeClause
 
     @classmethod
-    def __getMaxOffset(cls,
-                       date: datetime.date,
-                       range: Range) -> int:
+    def __getMaxOffset(
+                    cls,
+                    date: datetime.date,
+                    range: Range) -> int:
         """
         Helper method that returns the maximum offset for the given date and range.
         The range can be one of the following: 3m, 6m, 1y, 2y.

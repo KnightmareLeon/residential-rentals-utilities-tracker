@@ -43,9 +43,10 @@ class DashboardController:
                 range = r
                 break
         offsetInt = diffMonths(datetime.now(), currPage) + 1
+        print(range)
         balance, paid, unpaid = (formatMoney(Bill.billsTotalSum(range=range, offset=offsetInt)), 
-                                 formatMoney(Bill.billsTotalSum(range=range, offset=offsetInt, paidOnly=True)),
-                                 str(Bill.unpaidBillsCount(range=range, offset=offsetInt)))
+                                formatMoney(Bill.billsTotalSum(range=range, offset=offsetInt, paidOnly=True)),
+                                str(Bill.unpaidBillsCount(range=range, offset=offsetInt)))
         return (balance, paid, unpaid)
     
     @staticmethod
@@ -57,7 +58,7 @@ class DashboardController:
         urgentBills = Bill.urgentBills()
         for bill in urgentBills:
             bill["BillID"] = str(bill["BillID"])
-            bill["DueDate"] = bill["DueDate"].strftime("%Y-%m-%d")
+            bill["DueDate"] = bill["DueDate"].strftime("%B %d, %Y")
 
         return urgentBills
     
