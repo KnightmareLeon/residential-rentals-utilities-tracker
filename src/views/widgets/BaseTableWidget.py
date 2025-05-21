@@ -39,6 +39,7 @@ class BaseTableWidget(QTableWidget):
     TABLE_TEXT_COLOR_MAP = {
         (3, "Active"): "#00FF6F",
         (3, "Inactive"): "#FA1647",
+        (3, "N/A"): "#9C9C9C",
         (5, "Paid"): "#00FF6F",
         (5, "Unpaid"): "#FFE921",
         (5, "Overdue"): "#FA1647",

@@ -30,6 +30,8 @@ class ViewUnit(BaseViewWidget):
         self.addUtilityDetails(utilitiesLayout, unitUtilities)
         leftLayout.addWidget(utilitiesCard)
 
+        leftLayout.addStretch()
+
         contentLayout.addLayout(leftLayout)
 
         billsCard = self.createCard("Unit Bills")

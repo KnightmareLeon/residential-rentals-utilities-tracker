@@ -111,9 +111,9 @@ class UtilityDashboard(QFrame):
         self.summaryLabels = {}  # Store value labels here
 
         cards = [
-            ("Total balance of period", "₱ 142,034.12", "assets/icons/totalBalance.png", "balance"),
-            ("Total paid in period", "₱ 110,342.00", "assets/icons/totalPaid.png", "paid"),
-            ("Unpaid Bills", "7", "assets/icons/unpaidBills.png", "unpaid")
+            ("Total balance of period", "", "assets/icons/totalBalance.png", "balance"),
+            ("Total unpaid in period", "", "assets/icons/totalPaid.png", "paid"),
+            ("Unpaid Bills", "", "assets/icons/unpaidBills.png", "unpaid")
         ]
 
         for title, value, iconPath, key in cards:
@@ -124,13 +124,13 @@ class UtilityDashboard(QFrame):
         return container
 
     # UPDATES
-    def updateSummaryCards(self, balance=None, paid=None, unpaid=None) -> None:
-        if balance is not None:
-            self.summaryLabels["balance"].setText(balance)
-        if paid is not None:
-            self.summaryLabels["paid"].setText(paid)
-        if unpaid is not None:
-            self.summaryLabels["unpaid"].setText(unpaid)
+    def updateSummaryCards(self, totalCost=None, totalUnpaid=None, unpaidBills=None) -> None:
+        if totalCost is not None:
+            self.summaryLabels["balance"].setText(totalCost)
+        if totalUnpaid is not None:
+            self.summaryLabels["paid"].setText(totalUnpaid)
+        if unpaidBills is not None:
+            self.summaryLabels["unpaid"].setText(unpaidBills)
 
     def updateWidgets(self) -> None:
         self.chartWidget.updateWidget()
@@ -138,5 +138,5 @@ class UtilityDashboard(QFrame):
         monthRange = self.chartWidget.parseDateRangeToMonths(self.chartWidget.dateRange)
         offset = self.chartWidget.currDateOffset
 
-        balance, paid, unpaid = DashboardController.fetchBillsSummary(monthRange, offset)
-        self.updateSummaryCards(balance, paid, unpaid)
+        totalUnpaid, totalCost, unpaidBills = DashboardController.fetchBillsSummary(monthRange, offset)
+        self.updateSummaryCards(totalCost, totalUnpaid, unpaidBills)
