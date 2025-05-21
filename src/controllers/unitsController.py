@@ -20,6 +20,7 @@ class UnitsController:
 
         searchValue = searchValue.replace("'", "''")
         searchValue = None if searchValue == "" else searchValue
+
         totalPages =  Unit.totalCount(searchValue=searchValue) // 50 + 1
         return Unit.read(page=currentPage, sortBy=sortingField, order=sortingOrder, searchValue=searchValue), totalPages
 
@@ -29,9 +30,20 @@ class UnitsController:
         Adds a new unit with the given data.
         """
 
+        #Data Length Check
+        errorMessage = ""
+        if len(name) > 30:
+            errorMessage += "Name must not exceed 30 characters."
+        if len(address) > 255:
+            errorMessage += "Address must not exceed 255 characters."
+        if len(errorMessage) > 0:
+            return errorMessage
+
+        #Data Reformat
         name = name.replace("'", "''")
         address = address.replace("'", "''")
-        
+
+        #Unique Name Error Check
         if Unit.doesUnitNameExist(name):
             return (f"{name} already exists. Please input another name.")
 
@@ -55,7 +67,7 @@ class UnitsController:
         for utility in unitBills.keys():
             for bill in unitBills[utility]:
                 bill["BillingPeriodEnd"] = bill["BillingPeriodEnd"].strftime("%Y-%m-%d")
-        
+
         return ( # UNIT INFO
             unitInfo, 
         # INSTALLED UTILITIES
@@ -73,10 +85,19 @@ class UnitsController:
         originalID = int(originalID)
         originalData = Unit.readOne(originalID)
         editedColumns = {}
+
+        #Data Length Check
+        errorMessage = ""
+        if len(name) > 30:
+            errorMessage += "Name must not exceed 30 characters."
+        if len(address) > 255:
+            errorMessage += "Address must not exceed 255 characters."
+        if len(errorMessage) > 0:
+            return errorMessage
         
+        #Data Reformat
         name = name.replace("'", "''")
         address = address.replace("'", "''")
-
         for origKey in originalData.keys():
             if isinstance(originalData[origKey], str):
                 originalData[origKey] = originalData[origKey].replace("'", "''")
