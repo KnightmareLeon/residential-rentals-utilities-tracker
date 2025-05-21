@@ -425,6 +425,39 @@ class BillDatabaseTable(DatabaseTable):
         return result
     
     @classmethod
+    def unpaidBillsTotalSum(cls,
+                    range: Range,
+                    offset: int = 1) -> float:
+        """
+        Returns the total sum of all unpaid bills for the given range.
+        The range can be one of the following: 3m, 6m, 1y, 2y.
+
+        - range: Range, the range of months to get bills for.
+        - offset: int, the number of months to go back from the current date.
+        """
+
+        cls.initialize()
+
+        result = 0.0
+
+        try:
+            
+            rangeClause = cls.__rangeClause(range, offset)
+
+            cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
+            sql = f"SELECT SUM(Bill.TotalAmount) AS TotalAmount FROM {cls.getTableName()} WHERE {rangeClause} AND Bill.Status != 'Paid'"
+            cursor.execute(sql)
+            result = cursor.fetchone()['TotalAmount']
+
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        finally:
+            cursor.close()
+        return result
+
+
+    @classmethod
     def unpaidBillsCount(cls,
                         range: Range,
                         offset: int = 1) -> int:

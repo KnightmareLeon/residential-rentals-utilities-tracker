@@ -20,6 +20,7 @@ class BillsController:
         """
         print(f"Fetching bills in page {currentPage} sorted by {sortingField} {sortingOrder} while searching for {searchValue}")
         
+        searchValue = searchValue.replace("'", "''")
         searchValue = None if searchValue == "" else searchValue
 
         monthsMap = {"January" : "1", "February" : "2", "March" : "3", "April" : "4", "May" : "5", "June" : "6", "July": "7",
