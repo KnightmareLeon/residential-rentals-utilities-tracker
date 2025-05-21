@@ -20,6 +20,7 @@ class UtilitiesController:
         Fetches all utilitys with pagination, sorting, and searching.
         """
         print(f"Fetching utilities in page {currentPage} sorted by {sortingField} {sortingOrder} while searching for {searchValue}")
+        searchValue = searchValue.replace("'", "''")
         searchValue = None if searchValue == "" else searchValue
         totalPages =  InstalledUtility.uniqueTotalCount(searchValue) // 50 + 1
 

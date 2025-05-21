@@ -17,6 +17,8 @@ class UnitsController:
         Fetches all units with pagination, sorting, and searching.
         """
         print(f"Fetching units in page {currentPage} sorted by {sortingField} {sortingOrder} while searching for {searchValue}")
+
+        searchValue = searchValue.replace("'", "''")
         searchValue = None if searchValue == "" else searchValue
         totalPages =  Unit.totalCount(searchValue=searchValue) // 50 + 1
         return Unit.read(page=currentPage, sortBy=sortingField, order=sortingOrder, searchValue=searchValue), totalPages
@@ -26,8 +28,13 @@ class UnitsController:
         """
         Adds a new unit with the given data.
         """
+
+        name = name.replace("'", "''")
+        address = address.replace("'", "''")
+        
         if Unit.doesUnitNameExist(name):
             return (f"{name} already exists. Please input another name.")
+
         print("Adding unit:", name, address, type)
         Unit.create({"Name" : name, "Address" : address, "Type" : type})
         return "Unit added successfully"
@@ -62,10 +69,18 @@ class UnitsController:
         Edits a unit with the given data.
         """
         print("Editing unit:", originalID, name, address, type)
+
         originalID = int(originalID)
         originalData = Unit.readOne(originalID)
         editedColumns = {}
         
+        name = name.replace("'", "''")
+        address = address.replace("'", "''")
+
+        for origKey in originalData.keys():
+            if isinstance(originalData[origKey], str):
+                originalData[origKey] = originalData[origKey].replace("'", "''")
+
         if name != originalData["Name"] and Unit.doesUnitNameExist(name):
             return f"{name} already exists. Please input another name."
         if name != originalData["Name"]:
