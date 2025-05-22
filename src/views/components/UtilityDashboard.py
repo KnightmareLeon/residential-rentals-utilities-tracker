@@ -111,8 +111,8 @@ class UtilityDashboard(QFrame):
         self.summaryLabels = {}  # Store value labels here
 
         cards = [
-            ("Total balance of period", "", "assets/icons/totalBalance.png", "balance"),
-            ("Total unpaid in period", "", "assets/icons/totalPaid.png", "paid"),
+            ("Total Cost of period", "", "assets/icons/totalBalance.png", "balance"),
+            ("Total Unpaid in period", "", "assets/icons/totalPaid.png", "paid"),
             ("Unpaid Bills", "", "assets/icons/unpaidBills.png", "unpaid")
         ]
 

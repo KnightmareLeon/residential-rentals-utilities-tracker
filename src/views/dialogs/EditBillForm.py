@@ -40,10 +40,10 @@ class EditBillForm(BaseEditWidget):
         
         self.statusInput = self.addComboBox("Status", ['Unpaid', 'Paid', 'Partially Paid', 'Overdue'], sectionTitle="Bill Details", defaultValue=status)
         self.totalAmountInput = self.addFloatInput("Total Amount", defaultValue=float(totalAmount), sectionTitle="Bill Details")
-        self.dueDateInput = self.addDateInput("Due Date", defaultDate=dueDate, sectionTitle="Bill Details")
         self.billingStartInput = self.addDateInput("Billing Period Start", defaultDate=billingPeriodStart, sectionTitle="Bill Details")
         self.billingEndInput = self.addDateInput("Billing Period End", defaultDate=billingPeriodEnd, sectionTitle="Bill Details")
-
+        self.dueDateInput = self.addDateInput("Due Date", defaultDate=dueDate, sectionTitle="Bill Details")
+        
         self.onUnitNameChanged(unitDisplayDefault)
 
         index = self.typeInput.findText(utilityType)

@@ -96,52 +96,77 @@ def add_utilities(units, install_date):
 
 def generate_bills(utility_records, from_date):
     today = date.today()
-    three_months_ago = today.replace(day=1) - timedelta(days=90)
+    first_of_this_month = date(today.year, today.month, 1)
     month_cursor = date(from_date.year, from_date.month, 1)
 
     while month_cursor < today:
         next_month = (month_cursor.replace(day=28) + timedelta(days=4)).replace(day=1)
         for record in utility_records:
-            monthly = record["utility"] not in ['Gas', 'Maintenance', 'Miscellaneous']
-            irregular = record["utility"] in ['Gas', 'Maintenance', 'Miscellaneous']
-            should_add = monthly or (irregular and random.random() < 0.25)
+            utility_type = record["utility"]
+            is_irregular = utility_type in ['Gas', 'Maintenance', 'Miscellaneous']
+            is_monthly = not is_irregular
 
-            if should_add:
+            should_add = is_monthly or (is_irregular and random.random() < 0.25)
+            if not should_add:
+                continue
+
+            # Determine billing period
+            if is_monthly:
                 billing_start = QDate(month_cursor.year, month_cursor.month, 1)
                 billing_end = QDate(next_month.year, next_month.month, 1).addDays(-1)
-                due_date = billing_end.addDays(15)
+            else:
+                rand_day = random.randint(1, 28)
+                start_date = date(month_cursor.year, month_cursor.month, rand_day)
+                end_date = start_date + timedelta(days=random.randint(3, 10))
+                billing_start = QDate(start_date.year, start_date.month, start_date.day)
+                billing_end = QDate(end_date.year, end_date.month, end_date.day)
 
-                # Status logic
-                if month_cursor < three_months_ago:
-                    status = 'Paid'
-                else:
-                    # More likely to be Paid, but has a chance to be other statuses
-                    recent_statuses = random.choices(
-                        ['Paid', 'Unpaid', 'Partially Paid', 'Overdue'],
-                        weights=[50, 20, 15, 15],
-                        k=1
-                    )[0]
-                    status = recent_statuses
+            due_date = billing_end.addDays(15)
 
-                amount = {
-                    'Electricity': random.uniform(800, 2500),
-                    'Water': random.uniform(200, 700),
-                    'Gas': random.uniform(400, 1000),
-                    'Internet': random.uniform(1500, 2500),
-                    'Trash': random.uniform(100, 300),
-                    'Maintenance': random.uniform(500, 2000),
-                    'Miscellaneous': random.uniform(100, 1500),
-                }[record["utility"]]
+            # Determine status based on age
+            if month_cursor < first_of_this_month - timedelta(days=90):
+                status = 'Paid'
+            elif first_of_this_month - timedelta(days=90) <= month_cursor < first_of_this_month - timedelta(days=30):
+                # Bills 2–3 months ago → mostly paid, some overdue
+                status = random.choices(
+                    ['Paid', 'Overdue'],
+                    weights=[80, 20],
+                    k=1
+                )[0]
+            elif month_cursor >= first_of_this_month:
+                # Current month → no overdue bills
+                status = random.choices(
+                    ['Paid', 'Unpaid', 'Partially Paid'],
+                    weights=[40, 30, 30],
+                    k=1
+                )[0]
+            else:
+                # 1 month ago
+                status = random.choices(
+                    ['Paid', 'Unpaid', 'Partially Paid', 'Overdue'],
+                    weights=[60, 15, 15, 10],
+                    k=1
+                )[0]
 
-                BillsController.addBill(
-                    unitID=str(record["unit_id"]),
-                    utilityID=str(record["id"]),
-                    totalAmount=f"{amount:.2f}",
-                    billingPeriodStart=billing_start,
-                    billingPeriodEnd=billing_end,
-                    status=status,
-                    dueDate=due_date
-                )
+            amount = {
+                'Electricity': random.uniform(1500, 4000),
+                'Water': random.uniform(100, 800),
+                'Gas': random.uniform(800, 1100),
+                'Internet': random.uniform(1000, 3500),
+                'Trash': random.uniform(50, 300),
+                'Maintenance': random.uniform(50, 3500),
+                'Miscellaneous': random.uniform(50, 3500),
+            }[utility_type]
+
+            BillsController.addBill(
+                unitID=str(record["unit_id"]),
+                utilityID=str(record["id"]),
+                totalAmount=f"{amount:.2f}",
+                billingPeriodStart=billing_start,
+                billingPeriodEnd=billing_end,
+                status=status,
+                dueDate=due_date
+            )
         month_cursor = next_month
 
 # Run everything
