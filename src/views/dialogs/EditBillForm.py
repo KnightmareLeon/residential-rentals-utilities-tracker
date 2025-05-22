@@ -28,18 +28,29 @@ class EditBillForm(BaseEditWidget):
         )
 
         self.addSection("Bill Information")
-        self.addSection("Bill Details") 
+        self.addSection("Bill Details")
+
+        allUtilities = ['Electricity', 'Water', 'Gas', 'Internet', 'Trash', 'Maintenance', 'Miscellaneous']
 
         self.unitNameInput = self.addComboBox("Unit", self.unitDisplayNames, sectionTitle="Bill Information", defaultValue=unitDisplayDefault)
         self.unitNameInput.currentTextChanged.connect(self.onUnitNameChanged)
 
-        self.typeInput = self.addComboBox("Utility Type", ['Electricity', 'Water', 'Gas', 'Internet', 'Trash', 'Maintenance', 'Miscellaneous'], sectionTitle="Bill Information", defaultValue=utilityType)
+        self.typeInput = self.addComboBox("Utility Type", allUtilities, sectionTitle="Bill Information", defaultValue=utilityType)
+        self.typeInput.setPlaceholderText("")
         
         self.statusInput = self.addComboBox("Status", ['Unpaid', 'Paid', 'Partially Paid', 'Overdue'], sectionTitle="Bill Details", defaultValue=status)
         self.totalAmountInput = self.addFloatInput("Total Amount", defaultValue=float(totalAmount), sectionTitle="Bill Details")
         self.dueDateInput = self.addDateInput("Due Date", defaultDate=dueDate, sectionTitle="Bill Details")
         self.billingStartInput = self.addDateInput("Billing Period Start", defaultDate=billingPeriodStart, sectionTitle="Bill Details")
         self.billingEndInput = self.addDateInput("Billing Period End", defaultDate=billingPeriodEnd, sectionTitle="Bill Details")
+
+        self.onUnitNameChanged(unitDisplayDefault)
+
+        index = self.typeInput.findText(utilityType)
+        if index != -1:
+            self.typeInput.setCurrentIndex(index)
+        else:
+            self.typeInput.setCurrentIndex(-1)
     
     def onUnitNameChanged(self, displayName: str):
         unitID = self.unitDisplayToID.get(displayName)
