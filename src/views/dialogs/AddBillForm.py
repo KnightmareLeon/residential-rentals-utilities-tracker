@@ -27,11 +27,11 @@ class AddBillForm(BaseCreateWidget):
         self.unitNameInput.currentTextChanged.connect(self.handleUnitChange)
         
         self.utilityInput = self.addComboBox("Utility Type", [], "Bill Information")
-        
+
+        self.statusInput = self.addComboBox("Status", ['Unpaid', 'Paid', 'Partially Paid', 'Overdue'], "Bill Details")        
         self.totalAmountInput = self.addFloatInput("Total Amount", 0, 999999999, "Bill Details")
         self.billingPeriodStartInput = self.addDateInput("Billing Period Start", sectionTitle="Bill Details")
         self.billingPeriodEndInput = self.addDateInput("Billing Period End", sectionTitle="Bill Details")
-        self.statusInput = self.addComboBox("Status", ['Unpaid', 'Paid', 'Partially Paid', 'Overdue'], "Bill Details")
         self.dueDateInput = self.addDateInput("Due Date", sectionTitle="Bill Details")
 
         self.handleUnitChange()
