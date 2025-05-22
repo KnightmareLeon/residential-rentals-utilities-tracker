@@ -61,8 +61,8 @@ class BillsController:
         Adds a new unit with the given data.
         """
         
-        if billingPeriodEnd <= billingPeriodStart:
-            return "Billing Period End must be later than Billing Period Start"
+        if billingPeriodEnd < billingPeriodStart:
+            return "Billing Period End must be later than or equal to Billing Period Start"
 
         if dueDate < billingPeriodEnd:
             return "Due Date must be later than or equall to Billing Period End"
@@ -137,8 +137,8 @@ class BillsController:
         if amountValue < 0:
             return "Total Amount cannot be negative"
 
-        if billingPeriodEnd <= billingPeriodStart:
-            return "Billing Period End must be later than Billing Period Start"
+        if billingPeriodEnd < billingPeriodStart:
+            return "Billing Period End must be later than or equal to Billing Period Start"
 
         if dueDate < billingPeriodEnd:
             return "Due Date must be later than or equal to Billing Period End"

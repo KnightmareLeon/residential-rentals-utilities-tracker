@@ -70,7 +70,7 @@ class BillDatabaseTable(DatabaseTable):
                 "KEY UtilityID (UtilityID), " +
                 "CONSTRAINT bill_ibfk_1 FOREIGN KEY (UnitID) REFERENCES unit (UnitID) ON DELETE SET NULL ON UPDATE CASCADE, " +
                 "CONSTRAINT bill_ibfk_2 FOREIGN KEY (UtilityID) REFERENCES utility (UtilityID) ON DELETE SET NULL ON UPDATE CASCADE, " +
-                "CONSTRAINT bill_chk_1 CHECK ((BillingPeriodEnd > BillingPeriodStart)), " +
+                "CONSTRAINT bill_chk_1 CHECK ((BillingPeriodEnd >= BillingPeriodStart)), " +
                 "CONSTRAINT bill_chk_2 CHECK ((DueDate >= BillingPeriodEnd)))"
             )
         except Exception as e:

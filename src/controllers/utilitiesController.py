@@ -45,7 +45,10 @@ class UtilitiesController:
         installationDate = installationDate.toString("yyyy-MM-dd")
         
         #Error Checking
-        if InstalledUtility.unitHasUtilityType(mainUnitID, type) or "(added)" in type:
+        if type == "":
+            unitName = Unit.readOne(mainUnitID)["Name"]
+            return f"Cannot add more utility types for {unitName}."
+        if InstalledUtility.unitHasUtilityType(mainUnitID, type):
             unitName = Unit.readOne(mainUnitID)["Name"]
             return (f"{type} already exists for {unitName}. Please input another type.")
         if len(sharedUnitIDs) > 0:
