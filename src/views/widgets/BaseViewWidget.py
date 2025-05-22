@@ -352,7 +352,7 @@ class BaseViewWidget(QDialog):
         layout.addWidget(container)
  
     def addUtilityDetails(self, layout: QVBoxLayout, utilities: list[dict]):
-        headers = ["ID", "Type", "Status", "Shared"]
+        headers = ["ID", "Type", "Status", "Usage"]
         headerRow = QHBoxLayout()
         headerRow.setContentsMargins(0, 0, 0, 10)
         headerRow.setSpacing(20)

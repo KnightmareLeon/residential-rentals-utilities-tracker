@@ -9,6 +9,8 @@ class BillsPage(BasePageWidget):
         self.buttonText = "Add Bill"
         super().__init__(BillsTable, self.buttonText, mainWindow=mainWindow)
 
+        self.table.initializeSort()
+
     def updatePage(self):
         self.table.updateTable()
 

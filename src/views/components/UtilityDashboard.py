@@ -57,7 +57,7 @@ class UtilityDashboard(QFrame):
 
         # === Utility Chart ===
         data, _ = DashboardController.fetchUtilityDashboard(3, datetime.now())
-        self.chartWidget = UtilitySumChartWidget(data, "Total Utilities Cost of All Units", mainWindow=self.mainWindow)
+        self.chartWidget = UtilitySumChartWidget(data, "Total Utilities Cost of All Units", utilityDashboard=self, mainWindow=self.mainWindow)
         mainLayout.addWidget(self.chartWidget)
 
         self.chartWidget.handleRangeUpdate()

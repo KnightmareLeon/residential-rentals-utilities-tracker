@@ -204,3 +204,11 @@ QPushButton:hover {
 
         msgBox.exec()
     
+    # SET DEFAULT SORTING TO DUE DATE DESCENDING
+    def initializeSort(self):
+        self.currentSortIndex = 4
+        self.columnSortStates = [SortOrder.NONE] * self.columnCount()
+        self.columnSortStates[4] = SortOrder.DESC
+
+        self.updateHeaderLabels()
+        self.updateTable()

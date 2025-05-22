@@ -30,9 +30,10 @@ from src.controllers.billsController import BillsController
 
 class UtilitySumChartWidget(QFrame):
 
-    def __init__(self, data, title, parent=None, mainWindow=None):
+    def __init__(self, data, title, parent=None, utilityDashboard=None, mainWindow=None):
         super().__init__(parent)
         self.mainWindow = mainWindow
+        self.utilityDashboard = utilityDashboard
 
         self.currDateOffset = datetime.now()
         self.lastDateOffset = datetime.now() - relativedelta(months=48)
@@ -170,8 +171,6 @@ class UtilitySumChartWidget(QFrame):
         paginationLayout.addWidget(self.pageLabel)
         paginationLayout.addWidget(self.nextButton)
         layout.addLayout(paginationLayout)
-
-        self.handleRangeUpdate()
 
     def createChart(self, data):
         self.figure = Figure(figsize=(7, 5))
@@ -356,8 +355,7 @@ class UtilitySumChartWidget(QFrame):
                     }
                 """)
         self.currDateOffset = datetime.now()
-        self.updatePageLabel()
-        self.updateWidget()
+        self.utilityDashboard.updateWidgets()
 
     def handlePrevPage(self):
         curr = self.currDateOffset.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -365,8 +363,7 @@ class UtilitySumChartWidget(QFrame):
 
         if curr > last:
             self.currDateOffset -= relativedelta(months=self.parseDateRangeToMonths(self.dateRange))
-            self.updatePageLabel()
-            self.updateWidget()
+            self.utilityDashboard.updateWidgets()
 
     def handleNextPage(self):
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -375,8 +372,7 @@ class UtilitySumChartWidget(QFrame):
         if current < today:
             months = self.parseDateRangeToMonths(self.dateRange)
             self.currDateOffset += relativedelta(months=months)
-            self.updatePageLabel()
-            self.updateWidget()
+            self.utilityDashboard.updateWidgets()
 
     def updatePageLabel(self):
         self.pageLabel.setText(f"{self.currDateOffset.strftime('%B %d, %Y')}")
