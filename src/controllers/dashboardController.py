@@ -33,7 +33,7 @@ class DashboardController:
         return unitBills,  datetime.now() - relativedelta(months=monthsDiff)
 
     @staticmethod
-    def fetchBillsSummary(monthRange: int, currPage: QDate) -> tuple[str, str, int]:
+    def fetchBillsSummary(monthRange: int, currPage: datetime) -> tuple[str, str, str]:
         """
         Fetches the Total Balance of Period, Total Cost of Period , and Unpaid Bills.
         """
@@ -42,7 +42,7 @@ class DashboardController:
             if r.value == monthRange:
                 range = r
                 break
-        offsetInt = diffMonths(datetime.now(), currPage) + 1
+        offsetInt = diffMonths(datetime.now(), currPage) // range.value + 1
         balance, paid, unpaid = (formatMoney(Bill.unpaidBillsTotalSum(range=range, offset=offsetInt)), 
                                 formatMoney(Bill.billsTotalSum(range=range, offset=offsetInt, paidOnly=True)),
                                 str(Bill.unpaidBillsCount(range=range, offset=offsetInt)))
