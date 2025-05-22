@@ -102,21 +102,30 @@ class UnitsController:
             if isinstance(originalData[origKey], str):
                 originalData[origKey] = originalData[origKey].replace("'", "''")
 
+        #Error Check
         if name != originalData["Name"] and Unit.doesUnitNameExist(name):
             return f"{name} already exists. Please input another name."
+
         if name != originalData["Name"]:
             editedColumns["Name"] = name
         if address != originalData["Address"]:
             editedColumns["Address"] = address
         if type != originalData["Type"]:
             editedColumns["Type"] = type
+            if type == "Individual":
+                utilitiesInstalled = InstalledUtility.getUnitUtilities(originalID)
+                for utility in utilitiesInstalled:
+                    for unit in InstalledUtility.getUtilityUnits(utility):
+                        if unit["UnitID"] != originalID:
+                            InstalledUtility.delete([unit["UnitID"], utility])
+
         if editedColumns == {}:
             return "No changes made."
-        
+
         Unit.update(originalID, editedColumns)
 
         return "Unit edited successfully"
-    
+
     @staticmethod
     def deleteUnit(id: str) -> str:
         """
@@ -124,14 +133,14 @@ class UnitsController:
         """
         Unit.delete([int(id)])
         return "Unit deleted successfully"
-    
+
     @staticmethod
     def getUnitNames() -> list[dict[str, str]]:
         """
         Fetches all unit names with unit ID.
         """
         print("Fetching unit names")
-        
+
         return Unit.read(columns=["UnitID", "Name", "Type"], limit=Unit.totalCount(), sortBy="Name", order="ASC")
 
     @staticmethod
@@ -147,7 +156,7 @@ class UnitsController:
         for utility in unitBills.keys():
             for bill in unitBills[utility]:
                 bill["BillingPeriodEnd"] = bill["BillingPeriodEnd"].strftime("%Y-%m-%d")
-        
+
         earliestBillDates = Bill.getEarliestUnitBillDates(id) if Bill.getEarliestUnitBillDates(id) is not None else None
         if earliestBillDates is not None:
             for utility in earliestBillDates.keys():
