@@ -33,9 +33,13 @@ class UnitsController:
         #Data Length Check
         errorMessage = ""
         if len(name) > 30:
-            errorMessage += "Name must not exceed 30 characters."
+            errorMessage += "Name must not exceed 30 characters.\n"
+        if len(name) < 1:
+            errorMessage += "Please input a name.\n"
         if len(address) > 255:
             errorMessage += "Address must not exceed 255 characters."
+        if len(name) < 1:
+            errorMessage += "Please input an address."
         if len(errorMessage) > 0:
             return errorMessage
 
@@ -89,9 +93,13 @@ class UnitsController:
         #Data Length Check
         errorMessage = ""
         if len(name) > 30:
-            errorMessage += "Name must not exceed 30 characters."
+            errorMessage += "Name must not exceed 30 characters.\n"
+        if len(name) < 1:
+            errorMessage += "Please input a name.\n"
         if len(address) > 255:
             errorMessage += "Address must not exceed 255 characters."
+        if len(name) < 1:
+            errorMessage += "Please input an address."
         if len(errorMessage) > 0:
             return errorMessage
         
