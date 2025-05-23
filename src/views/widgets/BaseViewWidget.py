@@ -408,6 +408,8 @@ class BaseViewWidget(QDialog):
                     value.setStyleSheet("color: #00FF6F;")
                 elif value.text() == "Inactive":
                     value.setStyleSheet("color: #FA1647;")
+                elif value.text() == "N/A":
+                    value.setStyleSheet("color: #9C9C9C")
                 elif value.text() == "Shared" or value.text() == "Individual":
                     value.setStyleSheet("color: #AAAAAA;")
 

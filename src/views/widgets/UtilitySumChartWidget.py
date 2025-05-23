@@ -313,7 +313,7 @@ class UtilitySumChartWidget(QFrame):
 
     def handleFilterUpdate(self):
         self.utilityFilters = self.filterComboBox.checkedItems()
-        self.updateChart(self.data)
+        self.utilityDashboard.updateWidgets()
 
     def handleRangeUpdate(self):
         for btn in self.rangeButtons:

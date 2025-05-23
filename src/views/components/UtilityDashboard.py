@@ -138,5 +138,8 @@ class UtilityDashboard(QFrame):
         monthRange = self.chartWidget.parseDateRangeToMonths(self.chartWidget.dateRange)
         offset = self.chartWidget.currDateOffset
 
+        filters = self.chartWidget.utilityFilters
+
+        #TODO: USE FILTERS IN fetchBillsSummary
         totalUnpaid, totalCost, unpaidBills = DashboardController.fetchBillsSummary(monthRange, offset)
         self.updateSummaryCards(totalCost, totalUnpaid, unpaidBills)
