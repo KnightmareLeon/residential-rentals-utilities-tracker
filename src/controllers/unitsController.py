@@ -38,7 +38,7 @@ class UnitsController:
             errorMessage += "Please input a name.\n"
         if len(address) > 255:
             errorMessage += "Address must not exceed 255 characters."
-        if len(name) < 1:
+        if len(address) < 1:
             errorMessage += "Please input an address."
         if len(errorMessage) > 0:
             return errorMessage
@@ -98,7 +98,7 @@ class UnitsController:
             errorMessage += "Please input a name.\n"
         if len(address) > 255:
             errorMessage += "Address must not exceed 255 characters."
-        if len(name) < 1:
+        if len(address) < 1:
             errorMessage += "Please input an address."
         if len(errorMessage) > 0:
             return errorMessage

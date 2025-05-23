@@ -392,13 +392,16 @@ class BillDatabaseTable(DatabaseTable):
     @classmethod
     def billsTotalSum(cls,
                     range: Range,
+                    types : list[str],
                     offset: int = 1,
-                    paidOnly: bool = False) -> float:
+                    paidOnly: bool = False
+                    ) -> float:
         """
-        Returns the total sum of all bills for the given range.
+        Returns the total sum of all given types of bills for the given range.
         The range can be one of the following: 3m, 6m, 1y, 2y.
 
         - range: Range, the range of months to get bills for.
+        - types: list[str], the utilitiy types that will be included.
         - offset: int, the number of months to go back from the current date.
         - paidOnly: bool, if True, only paid bills will be included in the sum.
         """
@@ -412,8 +415,11 @@ class BillDatabaseTable(DatabaseTable):
 
             if paidOnly:
                 whereClause += " AND Bill.Status = 'Paid'"
+            whereClause += " AND (" + " OR ".join([f"u.Type = '{type}'" for type in types]) + ")"
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
-            sql = f"SELECT SUM(Bill.TotalAmount) AS TotalAmount FROM {cls.getTableName()} WHERE {whereClause}"
+            sql = f"SELECT SUM(bill.TotalAmount) AS TotalAmount FROM {cls.getTableName()} " + \
+                f"JOIN {UtilityDatabaseTable.getTableName()} u ON bill.UtilityID=u.UtilityID " + \
+                f"WHERE {whereClause}"
             cursor.execute(sql)
             result = cursor.fetchone()['TotalAmount']
 
@@ -427,6 +433,7 @@ class BillDatabaseTable(DatabaseTable):
     @classmethod
     def unpaidBillsTotalSum(cls,
                     range: Range,
+                    types = list[str],
                     offset: int = 1) -> float:
         """
         Returns the total sum of all unpaid bills for the given range.
@@ -443,9 +450,12 @@ class BillDatabaseTable(DatabaseTable):
         try:
             
             rangeClause = cls.__rangeClause(range, offset)
+            types = " AND (" + " OR ".join([f"u.Type = '{type}'" for type in types]) + ")"
 
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
-            sql = f"SELECT SUM(Bill.TotalAmount) AS TotalAmount FROM {cls.getTableName()} WHERE {rangeClause} AND Bill.Status != 'Paid'"
+            sql = f"SELECT SUM(bill.TotalAmount) AS TotalAmount FROM {cls.getTableName()} " + \
+                f"JOIN {UtilityDatabaseTable.getTableName()} u ON bill.UtilityID=u.UtilityID " + \
+                f"WHERE {rangeClause} AND bill.Status != 'Paid' {types} "
             cursor.execute(sql)
             result = cursor.fetchone()['TotalAmount']
 
@@ -460,6 +470,7 @@ class BillDatabaseTable(DatabaseTable):
     @classmethod
     def unpaidBillsCount(cls,
                         range: Range,
+                        types: list[str],
                         offset: int = 1) -> int:
         """
         Returns the total count of unpaid bills for the given range.
@@ -475,9 +486,12 @@ class BillDatabaseTable(DatabaseTable):
         try:
             
             rangeClause = cls.__rangeClause(range, offset)
+            types = " AND (" + " OR ".join([f"u.Type = '{type}'" for type in types]) + ")"
 
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
-            sql = f"SELECT COUNT(Bill.BillID) AS UnpaidCount FROM {cls.getTableName()} WHERE {rangeClause} AND Bill.Status != 'Paid'"
+            sql = f"SELECT COUNT(Bill.BillID) AS UnpaidCount FROM {cls.getTableName()} " + \
+                f"JOIN {UtilityDatabaseTable.getTableName()} u ON bill.UtilityID=u.UtilityID " + \
+                f"WHERE {rangeClause} {types} AND Bill.Status != 'Paid'"
             cursor.execute(sql)
             result = cursor.fetchone()['UnpaidCount']
 

@@ -141,5 +141,5 @@ class UtilityDashboard(QFrame):
         filters = self.chartWidget.utilityFilters
 
         #TODO: USE FILTERS IN fetchBillsSummary
-        totalUnpaid, totalCost, unpaidBills = DashboardController.fetchBillsSummary(monthRange, offset)
+        totalUnpaid, totalCost, unpaidBills = DashboardController.fetchBillsSummary(monthRange, offset, filters)
         self.updateSummaryCards(totalCost, totalUnpaid, unpaidBills)
