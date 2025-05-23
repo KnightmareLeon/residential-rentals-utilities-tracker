@@ -43,10 +43,10 @@ class DashboardController:
                 range = r
                 break
         offsetInt = diffMonths(datetime.now(), currPage) // range.value + 1
-        balance, paid, unpaid = (formatMoney(Bill.unpaidBillsTotalSum(range=range, offset=offsetInt)), 
-                                formatMoney(Bill.billsTotalSum(range=range, offset=offsetInt, paidOnly=True)),
+        totalUnpaid, totalCost, unpaidBillCount = (formatMoney(Bill.unpaidBillsTotalSum(range=range, offset=offsetInt)), 
+                                formatMoney(Bill.billsTotalSum(range=range, offset=offsetInt)),
                                 str(Bill.unpaidBillsCount(range=range, offset=offsetInt)))
-        return (balance, paid, unpaid)
+        return (totalUnpaid, totalCost, unpaidBillCount)
 
     @staticmethod
     def fetchUpcomingBills() -> list[dict[str, str]]:
