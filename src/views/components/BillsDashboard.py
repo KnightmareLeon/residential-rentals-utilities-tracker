@@ -136,7 +136,7 @@ class BillsDashboard(QWidget):
 
         self.bills = DashboardController.fetchUpcomingBills()
         
-        for index, bill in enumerate(self.bills[:15]):
+        for index, bill in enumerate(self.bills):
             utility = bill["Type"]
             color = categoryColors.get(utility, defaultColor)
             balance = bill['TotalAmount']
