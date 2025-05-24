@@ -15,10 +15,13 @@ class BillsTable(BaseTableWidget):
         super().__init__(self.headers, self.databaseHeaders, parent=parent, mainWindow=mainWindow)
 
     def updateTable(self):
+        pageTitle = "Bills"
+        self.mainWindow.setStatusBarText("Loading Bills...")
+        
         currentPage = self.parentWidget().currentPage
         sortingOrder = self.columnSortStates[self.currentSortIndex]
         sortingField = self.databaseHeaders[self.currentSortIndex]
-        searchValue = self.mainWindow.searchInputLineEdit.text().strip()
+        searchValue = self.mainWindow.searchbarTextByPage.get(pageTitle, "").strip()
 
         if sortingOrder == SortOrder.ASC:
             sortingOrderStr = "ASC"

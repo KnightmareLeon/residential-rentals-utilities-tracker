@@ -95,7 +95,6 @@ class BasePageWidget(QWidget):
 
     def resetPage(self):
         self.currentPage = 1
-        self.updatePage()
 
     @abstractmethod
     def handleAddButton(self):

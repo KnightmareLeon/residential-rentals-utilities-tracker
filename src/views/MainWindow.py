@@ -480,7 +480,12 @@ class MainWindow(QMainWindow):
         elif currentPage == self.billsPage:
             self.billsPage.resetPage()
 
+        self.updatePages()
+
     def updatePages(self):
+        currentTitle = self.windowLabel.text()
+        self.searchbarTextByPage[currentTitle] = self.searchInputLineEdit.text()
+
         self.unitsPage.updatePage()
         self.utilitiesPage.updatePage()
         self.billsPage.updatePage()
