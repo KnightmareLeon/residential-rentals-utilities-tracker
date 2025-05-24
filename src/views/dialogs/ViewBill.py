@@ -13,6 +13,9 @@ class ViewBill(BaseViewWidget):
         self.mainWindow = mainWindow
         self.billID = id
 
+        # format bill amount
+        billData["TotalAmount"] = f"₱{billData['TotalAmount']:.2f}"
+
         # format dates
         billData["BillingPeriodStart"] = billData["BillingPeriodStart"].strftime("%B %d, %Y")
         billData["BillingPeriodEnd"] = billData["BillingPeriodEnd"].strftime("%B %d, %Y")
