@@ -102,6 +102,7 @@ class BillsController:
         billInfo = Bill.readOne(id)
         billInfo["Type"] = Utility.readOne(billInfo["UtilityID"])["Type"] if billInfo["UtilityID"] is not None else None
         billInfo["UnitName"] = Unit.readOne(billInfo["UnitID"])["Name"] if billInfo["UnitID"] is not None else None
+        billInfo["TotalAmount"] = formatMoney(billInfo["TotalAmount"])
         return billInfo
 
     @staticmethod
