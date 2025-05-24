@@ -5,7 +5,9 @@ UtiliTrack is a comprehensive utility tracking application designed to manage an
 ---
 
 ## About
-School project for **CCC151**
+School project for **CCC151 - Information Management**
+
+Here is the our [Google Docs link](https://docs.google.com/document/d/14NUibsdk8e9LtcCpfhOJAlk9soUE7Fkw1tqVVz8lVOI/edit?usp=sharing) that has our **Entity-Relationship Diagram** (ERD), **Entity-Relationship** (ERM), **Data Dictionary**, and **SQL Data Definition Language** (SQL DDL) for this project.
 
 Members:
 1. Leonard John T. Corpuz
