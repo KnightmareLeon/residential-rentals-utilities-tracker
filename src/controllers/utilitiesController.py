@@ -236,5 +236,4 @@ class UtilitiesController:
         for bill in utilityBills[utilityType]:
             bill["BillingPeriodEnd"] = bill["BillingPeriodEnd"].strftime("%Y-%m-%d")
         earliestBillDate = Bill.getEarliestUtilityBillDate(id) if Bill.getEarliestUtilityBillDate(id) is not None else date.today() - relativedelta(months=monthRange)
-        monthsDiff = diffMonths(datetime.now(), datetime.combine(earliestBillDate, datetime.min.time())) - monthRange
-        return utilityBills,  datetime.now() - relativedelta(months=monthsDiff)
+        return utilityBills, datetime.now() - relativedelta(dt1=datetime.now(), dt2=datetime.combine(earliestBillDate,datetime.min.time())) + relativedelta(months=monthRange)

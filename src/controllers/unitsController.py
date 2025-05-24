@@ -171,5 +171,4 @@ class UnitsController:
                 earliestBillDates[utility] = earliestBillDates[utility] if earliestBillDates[utility] is not None else date.today()
         print(earliestBillDates)
         earliestBillDate = min(earliestBillDates.values()) if len(earliestBillDates.values()) > 0 else date.today() - relativedelta(months=monthRange)
-        monthsDiff = diffMonths(datetime.now(), datetime.combine(earliestBillDate, datetime.min.time())) - monthRange
-        return unitBills,  datetime.now() - relativedelta(months=monthsDiff)
+        return unitBills, datetime.now() - relativedelta(dt1=datetime.now(), dt2=datetime.combine(earliestBillDate,datetime.min.time())) + relativedelta(months=monthRange)

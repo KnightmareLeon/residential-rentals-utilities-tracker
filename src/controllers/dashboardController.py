@@ -28,8 +28,8 @@ class DashboardController:
             for bill in unitBills[utility]:
                 bill["BillingPeriodEnd"] = bill["BillingPeriodEnd"].strftime("%Y-%m-%d")
 
-        earliestBillDate = Bill.getEarliestBillDate() if Bill.getEarliestBillDate() is not None else date(1900, 1, 1)
-        return unitBills,  datetime.now() - relativedelta(dt1=datetime.now(), dt2=datetime.combine(earliestBillDate,datetime.min.time())) + relativedelta(months=monthRange)
+        earliestBillDate = Bill.getEarliestBillDate() if Bill.getEarliestBillDate() is not None else date.today() - relativedelta(months=monthRange)
+        return unitBills, datetime.now() - relativedelta(dt1=datetime.now(), dt2=datetime.combine(earliestBillDate,datetime.min.time())) + relativedelta(months=monthRange)
 
     @staticmethod
     def fetchBillsSummary(monthRange: int, currPage: datetime, filters : list[str]) -> tuple[str, str, str]:
