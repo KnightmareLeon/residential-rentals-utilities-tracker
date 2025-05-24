@@ -81,14 +81,14 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
     
     @classmethod
     def read(cls, 
-            columns : list[str] = None,
-            referred : dict['DatabaseTable' : list[str]] = None,
-            searchValue : str = None,
-            sortBy : str = None, 
-            order : str = "ASC",
-            page : int = 1, 
-            limit : int = 50
-            ) -> list[dict[str, any]]:
+             columns : list[str] = None,
+             referred : dict['DatabaseTable' : list[str]] = None,
+             searchValue : str = None,
+             sortBy : str = None, 
+             order : str = "ASC",
+             page : int = 1, 
+             limit : int = 50
+             ) -> list[dict[str, any]]:
         """
         Reads data from the table. The method accepts various parameters to filter,
         sort, and paginate the results. The parameters include:
