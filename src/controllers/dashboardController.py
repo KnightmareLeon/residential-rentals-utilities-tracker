@@ -50,10 +50,10 @@ class DashboardController:
     @staticmethod
     def fetchUpcomingBills() -> list[dict[str, str]]:
         """
-        Fetches 15 upcoming bills.
+        Fetches 50 upcoming bills.
         """
         print("Fetching upcoming bills")
-        urgentBills = Bill.urgentBills()
+        urgentBills = Bill.urgentBills(limit=50)
         for bill in urgentBills:
             bill["BillID"] = str(bill["BillID"])
             bill["DueDate"] = bill["DueDate"].strftime("%B %d, %Y")
