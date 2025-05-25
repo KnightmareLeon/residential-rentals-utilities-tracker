@@ -1,8 +1,6 @@
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 
-from PyQt6.QtCore import QDate
-
 from src.models.BillDatabaseTable import BillDatabaseTable as Bill
 
 from src.utils.constants import Range
