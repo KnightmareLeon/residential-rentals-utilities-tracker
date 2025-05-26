@@ -111,13 +111,14 @@ class UtilityDashboard(QFrame):
         self.summaryLabels = {}  # Store value labels here
 
         cards = [
-            ("Total Cost of period", "", "assets/icons/totalBalance.png", "balance"),
-            ("Total Unpaid in period", "", "assets/icons/totalPaid.png", "paid"),
-            ("Unpaid Bills", "", "assets/icons/unpaidBills.png", "unpaid")
+            ("Total Cost of period", "", "assets/icons/totalBalance.png", "balance", "Total cost of all utilities in the selected period"),
+            ("Total Unpaid in period", "", "assets/icons/totalPaid.png", "paid", "Total cost of all unpaid utilities in the selected period"),
+            ("Unpaid Bills", "", "assets/icons/unpaidBills.png", "unpaid", "Total number of unpaid bills in the selected period")
         ]
 
-        for title, value, iconPath, key in cards:
+        for title, value, iconPath, key, toolTip in cards:
             card, label = self.createSummaryCard(title, value, iconPath)
+            card.setToolTip(toolTip)
             layout.addWidget(card)
             self.summaryLabels[key] = label
 

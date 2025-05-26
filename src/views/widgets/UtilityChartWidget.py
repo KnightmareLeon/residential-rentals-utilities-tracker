@@ -106,6 +106,7 @@ class UtilityChartWidget(QFrame):
         headerLayout.addStretch()
 
         self.filterComboBox = CheckableComboBox()
+        self.filterComboBox.setToolTip("Select Utilities to Display")
         for label in self.utilityFilters:
             self.filterComboBox.addItem(label)
         self.filterComboBox.onItemCheckedChanged(self.handleFilterUpdate)
@@ -143,6 +144,7 @@ class UtilityChartWidget(QFrame):
             self.rangeButtons.append(btn)
             self.buttonGroup.addButton(btn)
             headerLayout.addWidget(btn)
+            btn.setToolTip(f"Show data for the last {label}")
         self.rangeButtons[0].setChecked(True)
 
         layout.addLayout(headerLayout)
@@ -170,6 +172,10 @@ class UtilityChartWidget(QFrame):
         self.nextButton.setFixedSize(32, 32)
         self.nextButton.setCursor(Qt.CursorShape.PointingHandCursor)
         self.nextButton.clicked.connect(self.handleNextPage)
+
+        self.nextButton.setToolTip("Next Range")
+        self.prevButton.setToolTip("Previous Range")
+        self.pageLabel.setToolTip("Current Date")
 
         paginationLayout.addWidget(self.prevButton)
         paginationLayout.addWidget(self.pageLabel)

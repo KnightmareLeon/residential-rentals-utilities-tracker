@@ -70,7 +70,8 @@ class HomePage(QWidget):
             background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #4600E9, stop:1 #E200F7);
         }
         """)
-
+        addBillButton.setToolTip("Add a new bill")
+        
         buttonLayout.addWidget(addBillButton)
         bottomRightLayout.addLayout(buttonLayout)
 

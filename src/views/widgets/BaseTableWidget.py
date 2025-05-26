@@ -123,6 +123,11 @@ class BaseTableWidget(QTableWidget):
         header = self.horizontalHeader()
         for i in range(self.columnCount() - 1):
             header.setSectionResizeMode(i, QHeaderView.ResizeMode.Stretch)
+        
+        model = header.model()
+
+        for col in range(self.columnCount()):
+            model.setHeaderData(col, header.orientation(), "Click to sort", Qt.ItemDataRole.ToolTipRole)
 
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
         self.setColumnWidth(0, 90)
@@ -158,6 +163,7 @@ class BaseTableWidget(QTableWidget):
 
         self.actionButtonsPerRow[row_idx] = []
         buttonHandlers = [self.handleViewButton, self.handleEditButton, self.handleDeleteButton]
+        buttonToolTips = ["View", "Edit", "Delete"]
 
         for i in range(self.BUTTON_COUNT):
             btn = QPushButton()
@@ -170,6 +176,7 @@ class BaseTableWidget(QTableWidget):
 
             if i < len(buttonHandlers):
                 btn.clicked.connect(lambda _, idx=row_idx, handler=buttonHandlers[i]: handler(idx))
+                btn.setToolTip(buttonToolTips[i])
 
         button_container.setLayout(layout)
         self.setCellWidget(row_idx, self.columnCount() - 1, button_container)

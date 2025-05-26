@@ -66,6 +66,11 @@ class BasePageWidget(QWidget):
         self.prevButton.setObjectName("prevButton")
         self.nextButton.setObjectName("nextButton")
 
+        self.addButton.setToolTip("Add")
+        self.prevButton.setToolTip("Previous Page")
+        self.nextButton.setToolTip("Next Page")
+        self.pageLabel.setToolTip("Current Page")
+
         self.addButton.setCursor(Qt.CursorShape.PointingHandCursor)
         self.prevButton.setCursor(Qt.CursorShape.PointingHandCursor)
         self.nextButton.setCursor(Qt.CursorShape.PointingHandCursor)

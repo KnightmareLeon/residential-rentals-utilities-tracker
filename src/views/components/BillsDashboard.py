@@ -113,6 +113,7 @@ class BillsDashboard(QWidget):
         viewAllButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         viewAllButton.setCursor(Qt.CursorShape.PointingHandCursor)
         viewAllButton.clicked.connect(self.viewBills.emit)
+        viewAllButton.setToolTip("View all bills")
         outerLayout.addWidget(viewAllButton)
 
         # Final layout for this widget
@@ -145,6 +146,7 @@ class BillsDashboard(QWidget):
 
             billEntry = BillEntry(index=index, utility=utility, color=color, balance=balance, due=due, status=status)
             billEntry.rowClicked.connect(self.handleRowClick)
+            billEntry.setToolTip("Click to view bill details")
             self.contentLayout.addWidget(billEntry)
         
         self.contentLayout.addStretch()

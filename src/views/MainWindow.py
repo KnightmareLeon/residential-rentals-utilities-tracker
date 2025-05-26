@@ -381,6 +381,10 @@ class MainWindow(QMainWindow):
         self.userProfileLabel.setPixmap(QtGui.QPixmap("src/ui\\../../assets/icons/account.png"))
         self.userProfileLabel.setScaledContents(True)
         self.userProfileLabel.setObjectName("userProfileLabel")
+
+        self.userNameLabel.setVisible(False)
+        self.userProfileLabel.setVisible(False)
+
         self.horizontalLayout_7.addWidget(self.userProfileLabel)
         self.horizontalLayout_7.setStretch(0, 2)
         self.horizontalLayout_7.setStretch(1, 1)
