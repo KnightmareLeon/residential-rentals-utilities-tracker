@@ -18,7 +18,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
     - FOREIGN KEY (UtilityID) REFERENCES
     utility (UtilityID): The UtilityID must exist in the utility table.
     """
-    
+
     _tableName = "installedutility"
     referredTables = {UnitDatabaseTable.getTableName() : UnitDatabaseTable, 
                     UtilityDatabaseTable.getTableName() : UtilityDatabaseTable}
@@ -51,7 +51,7 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             raise e
         finally:
             cursor.close()
-        
+
     @classmethod
     def _createTable(cls):
         try:
@@ -78,17 +78,17 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
         """
         cls.initialize()
         return cls._primary
-    
+
     @classmethod
     def read(cls, 
-             columns : list[str] = None,
-             referred : dict['DatabaseTable' : list[str]] = None,
-             searchValue : str = None,
-             sortBy : str = None, 
-             order : str = "ASC",
-             page : int = 1, 
-             limit : int = 50
-             ) -> list[dict[str, any]]:
+            columns : list[str] = None,
+            referred : dict['DatabaseTable' : list[str]] = None,
+            searchValue : str = None,
+            sortBy : str = None, 
+            order : str = "ASC",
+            page : int = 1, 
+            limit : int = 50
+            ) -> list[dict[str, any]]:
         """
         Reads data from the table. The method accepts various parameters to filter,
         sort, and paginate the results. The parameters include:
