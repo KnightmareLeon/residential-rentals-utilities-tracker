@@ -152,7 +152,8 @@ class BillDatabaseTable(DatabaseTable):
             day : str,
             year : str,
             page : int = 1, 
-            limit : int = 50
+            limit : int = 50,
+            nullSearch: bool = False
             ) -> list[dict[str, any]]:
         """
         The unique method for reading data from the installedutility table with records
@@ -186,7 +187,10 @@ class BillDatabaseTable(DatabaseTable):
             if searchValue is not None:
                 sql += f"WHERE (BillID REGEXP \'{searchValue}\' OR ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
                 sql += f"OR TotalAmount REGEXP \'{searchValue}\' OR DueDate REGEXP \'{searchValue}\' "
-                sql += f"OR b.Status REGEXP \'{searchValue}\') "
+                sql += f"OR b.Status REGEXP \'{searchValue}\' "
+                if nullSearch:
+                    sql += f"OR ut.Type IS NULL OR Name IS NULL "
+                sql += ") "
             if len(months) > 0:
                 sql += " OR ("
                 sql += " OR ".join([f"MONTH(DueDate) = {month} " for month in months])
@@ -211,7 +215,8 @@ class BillDatabaseTable(DatabaseTable):
                 searchValue : str,
                 months : list[str],
                 day : str,
-                year : str) -> int:
+                year : str,
+                nullSearch: bool = False) -> int:
         """
         Unique method to get the total count of records in the bills table with records
         from unit and utility table.
@@ -229,7 +234,10 @@ class BillDatabaseTable(DatabaseTable):
             if searchValue is not None:
                 sql += f"WHERE (BillID REGEXP \'{searchValue}\' OR ut.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
                 sql += f"OR TotalAmount REGEXP \'{searchValue}\' OR DueDate REGEXP \'{searchValue}\' "
-                sql += f"OR b.Status REGEXP \'{searchValue}\') "
+                sql += f"OR b.Status REGEXP \'{searchValue}\' "
+                if nullSearch:
+                    sql += f"OR ut.Type IS NULL OR Name IS NULL"
+                sql += ") "
             if len(months) > 0:
                 sql += " OR ("
                 sql += " OR ".join([f"MONTH(DueDate) = {month} " for month in months])
