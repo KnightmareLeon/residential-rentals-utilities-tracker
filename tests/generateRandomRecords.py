@@ -61,35 +61,49 @@ def add_utilities(units, install_date):
     utility_id_counter = 1
     utility_records = []
 
+    irregular_na_utilities = {'Gas', 'Maintenance', 'Miscellaneous', 'Trash'}
+
     for group in units:
         shared = group["shared"]
         individuals = group["individuals"]
 
         # Add shared utilities to shared unit
         for utility in SHARED_UTILITIES:
+            is_irregular_na = utility in irregular_na_utilities
             UtilitiesController.addUtility(
                 type=utility,
                 mainUnitID=str(shared["id"]),
                 sharedUnitIDs=[str(ind["id"]) for ind in individuals],
-                status="Active",
-                billingCycle="Monthly" if utility in ['Internet', 'Trash'] else "Irregular",
+                status="N/A" if is_irregular_na else "Active",
+                billingCycle="Irregular" if is_irregular_na else "Monthly",
                 installationDate=QDate(install_date.year, install_date.month, install_date.day)
             )
-            utility_records.append({"utility": utility, "unit_id": shared["id"], "id": utility_id_counter, "shared": True})
+            utility_records.append({
+                "utility": utility,
+                "unit_id": shared["id"],
+                "id": utility_id_counter,
+                "shared": True
+            })
             utility_id_counter += 1
 
         # Add individual utilities to individual units
         for ind in individuals:
             for utility in INDIVIDUAL_UTILITIES:
+                is_irregular_na = utility in irregular_na_utilities
                 UtilitiesController.addUtility(
                     type=utility,
                     mainUnitID=str(ind["id"]),
                     sharedUnitIDs=[],
-                    status="Active",
-                    billingCycle="Monthly" if utility != "Gas" else "Irregular",
+                    status="N/A" if is_irregular_na else "Active",
+                    billingCycle="Irregular" if is_irregular_na else "Monthly",
                     installationDate=QDate(install_date.year, install_date.month, install_date.day)
                 )
-                utility_records.append({"utility": utility, "unit_id": ind["id"], "id": utility_id_counter, "shared": False})
+                utility_records.append({
+                    "utility": utility,
+                    "unit_id": ind["id"],
+                    "id": utility_id_counter,
+                    "shared": False
+                })
                 utility_id_counter += 1
 
     return utility_records
@@ -157,6 +171,9 @@ def generate_bills(utility_records, from_date):
                 'Maintenance': random.uniform(50, 3500),
                 'Miscellaneous': random.uniform(50, 3500),
             }[utility_type]
+
+            if billing_end.toPyDate() > today:
+                continue
 
             BillsController.addBill(
                 unitID=str(record["unit_id"]),
