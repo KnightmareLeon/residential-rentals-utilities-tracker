@@ -1,5 +1,5 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtWidgets import QMainWindow
+from PyQt6.QtWidgets import QMainWindow, QGraphicsOpacityEffect
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import QSize
 
@@ -382,8 +382,13 @@ class MainWindow(QMainWindow):
         self.userProfileLabel.setScaledContents(True)
         self.userProfileLabel.setObjectName("userProfileLabel")
 
-        self.userNameLabel.setVisible(False)
-        self.userProfileLabel.setVisible(False)
+        opacity1 = QGraphicsOpacityEffect()
+        opacity1.setOpacity(0.0)
+        self.userNameLabel.setGraphicsEffect(opacity1)
+
+        opacity2 = QGraphicsOpacityEffect()
+        opacity2.setOpacity(0.0)
+        self.userProfileLabel.setGraphicsEffect(opacity2)
 
         self.horizontalLayout_7.addWidget(self.userProfileLabel)
         self.horizontalLayout_7.setStretch(0, 2)
