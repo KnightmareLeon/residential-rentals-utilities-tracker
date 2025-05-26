@@ -388,7 +388,8 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             sortBy : str, 
             order : str,
             page : int = 1, 
-            limit : int = 50
+            limit : int = 50,
+            nullSearch : bool = False,
             ) -> list[dict[str, any]]:
 
         """
@@ -426,7 +427,10 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             if searchValue is not None:
                 sql += f"AND (u.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
                 sql += f"OR Status REGEXP \'{searchValue}\' OR BillingCycle REGEXP \'{searchValue}\' "
-                sql += f"OR u.UtilityID REGEXP \'{searchValue}\') "
+                sql += f"OR u.UtilityID REGEXP \'{searchValue}\' "
+                if nullSearch:
+                    sql += f"OR Name IS NULL "
+                sql += ") "
             sql += f"ORDER BY {sortBy} {order} LIMIT {limit} OFFSET {offset};"
             cursor.execute(sql)
             result = cursor.fetchall()
@@ -440,7 +444,8 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
 
     @classmethod
     def uniqueTotalCount(cls,
-        searchValue : str) -> int:
+        searchValue : str,
+        nullSearch : bool = False) -> int:
         """
         Unique method to get the total count of records in the installedutility table with records
         from unit and utility table.
@@ -461,7 +466,10 @@ class InstalledUtilityDatabaseTable(DatabaseTable):
             if searchValue is not None:
                 sql += f"AND (u.Type REGEXP \'{searchValue}\' OR Name REGEXP \'{searchValue}\' "
                 sql += f"OR Status REGEXP \'{searchValue}\' OR BillingCycle REGEXP \'{searchValue}\' "
-                sql += f"OR u.UtilityID REGEXP \'{searchValue}\') "
+                sql += f"OR u.UtilityID REGEXP \'{searchValue}\' "
+                if nullSearch:
+                    sql += f"OR Name IS NULL "
+                sql += ") "
             cursor.execute(sql)
             result = cursor.fetchone()["COUNT(*)"]
         except Exception as e:

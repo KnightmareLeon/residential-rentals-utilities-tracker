@@ -1,3 +1,5 @@
+import re
+
 from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 
@@ -22,14 +24,20 @@ class UtilitiesController:
         print(f"Fetching utilities in page {currentPage} sorted by {sortingField} {sortingOrder} while searching for {searchValue}")
         searchValue = searchValue.replace("'", "''")
         searchValue = None if searchValue == "" else searchValue
-        totalPages =  InstalledUtility.uniqueTotalCount(searchValue) // 50 + 1
+        nullSearch = False
+        if searchValue is not None:
+            regex = re.escape(searchValue)
+            nullSearch = True if re.search(regex, "None", re.IGNORECASE) else False
+        print(nullSearch)
+        totalPages =  InstalledUtility.uniqueTotalCount(searchValue, nullSearch=nullSearch) // 50 + 1
 
         fetchedUtils = InstalledUtility.uniqueRead(searchValue,
                                             sortingField,
                                             sortingOrder,
-                                            page=currentPage,)
+                                            page=currentPage,
+                                            nullSearch=nullSearch)
         return fetchedUtils, totalPages
-    
+
     @staticmethod
     def addUtility(type: str, mainUnitID: str, sharedUnitIDs: list[str], status: str, billingCycle: str, installationDate : QDate) -> str:
         """
@@ -37,7 +45,7 @@ class UtilitiesController:
         """
         # get mainUnit ID using mainUnit name and sharedUnits ID using sharedUnits name
         print("Adding utility:", type, mainUnitID, sharedUnitIDs, status, billingCycle, installationDate)
-        
+
         #Conversion of input to proper format
         mainUnitID = int(mainUnitID)
         if len(sharedUnitIDs) > 0:
@@ -59,7 +67,7 @@ class UtilitiesController:
                     errorMsg += (f"{type} already exists for {unitName}. Please input another type.\n")
             if errorMsg != "":
                 return errorMsg
-        
+
         #Adding
         Utility.create({
             "Type": type,
@@ -89,7 +97,7 @@ class UtilitiesController:
         Fetches all information about a single utility by ID.
         """
         id = int(id)
-        
+
         utilityInfo = Utility.readOne(id)
         installationDates = InstalledUtility.getInstallationDates(id)
         utilityInfo["InstallationDate"] = installationDates[0]["InstallationDate"] if len(installationDates) > 0 else datetime.now()
@@ -112,7 +120,7 @@ class UtilitiesController:
             # UTILITY BILLS
             utilityBills
         )
-    
+
     @staticmethod
     def editUtility(originalID: str, type: str, mainUnitID: str, sharedUnitIDs: list[str], status: str, billingCycle: str, installationDate) -> str:
         """
@@ -150,7 +158,6 @@ class UtilitiesController:
                     errorMsg += (f"{type} already exists for {unitName}. Please input another type or another unit.\n")
             if errorMsg != "":
                 return errorMsg
-        
 
         if type != originalData["Type"]:
             editedColumns["Type"] = type
@@ -202,7 +209,7 @@ class UtilitiesController:
                         })    
 
         return "Utility edited successfully"
-    
+
     @staticmethod
     def deleteUtility(id: str) -> str:
         """

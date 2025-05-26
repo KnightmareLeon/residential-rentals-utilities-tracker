@@ -22,7 +22,7 @@ class BillsController:
         
         searchValue = searchValue.replace("'", "''")
         searchValue = None if searchValue == "" else searchValue
-
+        nullSearch = False
         monthsMap = {"January" : "1", "February" : "2", "March" : "3", "April" : "4", "May" : "5", "June" : "6", "July": "7",
                     "August" : "8", "September" : "9", "October" : "1", "November" : "11", "December" : "12"}
         months = []
@@ -30,7 +30,8 @@ class BillsController:
         year = ""
 
         if searchValue is not None:
-            regex = re.escape(searchValue) 
+            regex = re.escape(searchValue)
+            nullSearch = True if re.search(regex, "None", re.IGNORECASE) else False
             for month in monthsMap.keys():
                 if re.search(regex, month, re.IGNORECASE):
                     months.append(monthsMap[month])
@@ -48,8 +49,8 @@ class BillsController:
                         if len(splitSearch) > 2:
                             year = splitSearch[2] if splitSearch[2].isdigit else ""
 
-        totalPages =  Bill.uniqueTotalCount(searchValue, months, day, year) // 50 + 1
-        fetchedBills = Bill.uniqueRead(searchValue, sortingField, sortingOrder, months, day, year, page=currentPage)
+        totalPages =  Bill.uniqueTotalCount(searchValue, months, day, year, nullSearch=nullSearch) // 50 + 1
+        fetchedBills = Bill.uniqueRead(searchValue, sortingField, sortingOrder, months, day, year, page=currentPage, nullSearch=nullSearch)
         for bill in fetchedBills:
             bill["TotalAmount"] = formatMoney(amount = bill["TotalAmount"])
             bill["DueDate"] = bill["DueDate"].strftime("%B %d, %Y")
