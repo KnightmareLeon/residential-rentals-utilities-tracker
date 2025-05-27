@@ -1,11 +1,11 @@
 # UtiliTrack
 
-UtiliTrack is a comprehensive utility tracking application designed to manage and monitor utilities for boarding houses. It provides features for recording bills, utilities, and units, as well as generating summaries and visualizations for better decision-making.
+UtiliTrack is a desktop application designed for rental property owners to track, manage, and analyze utility expenses across their units. Users can link units to utilities (like electricity, water, internet, etc.), log bills over time, and view cost trends through charts and visualizations. This helps identify inefficiencies, detect cost spikes, compare usage across units, and make data-driven decisions—such as whether to bundle shared utilities into rent. Ideal for managing anything from multi-room homes to large apartment complexes, UtiliTrack empowers owners to optimize expenses and improve financial performance.
 
----
+
 
 ## About
-School project for **CCC151 - Information Management**
+This application was made for a school project for the course **CCC151 - Information Management**
 
 Here is the our [Google Docs link](https://docs.google.com/document/d/14NUibsdk8e9LtcCpfhOJAlk9soUE7Fkw1tqVVz8lVOI/edit?usp=sharing) that has our **Entity-Relationship Diagram** (ERD), **Entity-Relationship** (ERM), **Data Dictionary**, and **SQL Data Definition Language** (SQL DDL) for this project.
 
@@ -14,7 +14,69 @@ Members:
 2. Kim Gabriel A. Nasayao
 3. Rogelio Angelo C. Bollozos
 
----
+
+
+## Setup
+
+### 1. Clone the Repository
+
+First, clone the repository to your local system:
+
+```bash
+git clone https://github.com/KnightmareLeon/residential-rentals-utilities-tracker.git
+cd utilitrack
+```
+
+### 2. Install Dependencies
+
+Make sure you have Python 3.10+ installed. Then, create and activate a virtual environment:
+
+#### Create a virtual environment
+```bash
+python -m venv venv
+```
+
+#### Activate the Virtual Environment
+- On Windows:
+
+    ```bash
+    ./venv/Scripts/activate
+    ```
+
+- On Linux/macOS:
+
+    ```bash
+    source venv/bin/activate
+    ```
+
+#### Install Required Packages
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Set Up the MySQL Database
+Create a new MySQL database schema using your MySQL client or any GUI like MySQL Workbench:
+
+```sql
+CREATE DATABASE your_schema_name;
+```
+
+Create a .env file in the project root and add your MySQL configuration:
+
+```ini
+HOST=localhost
+USER=your_mysql_username
+PASSWORD=your_mysql_password
+DATABASE=your_schema_name
+```
+Make sure the user has permission to access and modify the selected database.
+
+### 4. Start the Application
+You can now run the application!
+
+```python
+python main.py
+```
 
 ## Features
 
@@ -77,19 +139,3 @@ Members:
      - Stores unit details, including name, address, and type.
    - **Bills Table**:
      - Tracks all bills, including their amounts, due dates, and statuses.
-
-
----
-
-## How to Use
-
-1. **Setup**:
-   - 
-2. **Run the Application**:
-   - Execute the main script: `python main.py`.
-3. **Navigate**:
-   - Use the dashboard for an overview of utilities and bills.
-   - Access detailed views for utilities and units as needed.
-
-
----
