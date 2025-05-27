@@ -138,7 +138,9 @@ class UtilitiesController:
         originalData = Utility.readOne(originalID)
         originalUnitID = InstalledUtility.getMainUnit(originalID)
         if originalUnitID is None:
-            originalUnitID = InstalledUtility.getUtilityUnits(originalID)[0]['UnitID']
+            originalUnits = InstalledUtility.getUtilityUnits(originalID)
+            if len(originalUnits) > 0:
+                originalUnitID = InstalledUtility.getUtilityUnits(originalID)[0]['UnitID']
         originalSharedUnitIDs = InstalledUtility.getUtilityUnits(originalID)
         originalSharedUnitIDs = [unit["UnitID"] for unit in originalSharedUnitIDs if unit["UnitID"] != originalUnitID]
 
