@@ -241,7 +241,7 @@ class UtilitySumChartWidget(QFrame):
                     start = tickDates[i].date()
                     end = tickDates[i + 1].date()
 
-                    if start <= billDate < end:
+                    if start <= billDate <= end:
                         totalSpace = (end - start).days
                         offset = (billDate - start).days / totalSpace if totalSpace > 0 else 0
                         x_val = i + offset
