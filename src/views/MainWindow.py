@@ -382,6 +382,7 @@ class MainWindow(QMainWindow):
         self.userProfileLabel.setScaledContents(True)
         self.userProfileLabel.setObjectName("userProfileLabel")
 
+        #TODO: REMOVE THIS WHEN USER FEATURE IS IMPLEMENTED 
         opacity1 = QGraphicsOpacityEffect()
         opacity1.setOpacity(0.0)
         self.userNameLabel.setGraphicsEffect(opacity1)
