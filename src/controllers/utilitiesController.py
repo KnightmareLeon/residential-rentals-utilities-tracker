@@ -28,7 +28,6 @@ class UtilitiesController:
         if searchValue is not None:
             regex = re.escape(searchValue)
             nullSearch = True if re.search(regex, "None", re.IGNORECASE) else False
-        print(nullSearch)
         totalPages =  InstalledUtility.uniqueTotalCount(searchValue, nullSearch=nullSearch) // 50 + 1
 
         fetchedUtils = InstalledUtility.uniqueRead(searchValue,
@@ -198,7 +197,6 @@ class UtilitiesController:
             originalInstallationDate = InstalledUtility.getInstallationDates(originalID)[0]["InstallationDate"]
 
             if installationDate != originalInstallationDate:
-                print(installationDate, originalInstallationDate)
                 InstalledUtility.update([originalUnitID, originalID], {"InstallationDate": installationDate})
             if sorted(sharedUnitIDs) != sorted(originalSharedUnitIDs):
                 for id in originalSharedUnitIDs:

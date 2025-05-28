@@ -423,14 +423,14 @@ class BillDatabaseTable(DatabaseTable):
 
             if paidOnly:
                 whereClause += " AND Bill.Status = 'Paid'"
-            whereClause += " AND (" + " OR ".join([f"u.Type = '{type}'" for type in types]) + ")"
+            whereClause += " AND (" + " OR ".join([f"u.Type = '{type}'" for type in types]) + ")" if len(types) > 0 else ""
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             sql = f"SELECT SUM(bill.TotalAmount) AS TotalAmount FROM {cls.getTableName()} " + \
                 f"JOIN {UtilityDatabaseTable.getTableName()} u ON bill.UtilityID=u.UtilityID " + \
                 f"WHERE {whereClause}"
             cursor.execute(sql)
             result = cursor.fetchone()['TotalAmount']
-
+            result = result if len(types) > 0 else 0
         except Exception as e:
             print(f"Error: {e}")
             raise e
@@ -458,7 +458,7 @@ class BillDatabaseTable(DatabaseTable):
         try:
             
             rangeClause = cls.__rangeClause(range, offset)
-            types = " AND (" + " OR ".join([f"u.Type = '{type}'" for type in types]) + ")"
+            types = " AND (" + " OR ".join([f"u.Type = '{type}'" for type in types]) + ")" if len(types) > 0 else ""
 
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             sql = f"SELECT SUM(bill.TotalAmount) AS TotalAmount FROM {cls.getTableName()} " + \
@@ -466,7 +466,7 @@ class BillDatabaseTable(DatabaseTable):
                 f"WHERE {rangeClause} AND bill.Status != 'Paid' {types} "
             cursor.execute(sql)
             result = cursor.fetchone()['TotalAmount']
-
+            result = result if len(types) > 0 else 0
         except Exception as e:
             print(f"Error: {e}")
             raise e
@@ -494,7 +494,7 @@ class BillDatabaseTable(DatabaseTable):
         try:
             
             rangeClause = cls.__rangeClause(range, offset)
-            types = " AND (" + " OR ".join([f"u.Type = '{type}'" for type in types]) + ")"
+            types = " AND (" + " OR ".join([f"u.Type = '{type}'" for type in types]) + ")" if len(types) > 0 else ""
 
             cursor = DatabaseConnection.getConnection().cursor(dictionary = True)
             sql = f"SELECT COUNT(Bill.BillID) AS UnpaidCount FROM {cls.getTableName()} " + \
@@ -502,7 +502,7 @@ class BillDatabaseTable(DatabaseTable):
                 f"WHERE {rangeClause} {types} AND Bill.Status != 'Paid'"
             cursor.execute(sql)
             result = cursor.fetchone()['UnpaidCount']
-
+            result = result if len(types) > 0 else 0
         except Exception as e:
             print(f"Error: {e}")
             raise e
